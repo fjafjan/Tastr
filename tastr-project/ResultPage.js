@@ -1,59 +1,57 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-web';
-import { useLocation } from 'react-router-dom';
+import { SafeAreaView, Text, StyleSheet, View, Button, Alert } from 'react-native';
+import { useLocation, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const ResultPage = () => {
+  const { sessionId } = useParams() // Extract session Id from URL.
   const location = useLocation();
-  const { sessionId } = location.state || {}
-  const [fields, setFields] = useState({})
-  const [seletedFields, setSelectedFields] = useState([])
+  const [fields, setFields] = useState({});
+  const [selectedFields, setSelectedFields] = useState([]);
 
+  console.log("Entering results page with session Id", sessionId)
   useEffect(() => {
     const fetchFields = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/foods/${sessionId}`)
-        const data = response.data
-        setFields(data)
+        const response = await axios.get(`http://localhost:5000/foods/${sessionId}`);
+        const data = response.data;
+        setFields(data);
 
-        // Randomly select two field s
-        const fieldNames = Object.keys(data)
+        // Randomly select two fields
+        const fieldNames = Object.keys(data);
         const shuffled = fieldNames.sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 2)
+        const selected = shuffled.slice(0, 2);
 
-        // Save selected fields
-        setSelectedFields(selected)
+        setSelectedFields(selected);
       } catch (error) {
-        console.error("Error fetching data", error)
+        console.error('Error fetching data', error);
       }
-    }
-    fetchFields()
-  }, [sessionId])
+    };
+
+    fetchFields();
+  }, [sessionId]);
 
   const handleSelect = (field) => {
     alert('Selected Field', `You selected ${field}: ${fields[field]}`);
   };
 
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.resultContainer}>
-        {setFields.map((field, index) => (
-           <View key={index} style={styles.fieldContainer}>
+        {selectedFields.map((field, index) => (
+          <View key={index} style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>{field}:</Text>
-            <Text style={styles.fieldValue}>{fields[field]}:</Text>
+            <Text style={styles.fieldValue}>{fields[field]}</Text>
             <Button
               title={`Select ${field}`}
               onPress={() => handleSelect(field)}
-              style={styles.selectButton}/>
+            />
           </View>
         ))}
       </View>
     </SafeAreaView>
-  )
+  );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -64,14 +62,14 @@ const styles = StyleSheet.create({
   },
   resultContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',  // Ensures items are spaced evenly
-    width: '100%',  // Makes sure the container uses full width
+    justifyContent: 'space-between',
+    width: '100%',
     paddingHorizontal: 10,
   },
   fieldContainer: {
-    flex: 1,  // Allows the field container to grow and shrink as needed
+    flex: 1,
     alignItems: 'center',
-    marginHorizontal: 5,  // Space between the field containers
+    marginHorizontal: 10,
   },
   fieldLabel: {
     fontSize: 18,
@@ -82,4 +80,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-  export default ResultPage;
+
+export default ResultPage;

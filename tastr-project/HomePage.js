@@ -34,7 +34,7 @@ const HomePage = () => {
       fields: fields
     })
 
-    navigate('/result', { state: { sessionId} });
+    navigate(`/${sessionId}/result`);
   }
 
   return (

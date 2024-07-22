@@ -14,6 +14,7 @@ app.use(bodyParser.json())
 // Endpoint to save data sent from a user.
 app.post('/save', (req, res) => {
   const { id, fields } = req.body
+  console.log("Received data on", id, fields)
   storedData[id] = fields
   res.sendStatus(200) // We are OK!
 })
@@ -21,6 +22,7 @@ app.post('/save', (req, res) => {
 // Endpoint to get data.
 app.get('/foods/:id', (req, res) => {
   const { id } = req.params
+  console.log("Posting data on", id)
   const fields = storedData[id]
   if (fields) {
     res.json(fields)
