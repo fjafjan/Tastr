@@ -49,7 +49,7 @@ module.exports = {
     port: 9000,
   },
   performance: {
-    maxAssetSize: 512000, // Increase the limit as per your need
-    maxEntrypointSize: 512000, // Increase the limit as per your need
+    maxAssetSize: 5120000, // Increase the limit as per your need
+    maxEntrypointSize: 5120000, // Increase the limit as per your need
   },
 };

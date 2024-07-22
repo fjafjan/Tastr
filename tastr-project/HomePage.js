@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import { SafeAreaView, ScrollView, TextInput, StyleSheet, View, Button } from 'react-native-web'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const HomePage = () => {
   const [fields, setFields] = useState({
@@ -12,7 +13,7 @@ const HomePage = () => {
     field6: '',
   });
 
-  const [selectedFields, setSelectedFields] = useState([])
+  // TODO: The homepage should navigate to a new user session directly
   const navigate = useNavigate();
 
   const handleChange = (name, value) => {
@@ -22,17 +23,18 @@ const HomePage = () => {
     })
   }
 
-  const handleDone = () => {
-    // Get field names
-    const fieldNames = Object.keys(fields)
+  const handleDone = async () => {
+    // Generate session ID.
+    // TODO: Actually generate a unique session ID.
+    const sessionId = "fjafjan"
 
-    // Shuffle the field names
-    const shuffled = fieldNames.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 2)
+    // Send the data to the server.
+    await axios.post('http://localhost:5000/save', {
+      id: sessionId,
+      fields: fields
+    })
 
-    // Save selected fields
-    setSelectedFields(selected)
-    navigate('/result', { state: {fields, selectedFields: selected} });
+    navigate('/result', { state: { sessionId} });
   }
 
   return (
