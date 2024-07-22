@@ -12,6 +12,7 @@ const HomePage = () => {
         field6: '',
     });
 
+    const [selectedFields, setSelectedFields] = useState([])
     const navigate = useNavigate();
 
     const handleChange = (name, value) => {
@@ -22,7 +23,16 @@ const HomePage = () => {
     }
 
     const handleDone = () => {
-        navigate('/result', { state: {fields} });
+        // Get field names
+        const fieldNames = Object.keys(fields)
+
+        // Shuffle the field names
+        const shuffled = fieldNames.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 2)
+
+        // Save selected fields
+        setSelectedFields(selected)
+        navigate('/result', { state: {fields, selectedFields: selected} });
     }
 
     return (

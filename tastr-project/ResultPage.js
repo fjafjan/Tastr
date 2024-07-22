@@ -1,19 +1,27 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
+import { Button } from 'react-native-web';
 import { useLocation } from 'react-router-dom';
 
 const ResultPage = () => {
     const location = useLocation();
-    const { fields } = location.state || {}
+    const { fields, selectedFields } = location.state || {}
+
+    const handleSelect = () => {
+        alert('Selected fields ' + selectedFields.join(', '))
+    }
+
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.resultContainer}>
-                {Object.keys(fields || {}).map((field, index) => (
-                 <Text key={index} style={styles.text}>
-                    {`${field}: ${fields[field]}`}
-                 </Text>
+                {selectedFields.map((field, index) => (
+                    <View key={index} style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>{field}:</Text>
+                        <Text style={styles.fieldValue}>{fields[field]}:</Text>
+                    </View>
                 ))}
+                <Button title="Selected" onPress={handleSelect}/>
             </View>
         </SafeAreaView>
     )
@@ -29,10 +37,18 @@ const styles = StyleSheet.create({
     resultContainer: {
       width: '80%',
     },
-    text: {
-      fontSize: 18,
-      marginBottom: 10,
-    },
+    fieldContainer: {
+        flex: 1,
+        alignItems: 'center',
+        marginHorizontal: 10,
+      },
+      fieldLabel: {
+        fontSize: 18,
+        fontWeight: 'bold',
+      },
+      fieldValue: {
+        fontSize: 16,
+      },
   });
 
   export default ResultPage;
