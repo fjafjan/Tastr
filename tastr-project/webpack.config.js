@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: './index.web.js',
-  mode: argv.mode || 'development',
+  mode: 'production',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -47,5 +47,9 @@ module.exports = {
     },
     compress: true,
     port: 9000,
+  },
+  performance: {
+    maxAssetSize: 512000, // Increase the limit as per your need
+    maxEntrypointSize: 512000, // Increase the limit as per your need
   },
 };
