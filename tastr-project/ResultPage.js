@@ -31,8 +31,9 @@ const ResultPage = () => {
     fetchFields();
   }, [sessionId]);
 
-  const handleSelect = (field) => {
-    alert('Selected Field', `You selected ${field}: ${fields[field]}`);
+  const handleSelect = async (field, otherField) => {
+    Alert.alert('Selected Field', `You selected ${field}: ${fields[field]} over ${fields[otherField]}`);
+    await axios.post(`http://localhost:5000/vote/${sessionId}/${field}/${otherField}`)
   };
 
   return (
@@ -43,8 +44,8 @@ const ResultPage = () => {
             <Text style={styles.fieldLabel}>{field}:</Text>
             <Text style={styles.fieldValue}>{fields[field]}</Text>
             <Button
-              title={`Select ${field}`}
-              onPress={() => handleSelect(field)}
+              title={`Select ${fields[field]}`}
+              onPress={() => handleSelect(field, selectedFields[Math.abs(1 - index)])}
             />
           </View>
         ))}
