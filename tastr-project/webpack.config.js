@@ -7,9 +7,10 @@ module.exports = (env, argv) => {
   const isDevelopment = argv.mode === 'development';
   return {
     entry: './index.web.js',
-    output: {
+      output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'bundle.js',
+      publicPath: '/', // Necessary for proper client-side routing
     },
     module: {
       rules: [
@@ -37,7 +38,7 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: 'index.html',
+        template: 'public/index.html',
       }),
       new webpack.DefinePlugin({
         __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
@@ -45,7 +46,7 @@ module.exports = (env, argv) => {
     ],
     devServer: {
       static: {
-        directory: path.join(__dirname, 'dist'),
+        directory: path.join(__dirname, 'public'),
       },
       historyApiFallback: true,
       compress: true,
