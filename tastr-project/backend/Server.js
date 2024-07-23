@@ -1,66 +1,77 @@
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const { default: mongoose } = require('mongoose')
+const { StoredData, VoteData } = require('./Models')
 
 const app = express()
 const port = 5000
 
-// TODO: Replace this with a database, will ask for this soon.
-let storedData = {}
-let voteData = {}
 
-app.use(cors()) // What does this do?
+// Middleware
+app.use(cors())
 app.use(bodyParser.json())
 
-// Endpoint to save data sent from a user.
-app.post('/save', (req, res) => {
-  const { id, fields } = req.body
-  console.log("Received data on", id, fields)
-  storedData[id] = fields
-  // Initialize the voting data.
-  if (!voteData[id]) {
-    voteData[id] = {}
-    const thisVote = voteData[id]
-    for (let key in fields) {
-      thisVote[key] = 0
-    }
-  }
-  res.sendStatus(200) // We are OK!
+// Connect to database.
+mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
+  console.log("Connected to database")
+}).catch(err => {
+  console.error("Failed to connect to database", err)
+  return 1
 })
 
-app.post('/vote/:id/:winner/:loser', (req, res) => {
+// Endpoint to save data sent from a user.
+app.post('/save', async(req, res) => {
+  const { id: sessionId, fields } = req.body
+  console.log("Received data on", sessionId, fields)
+  try {
+    await StoredData.findOneAndUpdate({id: sessionId}, {fields}, { upsert: true, new: true})
+
+    let voteEntry = VoteData.findOne({ sessionId: sessionId});
+    // Initialize the voting data.
+    if (!voteEntry[sessionId]) {
+      const votes = {}
+      for (let key in fields) {
+        votes[key] = 0
+      }
+      await new VoteData({ sessionId: sessionId, votes}).save()
+    }
+    res.sendStatus(200) // We are OK!
+  } catch(error) {
+    console.error("Failed to save new data due to ", error)
+  }
+})
+
+app.post('/vote/:id/:winner/:loser', async (req, res) => {
   const { id, winner, loser} = req.params
   console.log(`Got vote for ${winner} over ${loser} in Session ${id}`)
-  const thisVote = voteData[id]
+  let voteEntry = await VoteData.findOne({ sessionId: id });
 
-  if (thisVote && winner in thisVote && loser in thisVote) {
-    thisVote[winner] += 1
-    thisVote[loser] -= 1
+  if (voteEntry) {
+    voteEntry.votes.set(winner, voteEntry.votes.get(winner) + 1);
+    voteEntry.votes.set(loser, voteEntry.votes.get(loser) - 1);
     res.sendStatus(200)
   } else {
-    if (!thisVote) {
-      console.log("Vote data is missing for this session")
-    }
-    else if (!(winner in thisVote)) {
-      console.log("Missing voter data for the winner")
-    }
-    else if (!(loser in thisVote)) {
-      console.log("Missing voter data for the loser")
-    }
     console.log("Some piece of data is missing", thisVote)
     res.sendStatus(404)
   }
 })
 
 // Endpoint to get data.
-app.get('/foods/:id', (req, res) => {
+app.get('/foods/:id', async (req, res) => {
   const { id } = req.params
   console.log("Posting data on", id)
-  const fields = storedData[id]
-  if (fields) {
-    res.json(fields)
-  } else {
-    res.sendStatus(404) // Not found
+
+  try {
+    const entry = await StoredData.findOne({ id }, "fields").exec()
+    if (entry) {
+      console.log("Returning", entry, entry.fields)
+      res.json(entry.fields)
+    } else {
+      res.sendStatus(404) // Not found
+    }
+  } catch(error) {
+    console.error(`Failed to get foods for ${id}`)
   }
 })
 
