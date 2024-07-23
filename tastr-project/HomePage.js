@@ -42,7 +42,7 @@ const HomePage = () => {
       fields: fieldValues
     })
 
-    navigate(`/${sessionId}/result`);
+    navigate(`/${sessionId}`);
   }
 
   return (

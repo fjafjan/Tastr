@@ -15,6 +15,9 @@ const storedDataSchema = new Schema({
   foodObjects: { type: [foodObjectSchema], required: true } // Array of FoodObjects
 });
 
+// This defines the data for an individual vote. This allows us to e.g. remove malicious users
+// and generate sub-section preferences. So we store each individual vote instead of storing it
+// per item.
 const voteSchema = new Schema({
   voteId: {type: String, required: true, unique: true}, // Uniquely identifies this vote.
   userId: {type: String, required: true }, // Who did the voting.
@@ -32,8 +35,6 @@ const userSchema = new Schema({
 const StoredData = mongoose.model('StoredData', storedDataSchema)
 const VoteData = mongoose.model('VoteData', voteSchema)
 const UserData = mongoose.model("UserData", userSchema)
-
-// const VoteData = mongoose.model('VoteData', voteDataSchema)
 
 module.exports = {
   StoredData,
