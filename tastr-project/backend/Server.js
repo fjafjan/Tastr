@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
-const { StoredData, VoteData } = require('./Models')
+const { StoredData } = require('./Models')
 
 const app = express()
 const port = 5000
@@ -25,49 +25,61 @@ app.post('/save', async(req, res) => {
   const { id: sessionId, fields } = req.body
   console.log("Received data on", sessionId, fields)
   try {
-    await StoredData.findOneAndUpdate({sessionId: sessionId}, {fields}, { upsert: true})
-
-    const voteEntry = await VoteData.findOne({ sessionId: sessionId }).exec()
-    // Initialize the voting data.
-    if (!voteEntry) {
-      const votes = {}
-      for (let key in fields) {
-        votes[fields[key]] = 0
-      }
-      await new VoteData({ sessionId: sessionId, votes}).save()
-    }
+    const foodObjects = Object.keys(fields).map((key, index) => ({
+      id: key,
+      name: fields[key],
+      voteCount: 0,
+      MMR: 1000, // Default MMR
+    }))
+    await StoredData.findOneAndUpdate(
+      {sessionId: sessionId},
+      { $set : { foodObjects: foodObjects} },
+      { upsert: true, new: true}
+    );
     res.sendStatus(200) // We are OK!
   } catch(error) {
     console.error("Failed to save new data due to ", error)
   }
 })
 
-app.post('/vote/:id/:winner/:loser', async (req, res) => {
-  const { id, winner, loser} = req.params
-  console.log(`Got vote for ${winner} over ${loser} in Session ${id}`)
-  let voteEntry = await VoteData.findOne({ sessionId: id });
-
-  if (voteEntry) {
-    voteEntry.votes.set(winner, voteEntry.votes.get(winner) + 1);
-    voteEntry.votes.set(loser, voteEntry.votes.get(loser) - 1);
-    voteEntry.save()
-    res.sendStatus(200)
-  } else {
-    console.log("Some piece of data is missing", thisVote)
+app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
+  const { sessionId, winnerId, loserId} = req.params
+  console.log(`Got vote for ${winnerId} over ${loserId} in Session ${sessionId}`)
+  const entry = await StoredData.findOne({ sessionId: sessionId }).exec();
+  if (!entry) {
+    console.error("Failed to find session ID ", sessionId)
     res.sendStatus(404)
+    throw new Error("Failed to find session ID", sessionId)
   }
+
+  const winnerEntry = entry.foodObjects.find(food => food.id === winnerId)
+  const loserEntry = entry.foodObjects.find(food => food.id === loserId)
+
+  if (typeof(winnerEntry) === "undefined" || typeof(loserEntry) === "undefined") {
+    console.error(`Missing entry with id ${loserId} or ${winnerId}`)
+    res.sendStatus(404)
+    return;
+  }
+  winnerEntry.voteCount = winnerEntry.voteCount + 1
+  loserEntry.voteCount = loserEntry.voteCount - 1
+  entry.save()
+  res.sendStatus(200)
 })
 
 // Endpoint to get data.
-app.get('/foods/:sessionId', async (req, res) => {
+app.get('/names/:sessionId', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting food names for session ", sessionId)
 
   try {
-    const entry = await StoredData.findOne({ sessionId: sessionId }, "fields").exec()
+    const entry = await StoredData.findOne({ sessionId: sessionId }).exec()
     if (entry) {
-      console.log("Returning", entry.fields)
-      res.json(entry.fields)
+      const idToNamesDictionary = entry.foodObjects.reduce((acc, item) => {
+        acc[item.id] = item.name
+        return acc
+      }, {});
+      console.log("Returning", idToNamesDictionary)
+      res.json(idToNamesDictionary)
     } else {
       res.sendStatus(404) // Not found
     }
@@ -81,10 +93,15 @@ app.get('/votes/:sessionId', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting votes for session ", sessionId)
   try {
-    const voteEntry = await VoteData.findOne({ sessionId: sessionId }).exec()
-    if (voteEntry) {
-      console.log("Returning", voteEntry.votes)
-      res.json(voteEntry.votes)
+    const entry = await StoredData.findOne({ sessionId: sessionId }).exec()
+    if (entry) {
+      const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
+        acc[item.name] = item.voteCount
+        return acc;
+      }, {});
+
+      console.log("Returning", foodItemsDictionary)
+      res.json(foodItemsDictionary)
     } else {
       res.sendStatus(404) // Not found
     }

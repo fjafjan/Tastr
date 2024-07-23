@@ -5,34 +5,41 @@ import axios from 'axios'
 
 const HomePage = () => {
   const [category, setCategory] = useState("")
-  const [fields, setFields] = useState({
-    field1: '',
-    field2: '',
-    field3: '',
-    field4: '',
-    field5: '',
-    field6: '',
-  });
+  const [fields, setFields] = useState([{ id: 1, value: '' }]);
 
   // TODO: The homepage should navigate to a new user session directly
   const navigate = useNavigate();
 
-  const handleChange = (name, value) => {
-    setFields({
-      ...fields,
-      [name]: value
-    })
+  const handleChange = (id, value) => {
+    setFields(prevFields =>
+      prevFields.map(field =>
+        field.id === id ? { ...field, value } : field
+      )
+    )
+
+    // Add new field if the last visible field is filled
+    if (value !== '' && id === fields[fields.length - 1].id) {
+      setFields(prevFields =>
+        [...prevFields, {id: prevFields.length +1, value: ''}]
+      )
+    }
   }
 
   const handleDone = async () => {
-    // Generate session ID.
-    // TODO: Actually generate a unique session ID.
-    const sessionId = category
+    // The category is used as session Id for now.
+    const sessionId = category.toLowerCase()
 
+    // Filter out any fields that are empty
+    const filledFields = fields.filter(field => field.value !== '');
+
+    const fieldValues = filledFields.reduce((acc, field, index) => {
+      acc[`${index + 1}`] = field.value;
+      return acc;
+    }, {});
     // Send the data to the server.
     await axios.post('http://localhost:5000/save', {
       id: sessionId,
-      fields: fields
+      fields: fieldValues
     })
 
     navigate(`/${sessionId}/result`);
@@ -49,13 +56,13 @@ const HomePage = () => {
             value={category}
             onChangeText={setCategory}
           />
-          {Object.keys(fields).map((field, index) => (
+          {fields.map((field) => (
           <TextInput
-            key={index}
+            key={field.id}
             style={styles.input}
-            placeholder={`Enter text for ${field}`}
-            value={field[field]}
-            onChangeText={(value) => handleChange(field, value)}
+            placeholder={`Enter text for ${field.id}`}
+            value={field.value}
+            onChangeText={(value) => handleChange(field.id, value)}
           />
           ))}
 

@@ -25,49 +25,53 @@ const ResultPage = () => {
   });
   const [selectedFields, setSelectedFields] = useState([]);
 
+  const fetchFields = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/names/${sessionId}`);
+      const data = response.data
+      setFields(data);
+
+      // Randomly select two fields
+      const fieldNames = Object.values(data);
+      const shuffled = fieldNames.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 2);
+
+      setSelectedFields(selected);
+    } catch (error) {
+      console.error('Error fetching names', error);
+    }
+  };
+
+  const fetchVotes = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/votes/${sessionId}`);
+      const data = response.data;
+
+      const names = Object.keys(data);
+      const values = Object.values(data);
+
+      setVotes(data);
+
+      setChartData({
+        labels: names,
+        datasets: [
+          {
+            label: 'Votes',
+            data: values,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          }
+        ]
+      });
+    } catch (error) {
+      console.error('Error fetching votes', error);
+    }
+  }
+
   console.log("Entering results page with session Id", sessionId);
 
   useEffect(() => {
-    const fetchFields = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/foods/${sessionId}`);
-        const data = response.data;
-        setFields(data);
-
-        // Randomly select two fields
-        const fieldNames = Object.keys(data);
-        const shuffled = fieldNames.sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 2);
-
-        setSelectedFields(selected);
-      } catch (error) {
-        console.error('Error fetching names', error);
-      }
-    };
-    const fetchVotes = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/votes/${sessionId}`);
-        const data = response.data;
-        setVotes(data);
-
-        const labels = Object.keys(data);
-        const values = Object.values(data);
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              label: 'Votes',
-              data: values,
-              backgroundColor: 'rgba(75, 192, 192, 0.6)',
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1,
-            }
-          ]
-        });
-      } catch (error) {
-        console.error('Error fetching votes', error);
-      }
-    }
     fetchFields();
     fetchVotes();
   }, [sessionId]);
@@ -90,6 +94,7 @@ const ResultPage = () => {
   const handleSelect = async (field, otherField) => {
     alert(`You selected ${field}: ${fields[field]} over ${fields[otherField]}`);
     await axios.post(`http://localhost:5000/vote/${sessionId}/${field}/${otherField}`)
+    fetchVotes()
   };
 
   return (
