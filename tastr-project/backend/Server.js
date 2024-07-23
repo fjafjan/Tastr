@@ -59,19 +59,36 @@ app.post('/vote/:id/:winner/:loser', async (req, res) => {
 
 // Endpoint to get data.
 app.get('/foods/:id', async (req, res) => {
-  const { id } = req.params
-  console.log("Posting data on", id)
+  const { sessionId } = req.params
+  console.log("Getting food names for session ", sessionId)
 
   try {
-    const entry = await StoredData.findOne({ id }, "fields").exec()
+    const entry = await StoredData.findOne({ sessionId }, "fields").exec()
     if (entry) {
-      console.log("Returning", entry, entry.fields)
+      console.log("Returning", entry.fields)
       res.json(entry.fields)
     } else {
       res.sendStatus(404) // Not found
     }
   } catch(error) {
-    console.error(`Failed to get foods for ${id}`)
+    console.error(`Failed to get foods for ${sessionId}`, error)
+  }
+})
+
+// Endpoint to get votes.
+app.get('/foods/:votes', async (req, res) => {
+  const { sessionId } = req.params
+  console.log("Getting votes for session ", sessionId)
+  try {
+    const voteEntry = await VoteData.findOne({ sessionId: sessionId }).exec()
+    if (voteEntry) {
+      console.log("Returning", voteEntry.votes)
+      res.json(voteEntry.votes)
+    } else {
+      res.sendStatus(404) // Not found
+    }
+  } catch(error) {
+    console.error(`Failed to find votes for ${sessionId}`, error)
   }
 })
 
