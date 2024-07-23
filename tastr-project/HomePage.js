@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const HomePage = () => {
+  const [category, setCategory] = useState("")
   const [fields, setFields] = useState({
     field1: '',
     field2: '',
@@ -26,7 +27,7 @@ const HomePage = () => {
   const handleDone = async () => {
     // Generate session ID.
     // TODO: Actually generate a unique session ID.
-    const sessionId = "fjafjan"
+    const sessionId = category
 
     // Send the data to the server.
     await axios.post('http://localhost:5000/save', {
@@ -41,6 +42,13 @@ const HomePage = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.inputContainer}>
+          <TextInput
+            key="Category"
+            style={styles.category}
+            placeholder={'What are you Sampling?'}
+            value={category}
+            onChangeText={setCategory}
+          />
           {Object.keys(fields).map((field, index) => (
           <TextInput
             key={index}
@@ -69,6 +77,14 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '80%',
+  },
+  category: {
+    height: 60,
+    width: 300,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 30,
+    paddingHorizontal: 30,
   },
   input: {
     height: 40,

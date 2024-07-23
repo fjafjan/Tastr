@@ -32,7 +32,7 @@ app.post('/save', async(req, res) => {
     if (!voteEntry) {
       const votes = {}
       for (let key in fields) {
-        votes[key] = 0
+        votes[fields[key]] = 0
       }
       await new VoteData({ sessionId: sessionId, votes}).save()
     }
@@ -50,6 +50,7 @@ app.post('/vote/:id/:winner/:loser', async (req, res) => {
   if (voteEntry) {
     voteEntry.votes.set(winner, voteEntry.votes.get(winner) + 1);
     voteEntry.votes.set(loser, voteEntry.votes.get(loser) - 1);
+    voteEntry.save()
     res.sendStatus(200)
   } else {
     console.log("Some piece of data is missing", thisVote)
