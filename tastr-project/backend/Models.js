@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose
 
 const storedDataSchema = new Schema({
-  id: { type: String, required: true, unique: true},
+  sessionId: { type: String, required: true, unique: true},
   fields: { type: Map, of: String, required: true}
 });
 

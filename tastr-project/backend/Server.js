@@ -25,11 +25,11 @@ app.post('/save', async(req, res) => {
   const { id: sessionId, fields } = req.body
   console.log("Received data on", sessionId, fields)
   try {
-    await StoredData.findOneAndUpdate({id: sessionId}, {fields}, { upsert: true, new: true})
+    await StoredData.findOneAndUpdate({sessionId: sessionId}, {fields}, { upsert: true})
 
-    let voteEntry = VoteData.findOne({ sessionId: sessionId});
+    const voteEntry = await VoteData.findOne({ sessionId: sessionId }).exec()
     // Initialize the voting data.
-    if (!voteEntry[sessionId]) {
+    if (!voteEntry) {
       const votes = {}
       for (let key in fields) {
         votes[key] = 0
@@ -58,12 +58,12 @@ app.post('/vote/:id/:winner/:loser', async (req, res) => {
 })
 
 // Endpoint to get data.
-app.get('/foods/:id', async (req, res) => {
+app.get('/foods/:sessionId', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting food names for session ", sessionId)
 
   try {
-    const entry = await StoredData.findOne({ sessionId }, "fields").exec()
+    const entry = await StoredData.findOne({ sessionId: sessionId }, "fields").exec()
     if (entry) {
       console.log("Returning", entry.fields)
       res.json(entry.fields)
@@ -76,7 +76,7 @@ app.get('/foods/:id', async (req, res) => {
 })
 
 // Endpoint to get votes.
-app.get('/foods/:votes', async (req, res) => {
+app.get('/votes/:sessionId', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting votes for session ", sessionId)
   try {

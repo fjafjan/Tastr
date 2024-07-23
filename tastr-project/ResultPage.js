@@ -1,33 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, Button, Alert } from 'react-native';
 import { useLocation, useParams } from 'react-router-dom';
-import { Bar } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
-import 'chart.js/auto'
+import 'chart.js/auto';
 
 const ResultPage = () => {
-  const { sessionId } = useParams() // Extract session Id from URL.
+  const { sessionId } = useParams(); // Extract session Id from URL.
   const location = useLocation();
   const [fields, setFields] = useState({});
-  const [votes, setVotes] = useState({})
-  const [chartData, setChartData] = useState({})
+  const [votes, setVotes] = useState({});
+  const [chartData, setChartData] = useState({});
   const [selectedFields, setSelectedFields] = useState([]);
 
-  console.log("Entering results page with session Id", sessionId)
+  console.log("Entering results page with session Id", sessionId);
+
   useEffect(() => {
-    // Get the names of the foods.
+    // Get the names of the fields.
     fetch(`http://localhost:5000/foods/${sessionId}`)
       .then(response => response.json())
       .then(data => setFields(data))
-      .catch(error => console.error('Error fetching food names', error))
+      .catch(error => console.error('Error fetching field names', error));
 
     // Get the vote data.
     fetch(`http://localhost:5000/votes/${sessionId}`)
       .then(response => response.json())
       .then(data => {
-        setVotes(data)
-        const labels = Object.keys(data)
-        const values = Object.values(data)
+        setVotes(data);
+        const labels = Object.keys(data);
+        const values = Object.values(data);
         setChartData({
           labels: labels,
           datasets: [
@@ -39,10 +40,25 @@ const ResultPage = () => {
               borderWidth: 1,
             }
           ]
-        })
+        });
       })
-      .catch(error => console.error("Failed to fetch vote data", error))
+      .catch(error => console.error("Failed to fetch vote data", error));
   }, [sessionId]);
+
+  useEffect(() => {
+    // Select two random fields when the component mounts or when fields change
+    if (Object.keys(fields).length > 0) {
+      const fieldNames = Object.keys(fields);
+      const randomFields = [];
+      while (randomFields.length < 2) {
+        const randomField = fieldNames[Math.floor(Math.random() * fieldNames.length)];
+        if (!randomFields.includes(randomField)) {
+          randomFields.push(randomField);
+        }
+      }
+      setSelectedFields(randomFields);
+    }
+  }, [fields]);
 
   const handleSelect = async (field, otherField) => {
     alert(`You selected ${field}: ${fields[field]} over ${fields[otherField]}`);
@@ -61,8 +77,11 @@ const ResultPage = () => {
               onPress={() => handleSelect(field, selectedFields[Math.abs(1 - index)])}
             />
           </View>
-
         ))}
+      </View>
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Current Votes</Text>
+        <Bar data={chartData} />
       </View>
     </SafeAreaView>
   );
@@ -93,6 +112,16 @@ const styles = StyleSheet.create({
   fieldValue: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  chartContainer: {
+    width: '100%',
+    padding: 20,
+  },
+  chartTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
