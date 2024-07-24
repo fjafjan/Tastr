@@ -16,6 +16,18 @@ const sessionDataSchema = new Schema({
   foodObjects: { type: [foodObjectSchema], required: true } // Array of FoodObjects
 });
 
+const emailSchema = new Schema({
+  email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      required: 'Email address is required',
+      validate: [validateEmail, 'Please fill a valid email address'],
+      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+  }
+})
+
 // This defines the data for an individual vote. This allows us to e.g. remove malicious users
 // and generate sub-section preferences. So we store each individual vote instead of storing it
 // per item.
@@ -30,7 +42,8 @@ const voteSchema = new Schema({
 // This will likely change a bit in the future.
 const userSchema = new Schema({
   userId: {type: String, required: true, unique: true}, // Uniquely identifies the user
-  name: {type: String, required: true} // A more descriptive name of the user.
+  name: {type: String, required: true}, // A more descriptive name of the user.
+  email: {type: emailSchema, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
 })
 
 const SessionData = mongoose.model('SessionData', sessionDataSchema)

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
 
 const LoginPage = () => {
   const { sessionId } = useParams(); // Extract session Id from URL.
+  const location = useLocation()
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('')
   const navigate = useNavigate();
+
+  const wasCreated = location.state?.creator
 
   const handleLogin = () => {
     // Save the name in local storage or cookies as needed
@@ -24,7 +28,14 @@ const LoginPage = () => {
           value={name}
           onChangeText={setName}
         />
+        <TextInput
+          style={styles.input}
+          placeholder={'Optionally your email, to be notified of testing results'}
+          values={email}
+          onChangeText={setEmail}
+        />
         <Button title="Continue" onPress={handleLogin} />
+        {wasCreated && <Button title="RemoveThis"/>}
       </View>
     </SafeAreaView>
   );

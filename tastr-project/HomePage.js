@@ -42,7 +42,7 @@ const HomePage = () => {
       fields: fieldValues
     })
 
-    navigate(`/${sessionId}`);
+    navigate(`/${sessionId}`, { state: { creator: true}});
   }
 
   return (

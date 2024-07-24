@@ -137,8 +137,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,  // Increase the padding for larger button size
-    paddingHorizontal: 40, // Increase the padding for larger button size
+    paddingVertical: 1,  // Increase the padding for larger button size
+    paddingHorizontal: 1, // Increase the padding for larger button size
     marginVertical: 20,
     marginHorizontal: 20,
     backgroundColor: '#4CAF50',
