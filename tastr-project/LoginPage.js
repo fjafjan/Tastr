@@ -11,8 +11,8 @@ const LoginPage = () => {
     // Save the name in local storage or cookies as needed
     localStorage.setItem('userId', name);
 
-    // Navigate to the ResultPage with sessionId
-    navigate(`/${sessionId}/result`);
+    // Navigate to the Voting page with sessionId
+    navigate(`/${sessionId}/voting`);
   };
 
   return (

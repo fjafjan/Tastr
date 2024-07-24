@@ -5,7 +5,7 @@ import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
 
-const ResultPage = () => {
+const VotePage = () => {
   const { sessionId } = useParams(); // Extract session Id from URL.
   const [foodNames, setFoodNames] = useState({});
   const [foodAliases, setFoodAliases] = useState({})
@@ -145,4 +145,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ResultPage;
+export default VotePage;
