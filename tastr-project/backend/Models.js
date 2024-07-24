@@ -5,6 +5,7 @@ const { Schema } = mongoose
 const foodObjectSchema = new Schema({
   id: { type: String, required: true }, // Unique identifier for each food item
   name: { type: String, required: true }, // Name of the food item
+  alias: { type: String, required: true }, // Alias displayed to the user to hide the identity.
   voteCount: { type: Number, default: 0 }, // Number of votes for the food item
   MMR: { type: Schema.Types.Number, default: 1000.0 } // MMR (Matchmaking Rating) as a double
 });

@@ -7,7 +7,7 @@ const PerformVote = require('./DatabaseUtility')
 
 const app = express()
 const port = 5000
-
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Å', 'Ä', 'Ö']
 
 // Middleware
 app.use(cors())
@@ -23,12 +23,13 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 
 // Endpoint to save data sent from a user.
 app.post('/sessions/add', async(req, res) => {
-  const { id: sessionId, fields } = req.body
-  console.log("Received data on", sessionId, fields)
+  const { id: sessionId, fields: foodNames } = req.body
+  console.log("Received data on", sessionId, foodNames)
   try {
-    const foodObjects = Object.keys(fields).map((key, index) => ({
+    const foodObjects = Object.keys(foodNames).map((key, index) => ({
       id: key,
-      name: fields[key],
+      name: foodNames[key],
+      alias: letters[index],
       voteCount: 0,
       MMR: 1000, // Default MMR
     }))
@@ -67,6 +68,27 @@ app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
     res.sendStatus(200)
   } else {
     res.sendStatus(500)
+  }
+})
+
+app.get('/aliases/:sessionId', async (req, res) => {
+  const { sessionId } = req.params
+  console.log("Getting aliases for session ", sessionId)
+
+  try {
+    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    if (entry) {
+      const idToAliasDictionary = entry.foodObjects.reduce((acc, item) => {
+        acc[item.id] = item.alias
+        return acc
+      }, {});
+      console.log("Returning", idToAliasDictionary)
+      res.json(idToAliasDictionary)
+    } else {
+      res.sendStatus(404) // Not found
+    }
+  } catch(error) {
+    console.error(`Failed to get foods for ${sessionId}`, error)
   }
 })
 

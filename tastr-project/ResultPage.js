@@ -7,7 +7,8 @@ import 'chart.js/auto';
 
 const ResultPage = () => {
   const { sessionId } = useParams(); // Extract session Id from URL.
-  const [fields, setFields] = useState({});
+  const [foodNames, setFoodNames] = useState({});
+  const [foodAliases, setFoodAliases] = useState({})
   const [votes, setVotes] = useState({});
   const [chartData, setChartData] = useState({
     labels: [],
@@ -21,20 +22,23 @@ const ResultPage = () => {
       },
     ],
   });
-  const [selectedFields, setSelectedFields] = useState([]);
+  const [selectedFoods, setSelectedFoods] = useState([]);
 
   const fetchFields = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/names/${sessionId}`);
       const data = response.data;
-      setFields(data);
-
+      setFoodNames(data);
+      const aliasResponse = await axios.get(`http://localhost:5000/aliases/${sessionId}`)
+      const aliases = aliasResponse.data
+      setFoodAliases(aliases)
       // Randomly select two fields
-      const fieldNames = Object.keys(response.data);
-      const shuffled = fieldNames.sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 2);
+      const foodAliases = Object.keys(aliasResponse.data);
+      const shuffled = foodAliases.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 2).sort();
 
-      setSelectedFields(selected);
+
+      setSelectedFoods(selected);
     } catch (error) {
       console.error('Error fetching names', error);
     }
@@ -72,15 +76,16 @@ const ResultPage = () => {
     fetchVotes();
   }, [sessionId]);
 
-  const handleSelect = async (field, otherField) => {
-    Alert.alert(`You selected ${field}: ${fields[field]} over ${fields[otherField]}`);
+  const handleSelect = async (foodIdA, foodIdB) => {
+    Alert.alert(`You selected ${foodIdA}: ${foodNames[foodIdA]} over ${foodNames[foodIdB]}`);
     const userId = localStorage.getItem('userId');
     if (!userId) {
       console.error('No user ID found');
       return;
     }
     try {
-      await axios.post(`http://localhost:5000/vote/${sessionId}/${field}/${otherField}`, { userId: userId});
+      await axios.post(`http://localhost:5000/vote/${sessionId}/${foodIdA}/${foodIdB}`, { userId: userId});
+      fetchFields()
       fetchVotes();
     } catch (error) {
       console.error('Error submitting vote', error);
@@ -90,11 +95,11 @@ const ResultPage = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.resultContainer}>
-        {selectedFields.map((field, index) => (
+        {selectedFoods.map((foodId, index) => (
           <View key={index} style={styles.selectButton}>
             <Button
-              title={`${fields[field]}`}
-              onPress={() => handleSelect(field, selectedFields[1 - index])}
+              title={`${foodAliases[foodId]}`}
+              onPress={() => handleSelect(foodId, selectedFoods[1 - index])}
             />
           </View>
         ))}
