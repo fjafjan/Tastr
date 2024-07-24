@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
 
 const LoginPage = () => {
-  const { categoryId } = useParams(); // Extract category Id from URL.
+  const { categoryId } = useParams(); // Extract session Id from URL.
   const location = useLocation()
   const [name, setName] = useState('');
   const [email, setEmail] = useState('')
