@@ -6,7 +6,7 @@ const foodObjectSchema = new Schema({
   id: { type: String, required: true }, // Unique identifier for each food item
   name: { type: String, required: true }, // Name of the food item
   voteCount: { type: Number, default: 0 }, // Number of votes for the food item
-  MMR: { type: Schema.Types.Decimal128, default: 1000.0 } // MMR (Matchmaking Rating) as a double
+  MMR: { type: Schema.Types.Number, default: 1000.0 } // MMR (Matchmaking Rating) as a double
 });
 
 // Define the schema for StoredData

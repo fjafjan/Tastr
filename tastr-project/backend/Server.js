@@ -3,6 +3,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { SessionData, VoteData, UserData } = require('./Models')
+const PerformVote = require('./DatabaseUtility')
 
 const app = express()
 const port = 5000
@@ -21,7 +22,7 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 })
 
 // Endpoint to save data sent from a user.
-app.post('/createSession', async(req, res) => {
+app.post('/sessions/add', async(req, res) => {
   const { id: sessionId, fields } = req.body
   console.log("Received data on", sessionId, fields)
   try {
@@ -61,32 +62,12 @@ app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
   const { sessionId, winnerId, loserId} = req.params
   const { userId } = req.body
   console.log(`Got vote for ${winnerId} over ${loserId} in Session ${sessionId}`)
-  const entry = await SessionData.findOne({ sessionId: sessionId }).exec();
-  if (!entry) {
-    console.error("Failed to find session ID ", sessionId)
-    res.sendStatus(404)
-    throw new Error("Failed to find session ID", sessionId)
+  const result = await PerformVote(userId, sessionId, winnerId, loserId)
+  if (result) {
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(500)
   }
-
-  const winnerEntry = entry.foodObjects.find(food => food.id === winnerId)
-  const loserEntry = entry.foodObjects.find(food => food.id === loserId)
-  if (typeof(winnerEntry) === "undefined" || typeof(loserEntry) === "undefined") {
-    console.error(`Missing entry with id ${loserId} or ${winnerId}`)
-    res.sendStatus(404)
-    return;
-  }
-
-  winnerEntry.voteCount = winnerEntry.voteCount + 1
-  loserEntry.voteCount = loserEntry.voteCount - 1
-  entry.save()
-  await VoteData.create({
-    voteId: Math.random().toString(), // TODO: Just use the default ID instead?
-    userId: userId,
-    sessionId: sessionId,
-    winnerId: winnerId,
-    loserId: loserId
-  })
-  res.sendStatus(200)
 })
 
 // Endpoint to get data.
@@ -130,6 +111,27 @@ app.get('/votes/:sessionId', async (req, res) => {
     }
   } catch(error) {
     console.error(`Failed to find votes for ${sessionId}`, error)
+  }
+})
+
+app.get('/mmr/:sessionId', async (req, res) => {
+  const { sessionId } = req.params
+  console.log("Getting MMR for session", sessionId)
+  try {
+    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    if (entry) {
+      const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
+        acc[item.name] = item.MMR
+        return acc;
+      }, {});
+
+      console.log("Returning", foodItemsDictionary)
+      res.json(foodItemsDictionary)
+    } else {
+      res.sendStatus(404) // Not found
+    }
+  } catch(error) {
+    console.error(`Failed to find MMR for ${sessionId}`, error)
   }
 })
 

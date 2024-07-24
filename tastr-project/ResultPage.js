@@ -42,7 +42,7 @@ const ResultPage = () => {
 
   const fetchVotes = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/votes/${sessionId}`);
+      const response = await axios.get(`http://localhost:5000/mmr/${sessionId}`);
       const data = response.data;
 
       const names = Object.keys(data);

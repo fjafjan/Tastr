@@ -37,7 +37,7 @@ const HomePage = () => {
       return acc;
     }, {});
     // Send the data to the server.
-    await axios.post('http://localhost:5000/save', {
+    await axios.post('http://localhost:5000/sessions/add', {
       id: sessionId,
       fields: fieldValues
     })
