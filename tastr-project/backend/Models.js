@@ -10,9 +10,9 @@ const foodObjectSchema = new Schema({
   MMR: { type: Schema.Types.Number, default: 1000.0 } // MMR (Matchmaking Rating) as a double
 });
 
-// Define the schema for StoredData
-const sessionDataSchema = new Schema({
-  sessionId: { type: String, required: true, unique: true }, // Unique session identifier
+// Define the schema for Food categories, e.g. Wines, Meats, Cinnamon buns etc.
+const foodCategorySchema = new Schema({
+  categoryId: { type: String, required: true, unique: true }, // Unique category identifier
   foodObjects: { type: [foodObjectSchema], required: true } // Array of FoodObjects
 });
 
@@ -34,7 +34,7 @@ const emailSchema = new Schema({
 const voteSchema = new Schema({
   voteId: {type: String, required: true, unique: true}, // Uniquely identifies this vote.
   userId: {type: String, required: true }, // Who did the voting.
-  sessionId: { type: String, required: true} , // What was the category.
+  categoryId: { type: String, required: true} , // What was the category.
   winnerId: { type: String, required: true }, // Who was chosen as the winner.
   loserId: { type: String, required: true }, // Who was voted against.
 });
@@ -46,12 +46,18 @@ const userSchema = new Schema({
   email: {type: emailSchema, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
 })
 
-const SessionData = mongoose.model('SessionData', sessionDataSchema)
+// We need something which ties together:
+// The category schema, i.e. what food is being tested.
+// The user schema, which users are participating.
+// The host ID, who is allowed to declare it done.
+// Maybe some optional name, and the URL.
+
+const FoodCategoryData = mongoose.model('FoodCategoryData', foodCategorySchema)
 const VoteData = mongoose.model('VoteData', voteSchema)
 const UserData = mongoose.model("UserData", userSchema)
 
 module.exports = {
-  SessionData,
+  FoodCategoryData,
   VoteData,
   UserData,
 }

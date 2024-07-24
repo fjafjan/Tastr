@@ -26,20 +26,20 @@ const HomePage = () => {
   }
 
   const handleDone = async () => {
-    // The category is used as session Id for now.
-    const sessionId = category.toLowerCase()
+    // The category name is used as  Id for now.
+    const categoryId = category.toLowerCase()
 
     // Filter out any fields that are empty
     const filledFields = fields.filter(field => field.value !== '');
 
-    const fieldValues = filledFields.reduce((acc, field, index) => {
+    const foodNames = filledFields.reduce((acc, field, index) => {
       acc[`${index + 1}`] = field.value;
       return acc;
     }, {});
     // Send the data to the server.
     await axios.post('http://localhost:5000/sessions/add', {
-      id: sessionId,
-      fields: fieldValues
+      categoryId: categoryId,
+      foodNames: foodNames
     })
 
     navigate(`/${sessionId}`, { state: { creator: true}});

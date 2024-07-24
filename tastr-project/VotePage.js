@@ -6,7 +6,7 @@ import axios from 'axios';
 import 'chart.js/auto';
 
 const VotePage = () => {
-  const { sessionId } = useParams(); // Extract session Id from URL.
+  const { sessionId: categoryId } = useParams(); // Extract category Id from URL.
   const [foodNames, setFoodNames] = useState({});
   const [foodAliases, setFoodAliases] = useState({})
   const [votes, setVotes] = useState({});
@@ -26,10 +26,10 @@ const VotePage = () => {
 
   const fetchFields = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/${sessionId}/names`);
+      const response = await axios.get(`http://localhost:5000/${categoryId}/names`);
       const data = response.data;
       setFoodNames(data);
-      const aliasResponse = await axios.get(`http://localhost:5000/${sessionId}/aliases`)
+      const aliasResponse = await axios.get(`http://localhost:5000/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
       // Randomly select two fields
@@ -45,7 +45,7 @@ const VotePage = () => {
 
   const fetchVotes = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/${sessionId}/mmr`);
+      const response = await axios.get(`http://localhost:5000/${categoryId}/mmr`);
       const data = response.data;
 
       const names = Object.keys(data);
@@ -72,7 +72,7 @@ const VotePage = () => {
   useEffect(() => {
     fetchFields();
     fetchVotes();
-  }, [sessionId]);
+  }, [categoryId]);
 
   const handleSelect = async (foodIdA, foodIdB) => {
     Alert.alert(`You selected ${foodIdA}: ${foodNames[foodIdA]} over ${foodNames[foodIdB]}`);
@@ -82,7 +82,7 @@ const VotePage = () => {
       return;
     }
     try {
-      await axios.post(`http://localhost:5000/vote/${sessionId}/${foodIdA}/${foodIdB}`, { userId: userId});
+      await axios.post(`http://localhost:5000/vote/${categoryId}/${foodIdA}/${foodIdB}`, { userId: userId});
       fetchFields()
       fetchVotes();
     } catch (error) {

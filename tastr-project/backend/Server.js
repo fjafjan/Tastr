@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
-const { SessionData, VoteData, UserData } = require('./Models')
+const { FoodCategoryData, VoteData, UserData } = require('./Models')
 const { PerformVote, CreateSession } = require('./DatabaseUtility')
 
 const app = express()
@@ -22,13 +22,13 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 
 // Endpoint to save data sent from a user.
 app.post('/sessions/add', async(req, res) => {
-  const { id: sessionId, fields: foodNames } = req.body
-  console.log("Creating new session with ", sessionId, foodNames)
-  const result = await CreateSession(sessionId, foodNames)
+  const { categoryId: categoryId, foodNames: foodNames } = req.body
+  console.log("Creating new category with ", categoryId, foodNames)
+  const result = await CreateSession(categoryId, foodNames)
   if (result) {
     res.sendStatus(200) // Ok!
   } else {
-    console.error("Failed to create new session ", sessionId, foodNames)
+    console.error("Failed to create new category ", categoryId, foodNames)
   }
 })
 
@@ -47,11 +47,11 @@ app.post('/users/add', async(req, res) => {
   }
 })
 
-app.post('/:sessionId/vote/:winnerId/:loserId', async (req, res) => {
-  const { sessionId, winnerId, loserId} = req.params
+app.post('/:categoryId/vote/:winnerId/:loserId', async (req, res) => {
+  const { categoryId, winnerId, loserId} = req.params
   const { userId } = req.body
-  console.log(`Got vote for ${winnerId} over ${loserId} in Session ${sessionId}`)
-  const result = await PerformVote(userId, sessionId, winnerId, loserId)
+  console.log(`Got vote for ${winnerId} over ${loserId} in Session ${categoryId}`)
+  const result = await PerformVote(userId, categoryId, winnerId, loserId)
   if (result) {
     res.sendStatus(200)
   } else {
@@ -59,12 +59,12 @@ app.post('/:sessionId/vote/:winnerId/:loserId', async (req, res) => {
   }
 })
 
-app.get('/:sessionId/aliases', async (req, res) => {
-  const { sessionId } = req.params
-  console.log("Getting aliases for session ", sessionId)
+app.get('/:categoryId/aliases', async (req, res) => {
+  const { categoryId } = req.params
+  console.log("Getting aliases for category ", categoryId)
 
   try {
-    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
     if (entry) {
       const idToAliasDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.id] = item.alias
@@ -76,17 +76,17 @@ app.get('/:sessionId/aliases', async (req, res) => {
       res.sendStatus(404) // Not found
     }
   } catch(error) {
-    console.error(`Failed to get foods for ${sessionId}`, error)
+    console.error(`Failed to get foods for ${categoryId}`, error)
   }
 })
 
 // Endpoint to get data.
-app.get('/:sessionId/names', async (req, res) => {
-  const { sessionId } = req.params
-  console.log("Getting food names for session ", sessionId)
+app.get('/:categoryId/names', async (req, res) => {
+  const { categoryId } = req.params
+  console.log("Getting food names for category ", categoryId)
 
   try {
-    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
     if (entry) {
       const idToNamesDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.id] = item.name
@@ -98,16 +98,16 @@ app.get('/:sessionId/names', async (req, res) => {
       res.sendStatus(404) // Not found
     }
   } catch(error) {
-    console.error(`Failed to get foods for ${sessionId}`, error)
+    console.error(`Failed to get foods for ${categoryId}`, error)
   }
 })
 
 // Endpoint to get votes.
-app.get('/:sessionId/votes', async (req, res) => {
-  const { sessionId } = req.params
-  console.log("Getting votes for session ", sessionId)
+app.get('/:categoryId/votes', async (req, res) => {
+  const { categoryId } = req.params
+  console.log("Getting votes for category ", categoryId)
   try {
-    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
     if (entry) {
       const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.name] = item.voteCount
@@ -120,15 +120,15 @@ app.get('/:sessionId/votes', async (req, res) => {
       res.sendStatus(404) // Not found
     }
   } catch(error) {
-    console.error(`Failed to find votes for ${sessionId}`, error)
+    console.error(`Failed to find votes for ${categoryId}`, error)
   }
 })
 
-app.get('/:sessionId/mmr', async (req, res) => {
-  const { sessionId } = req.params
-  console.log("Getting MMR for session", sessionId)
+app.get('/:categoryId/mmr', async (req, res) => {
+  const { categoryId } = req.params
+  console.log("Getting MMR for category", categoryId)
   try {
-    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
+    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
     if (entry) {
       const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.name] = item.MMR
@@ -141,7 +141,7 @@ app.get('/:sessionId/mmr', async (req, res) => {
       res.sendStatus(404) // Not found
     }
   } catch(error) {
-    console.error(`Failed to find MMR for ${sessionId}`, error)
+    console.error(`Failed to find MMR for ${categoryId}`, error)
   }
 })
 

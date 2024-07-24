@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
 
 const LoginPage = () => {
-  const { sessionId } = useParams(); // Extract session Id from URL.
+  const { categoryId } = useParams(); // Extract category Id from URL.
   const location = useLocation()
   const [name, setName] = useState('');
   const [email, setEmail] = useState('')
@@ -15,8 +15,8 @@ const LoginPage = () => {
     // Save the name in local storage or cookies as needed
     localStorage.setItem('userId', name);
 
-    // Navigate to the Voting page with sessionId
-    navigate(`/${sessionId}/voting`);
+    // Navigate to the Voting page for the category
+    navigate(`/${categoryId}/voting`);
   };
 
   return (
@@ -24,7 +24,7 @@ const LoginPage = () => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder={`Who are you who dares opine on ${sessionId}`}
+          placeholder={`Who are you who dares opine on ${categoryId}`}
           value={name}
           onChangeText={setName}
         />

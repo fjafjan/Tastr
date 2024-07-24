@@ -9,8 +9,8 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="" element={<HomePage />} />
-        <Route path="/:sessionId" element={<LoginPage />} />
-        <Route path="/:sessionId/voting" element={<VotePage />} />
+        <Route path="/:categoryId" element={<LoginPage />} />
+        <Route path="/:categoryId/voting" element={<VotePage />} />
       </Routes>
     </Router>
   );

@@ -1,4 +1,4 @@
-const { SessionData, VoteData } = require('./Models')
+const { FoodCategoryData, VoteData } = require('./Models')
 
 // Constants defining how quickly the ELO changes.
 const s = 400
@@ -20,20 +20,20 @@ function elo_change(winner_elo, loser_elo)
   return { winnerAfter: winner_after, loserAfter: loser_after }
 }
 
-async function PerformVote(userId, sessionId, winnerId, loserId) {
-  console.log(`Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${sessionId}`)
+async function PerformVote(userId, categoryId, winnerId, loserId) {
+  console.log(`Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${categoryId}`)
 
   await VoteData.create({
     voteId: Math.random().toString(), // TODO: Just use the default ID instead?
     userId: userId,
-    sessionId: sessionId,
+    categoryId: categoryId,
     winnerId: winnerId,
     loserId: loserId
   })
 
-  const sessionEntry = await SessionData.findOne({ sessionId: sessionId }).exec()
+  const sessionEntry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
   if (!sessionEntry) {
-    console.error("Failed to find session ID ", sessionId)
+    console.error("Failed to find category with ID ", categoryId)
     return false
   }
 
@@ -51,7 +51,7 @@ async function PerformVote(userId, sessionId, winnerId, loserId) {
   return true
 }
 
-async function CreateSession(sessionId, foodNames) {
+async function CreateSession(categoryId, foodNames) {
   try {
     // Shuffle the letters.
     const selection = letters.slice(0, foodNames.length)
@@ -63,8 +63,8 @@ async function CreateSession(sessionId, foodNames) {
       alias: shuffled[index],
       MMR: 1000, // Default MMR
     }))
-    await SessionData.findOneAndUpdate(
-      {sessionId: sessionId},
+    await FoodCategoryData.findOneAndUpdate(
+      {categoryId: categoryId},
       { $set : { foodObjects: foodObjects} },
       { upsert: true, new: true}
     );
