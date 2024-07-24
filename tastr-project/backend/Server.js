@@ -3,7 +3,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { FoodCategoryData, VoteData, UserData } = require('./Models')
-const { PerformVote, CreateSession } = require('./DatabaseUtility')
+const { PerformVote, CreateSession, FindTastedItems } = require('./DatabaseUtility')
 
 const app = express()
 const port = 5000
@@ -142,6 +142,19 @@ app.get('/:categoryId/mmr', async (req, res) => {
     }
   } catch(error) {
     console.error(`Failed to find MMR for ${categoryId}`, error)
+  }
+})
+
+app.get('/:categoryId/:userId/tasted', async (req, res) => {
+  const { categoryId: categoryId, userId: userId } = req.params
+  console.log(`Getting the votes in ${categoryId} for ${userId}`)
+  const result = await FindTastedItems(categoryId, userId)
+
+  if (result) {
+    console.log("Returning tasted map:", result)
+    res.json(result)
+  } else {
+    res.sendStatus(500)
   }
 })
 

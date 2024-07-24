@@ -85,6 +85,8 @@ const VotePage = () => {
       await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
       fetchFields()
       fetchVotes();
+      // remove this
+      const test = await axios.get(`http://localhost:5000/${categoryId}/${userId}/tasted`)
     } catch (error) {
       console.error('Error submitting vote', error);
     }

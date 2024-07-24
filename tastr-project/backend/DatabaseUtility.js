@@ -75,8 +75,39 @@ async function CreateSession(categoryId, foodNames) {
   }
 }
 
+// Get the number of times a user has tasted each food item.
+async function FindTastedItems(categoryId, userId)
+{
+  console.log(`Computing MMR for ${categoryId} in ${userId}`)
 
-module.exports = { PerformVote, CreateSession}
+  const foodVotes = await VoteData.find(
+    {
+      categoryId: categoryId,
+      userId: userId
+    }
+  ).select(['winnerId', 'loserId'])
+  if (!foodVotes) {
+    console.error("Failed to find any votes in category with user", categoryId, userId)
+    return false
+  }
 
+  const categoryEntry = await FoodCategoryData.findOne({categoryId: categoryId})
+  if (!categoryEntry) {
+    console.error("Failed to find category with ID ", categoryId)
+    return false
+  }
 
-// export default DatabaseUtility
+  // We will return a dictionary mapping food ID to the number of times this user has tasted it.
+  const tasted = {}
+  // Initialize all food IDs to 0
+  categoryEntry.foodObjects.forEach(item => tasted[item.id] = 0)
+
+  // Increment once for each win or loss.
+  foodVotes.forEach(item => {
+    tasted[item.winnerId] = tasted[item.winnerId] + 1
+    tasted[item.loserId] = tasted[item.loserId] + 1
+  })
+  return tasted
+}
+
+module.exports = { PerformVote, CreateSession, FindTastedItems}
