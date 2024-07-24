@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, Button, Alert } from 'react-native';
+import { SafeAreaView, Text, StyleSheet, View, Button, Alert, TouchableOpacity } from 'react-native';
 import { useLocation, useParams } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
@@ -92,14 +92,16 @@ const VotePage = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Which do you prefer</Text>
       <View style={styles.resultContainer}>
         {selectedFoods.map((foodId, index) => (
-          <View key={index} style={styles.selectButton}>
-            <Button
-              title={`${foodAliases[foodId]}`}
-              onPress={() => handleSelect(foodId, selectedFoods[1 - index])}
-            />
-          </View>
+          <TouchableOpacity
+            key={index}
+            style={styles.selectButton}
+            onPress={() => handleSelect(foodId, selectedFoods[1 - index])}
+          >
+            <Text style={styles.buttonText}>{foodAliases[foodId]}</Text>
+          </TouchableOpacity>
         ))}
       </View>
       <View style={styles.chartContainer}>
@@ -120,6 +122,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
   resultContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -129,8 +136,17 @@ const styles = StyleSheet.create({
   selectButton: {
     flex: 1,
     alignItems: 'center',
-    marginVertical: 50,
-    marginHorizontal: 50,
+    justifyContent: 'center',
+    paddingVertical: 40,  // Increase the padding for larger button size
+    paddingHorizontal: 40, // Increase the padding for larger button size
+    marginVertical: 20,
+    marginHorizontal: 20,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+  },
+  buttonText: {
+    fontSize: 24,
+    color: 'white',
   },
   chartContainer: {
     width: '80%',
@@ -144,5 +160,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 
 export default VotePage;
