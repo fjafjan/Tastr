@@ -26,17 +26,16 @@ const ResultPage = () => {
 
   const fetchFields = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/names/${sessionId}`);
+      const response = await axios.get(`http://localhost:5000/${sessionId}/names`);
       const data = response.data;
       setFoodNames(data);
-      const aliasResponse = await axios.get(`http://localhost:5000/aliases/${sessionId}`)
+      const aliasResponse = await axios.get(`http://localhost:5000/${sessionId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
       // Randomly select two fields
       const foodAliases = Object.keys(aliasResponse.data);
       const shuffled = foodAliases.sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 2).sort();
-
 
       setSelectedFoods(selected);
     } catch (error) {
@@ -46,12 +45,11 @@ const ResultPage = () => {
 
   const fetchVotes = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/mmr/${sessionId}`);
+      const response = await axios.get(`http://localhost:5000/${sessionId}/mmr`);
       const data = response.data;
 
       const names = Object.keys(data);
       const values = Object.values(data);
-
       setVotes(data);
 
       setChartData({

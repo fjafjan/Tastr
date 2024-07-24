@@ -3,11 +3,10 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { SessionData, VoteData, UserData } = require('./Models')
-const PerformVote = require('./DatabaseUtility')
+const { PerformVote, CreateSession } = require('./DatabaseUtility')
 
 const app = express()
 const port = 5000
-const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Å', 'Ä', 'Ö']
 
 // Middleware
 app.use(cors())
@@ -24,23 +23,12 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 // Endpoint to save data sent from a user.
 app.post('/sessions/add', async(req, res) => {
   const { id: sessionId, fields: foodNames } = req.body
-  console.log("Received data on", sessionId, foodNames)
-  try {
-    const foodObjects = Object.keys(foodNames).map((key, index) => ({
-      id: key,
-      name: foodNames[key],
-      alias: letters[index],
-      voteCount: 0,
-      MMR: 1000, // Default MMR
-    }))
-    await SessionData.findOneAndUpdate(
-      {sessionId: sessionId},
-      { $set : { foodObjects: foodObjects} },
-      { upsert: true, new: true}
-    );
-    res.sendStatus(200) // We are OK!
-  } catch(error) {
-    console.error("Failed to save new data due to ", error)
+  console.log("Creating new session with ", sessionId, foodNames)
+  const result = await CreateSession(sessionId, foodNames)
+  if (result) {
+    res.sendStatus(200) // Ok!
+  } else {
+    console.error("Failed to create new session ", sessionId, foodNames)
   }
 })
 
@@ -59,7 +47,7 @@ app.post('/users/add', async(req, res) => {
   }
 })
 
-app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
+app.post('/:sessionId/vote/:winnerId/:loserId', async (req, res) => {
   const { sessionId, winnerId, loserId} = req.params
   const { userId } = req.body
   console.log(`Got vote for ${winnerId} over ${loserId} in Session ${sessionId}`)
@@ -71,7 +59,7 @@ app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
   }
 })
 
-app.get('/aliases/:sessionId', async (req, res) => {
+app.get('/:sessionId/aliases', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting aliases for session ", sessionId)
 
@@ -93,7 +81,7 @@ app.get('/aliases/:sessionId', async (req, res) => {
 })
 
 // Endpoint to get data.
-app.get('/names/:sessionId', async (req, res) => {
+app.get('/:sessionId/names', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting food names for session ", sessionId)
 
@@ -115,7 +103,7 @@ app.get('/names/:sessionId', async (req, res) => {
 })
 
 // Endpoint to get votes.
-app.get('/votes/:sessionId', async (req, res) => {
+app.get('/:sessionId/votes', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting votes for session ", sessionId)
   try {
@@ -136,7 +124,7 @@ app.get('/votes/:sessionId', async (req, res) => {
   }
 })
 
-app.get('/mmr/:sessionId', async (req, res) => {
+app.get('/:sessionId/mmr', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting MMR for session", sessionId)
   try {

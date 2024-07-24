@@ -3,13 +3,10 @@ const { SessionData, VoteData } = require('./Models')
 // Constants defining how quickly the ELO changes.
 const s = 400
 const K = 32
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Å', 'Ä', 'Ö']
+
 function sigma(r) {
   const exponent = -r/s
-  return 1./(1 + Math.pow(10, exponent))
-}
-
-function expected_score(my_elo, opponent_elo) {
-  exponent = (opponent_elo - my_elo) / s
   return 1./(1 + Math.pow(10, exponent))
 }
 
@@ -54,29 +51,32 @@ async function PerformVote(userId, sessionId, winnerId, loserId) {
   return true
 }
 
-async function GetMMR(sessionId, foodId) {
-  console.log(`Computing MMR for ${foodId} in ${sessionId}`)
+async function CreateSession(sessionId, foodNames) {
+  try {
+    // Shuffle the letters.
+    const selection = letters.slice(0, foodNames.length)
+    const shuffled = selection.sort(() => 0.5 - Math.random())
 
-  const foodVotes = await VoteData.find(
-    {
-      $or:
-      [
-        {
-          sessionId: sessionId,
-          winnerId: foodId,
-        },
-        {
-          sessionId: sessionId,
-          loserId: foodId,
-        }
-      ]
-    }
-  )
-
-
+    const foodObjects = Object.keys(foodNames).map((key, index) => ({
+      id: key,
+      name: foodNames[key],
+      alias: shuffled[index],
+      MMR: 1000, // Default MMR
+    }))
+    await SessionData.findOneAndUpdate(
+      {sessionId: sessionId},
+      { $set : { foodObjects: foodObjects} },
+      { upsert: true, new: true}
+    );
+    return true
+  } catch(error) {
+    console.error("Failed to save new data due to ", error)
+    return false
+  }
 }
 
-module.exports = PerformVote
+
+module.exports = { PerformVote, CreateSession}
 
 
 // export default DatabaseUtility
