@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
-const { StoredData } = require('./Models')
+const { SessionData, VoteData, UserData } = require('./Models')
 
 const app = express()
 const port = 5000
@@ -21,7 +21,7 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 })
 
 // Endpoint to save data sent from a user.
-app.post('/save', async(req, res) => {
+app.post('/createSession', async(req, res) => {
   const { id: sessionId, fields } = req.body
   console.log("Received data on", sessionId, fields)
   try {
@@ -31,7 +31,7 @@ app.post('/save', async(req, res) => {
       voteCount: 0,
       MMR: 1000, // Default MMR
     }))
-    await StoredData.findOneAndUpdate(
+    await SessionData.findOneAndUpdate(
       {sessionId: sessionId},
       { $set : { foodObjects: foodObjects} },
       { upsert: true, new: true}
@@ -42,10 +42,26 @@ app.post('/save', async(req, res) => {
   }
 })
 
+app.post('/users/add', async(req, res) => {
+  const { userId: userId, name } = req.body
+  console.log("Adding new user", userId, name)
+  try {
+    UserData.create({
+      name: name,
+      userId: userId,
+    })
+    res.sendStatus(200) // Ok!
+  } catch(error) {
+    console.error("Failed to add user", userId, name, error)
+    res.sendStatus(404)
+  }
+})
+
 app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
   const { sessionId, winnerId, loserId} = req.params
+  const { userId } = req.body
   console.log(`Got vote for ${winnerId} over ${loserId} in Session ${sessionId}`)
-  const entry = await StoredData.findOne({ sessionId: sessionId }).exec();
+  const entry = await SessionData.findOne({ sessionId: sessionId }).exec();
   if (!entry) {
     console.error("Failed to find session ID ", sessionId)
     res.sendStatus(404)
@@ -54,15 +70,22 @@ app.post('/vote/:sessionId/:winnerId/:loserId', async (req, res) => {
 
   const winnerEntry = entry.foodObjects.find(food => food.id === winnerId)
   const loserEntry = entry.foodObjects.find(food => food.id === loserId)
-
   if (typeof(winnerEntry) === "undefined" || typeof(loserEntry) === "undefined") {
     console.error(`Missing entry with id ${loserId} or ${winnerId}`)
     res.sendStatus(404)
     return;
   }
+
   winnerEntry.voteCount = winnerEntry.voteCount + 1
   loserEntry.voteCount = loserEntry.voteCount - 1
   entry.save()
+  await VoteData.create({
+    voteId: Math.random().toString(), // TODO: Just use the default ID instead?
+    userId: userId,
+    sessionId: sessionId,
+    winnerId: winnerId,
+    loserId: loserId
+  })
   res.sendStatus(200)
 })
 
@@ -72,7 +95,7 @@ app.get('/names/:sessionId', async (req, res) => {
   console.log("Getting food names for session ", sessionId)
 
   try {
-    const entry = await StoredData.findOne({ sessionId: sessionId }).exec()
+    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
     if (entry) {
       const idToNamesDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.id] = item.name
@@ -93,7 +116,7 @@ app.get('/votes/:sessionId', async (req, res) => {
   const { sessionId } = req.params
   console.log("Getting votes for session ", sessionId)
   try {
-    const entry = await StoredData.findOne({ sessionId: sessionId }).exec()
+    const entry = await SessionData.findOne({ sessionId: sessionId }).exec()
     if (entry) {
       const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
         acc[item.name] = item.voteCount

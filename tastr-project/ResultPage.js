@@ -72,25 +72,15 @@ const ResultPage = () => {
     fetchVotes();
   }, [sessionId]);
 
-  // useEffect(() => {
-  //   // Select two random fields when the component mounts or when fields change
-  //   if (Object.keys(fields).length > 1) {
-  //     const fieldNames = Object.keys(fields);
-  //     const randomFields = [];
-  //     while (randomFields.length < 2) {
-  //       const randomField = fieldNames[Math.floor(Math.random() * fieldNames.length)];
-  //       if (!randomFields.includes(randomField)) {
-  //         randomFields.push(randomField);
-  //       }
-  //     }
-  //     setSelectedFields(randomFields);
-  //   }
-  // }, [fields]);
-
   const handleSelect = async (field, otherField) => {
     Alert.alert(`You selected ${field}: ${fields[field]} over ${fields[otherField]}`);
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
     try {
-      await axios.post(`http://localhost:5000/vote/${sessionId}/${field}/${otherField}`);
+      await axios.post(`http://localhost:5000/vote/${sessionId}/${field}/${otherField}`, { userId: userId});
       fetchVotes();
     } catch (error) {
       console.error('Error submitting vote', error);

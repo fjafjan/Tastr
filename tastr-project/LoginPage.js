@@ -9,7 +9,7 @@ const LoginPage = () => {
 
   const handleLogin = () => {
     // Save the name in local storage or cookies as needed
-    localStorage.setItem('userName', name);
+    localStorage.setItem('userId', name);
 
     // Navigate to the ResultPage with sessionId
     navigate(`/${sessionId}/result`);

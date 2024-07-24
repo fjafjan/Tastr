@@ -10,7 +10,7 @@ const foodObjectSchema = new Schema({
 });
 
 // Define the schema for StoredData
-const storedDataSchema = new Schema({
+const sessionDataSchema = new Schema({
   sessionId: { type: String, required: true, unique: true }, // Unique session identifier
   foodObjects: { type: [foodObjectSchema], required: true } // Array of FoodObjects
 });
@@ -32,12 +32,12 @@ const userSchema = new Schema({
   name: {type: String, required: true} // A more descriptive name of the user.
 })
 
-const StoredData = mongoose.model('StoredData', storedDataSchema)
+const SessionData = mongoose.model('SessionData', sessionDataSchema)
 const VoteData = mongoose.model('VoteData', voteSchema)
 const UserData = mongoose.model("UserData", userSchema)
 
 module.exports = {
-  StoredData,
+  SessionData,
   VoteData,
   UserData,
 }
