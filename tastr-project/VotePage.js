@@ -6,7 +6,7 @@ import axios from 'axios';
 import 'chart.js/auto';
 
 const VotePage = () => {
-  const { sessionId: categoryId } = useParams(); // Extract category Id from URL.
+  const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
   const [foodNames, setFoodNames] = useState({});
   const [foodAliases, setFoodAliases] = useState({})
   const [votes, setVotes] = useState({});
@@ -82,7 +82,7 @@ const VotePage = () => {
       return;
     }
     try {
-      await axios.post(`http://localhost:5000/vote/${categoryId}/${foodIdA}/${foodIdB}`, { userId: userId});
+      await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
       fetchFields()
       fetchVotes();
     } catch (error) {

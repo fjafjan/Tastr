@@ -42,7 +42,7 @@ const HomePage = () => {
       foodNames: foodNames
     })
 
-    navigate(`/${sessionId}`, { state: { creator: true}});
+    navigate(`/${categoryId}`, { state: { creator: true}});
   }
 
   return (

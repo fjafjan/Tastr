@@ -16,6 +16,11 @@ const foodCategorySchema = new Schema({
   foodObjects: { type: [foodObjectSchema], required: true } // Array of FoodObjects
 });
 
+const validateEmail = function(email) {
+  var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  return re.test(email)
+};
+
 const emailSchema = new Schema({
   email: {
       type: String,

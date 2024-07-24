@@ -54,7 +54,7 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
 async function CreateSession(categoryId, foodNames) {
   try {
     // Shuffle the letters.
-    const selection = letters.slice(0, foodNames.length)
+    const selection = letters.slice(0, Object.keys(foodNames).length)
     const shuffled = selection.sort(() => 0.5 - Math.random())
 
     const foodObjects = Object.keys(foodNames).map((key, index) => ({
