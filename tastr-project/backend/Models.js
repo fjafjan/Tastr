@@ -57,12 +57,23 @@ const userSchema = new Schema({
 // The host ID, who is allowed to declare it done.
 // Maybe some optional name, and the URL.
 
+const sessionSchema = new Schema({
+  sessionId: {type: String, required: true, unique: true},
+  categoryId: {type: String, required: true},
+  userIds: [{type: String}],
+  hostId: {type: String, required: true},
+  url: {type: String, default: ""},
+  name: {type: String, default: ""},
+})
+
 const FoodCategoryData = mongoose.model('FoodCategoryData', foodCategorySchema)
 const VoteData = mongoose.model('VoteData', voteSchema)
 const UserData = mongoose.model("UserData", userSchema)
+const SessionData = mongoose.model("SessionData", sessionSchema)
 
 module.exports = {
   FoodCategoryData,
   VoteData,
   UserData,
+  SessionData,
 }
