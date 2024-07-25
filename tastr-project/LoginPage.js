@@ -22,9 +22,6 @@ const LoginPage = () => {
     navigate(`/${categoryId}/voting`);
   };
 
-  const handleStart = () => {
-    socket.emit('start')
-  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
@@ -41,7 +38,6 @@ const LoginPage = () => {
           onChangeText={setEmail}
         />
         <Button title="Continue" onPress={handleLogin} />
-        {wasCreated && <Button title="RemoveThis" onPress={handleStart}/>}
       </View>
     </SafeAreaView>
   );

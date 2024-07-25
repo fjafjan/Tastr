@@ -1,4 +1,4 @@
-const { FoodCategoryData, VoteData } = require('./Models')
+const { FoodCategoryData, VoteData, SessionData } = require('./Models')
 
 // Constants defining how quickly the ELO changes.
 const s = 400
@@ -18,6 +18,47 @@ function elo_change(winner_elo, loser_elo)
   winner_after = winner_elo + (likelihood * K) // For some reason using + converts the results to a string...
   loser_after = loser_elo - likelihood * K
   return { winnerAfter: winner_after, loserAfter: loser_after }
+}
+
+
+async function CreateCategory(categoryId, foodNames) {
+  try {
+    // Shuffle the letters.
+    const selection = letters.slice(0, Object.keys(foodNames).length)
+    const shuffled = selection.sort(() => 0.5 - Math.random())
+
+    const foodObjects = Object.keys(foodNames).map((key, index) => ({
+      id: key,
+      name: foodNames[key],
+      alias: shuffled[index],
+      MMR: 1000, // Default MMR
+    }))
+    await FoodCategoryData.findOneAndUpdate(
+      {categoryId: categoryId},
+      { $set : { foodObjects: foodObjects} },
+      { upsert: true, new: true}
+    );
+    return true
+  } catch(error) {
+    console.error("Failed to save new data due to ", error)
+    return false
+  }
+}
+
+async function CreateSession(categoryId, hostId, tasterIds)
+{
+  try {
+    await SessionData.create({
+      categoryId: categoryId,
+      hostId: hostId,
+      sessionId: Math.random().toString(),
+      tasterIds: tasterIds
+    })
+  } catch(error) {
+    console.error("Failed to create new session data due to", error)
+    return false
+  }
+  return true
 }
 
 async function PerformVote(userId, categoryId, winnerId, loserId) {
@@ -49,30 +90,6 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
   console.log(`After vote, MMR for winner: ${winnerEntry.MMR}, loser: ${loserEntry.MMR}`)
   sessionEntry.save()
   return true
-}
-
-async function CreateSession(categoryId, foodNames) {
-  try {
-    // Shuffle the letters.
-    const selection = letters.slice(0, Object.keys(foodNames).length)
-    const shuffled = selection.sort(() => 0.5 - Math.random())
-
-    const foodObjects = Object.keys(foodNames).map((key, index) => ({
-      id: key,
-      name: foodNames[key],
-      alias: shuffled[index],
-      MMR: 1000, // Default MMR
-    }))
-    await FoodCategoryData.findOneAndUpdate(
-      {categoryId: categoryId},
-      { $set : { foodObjects: foodObjects} },
-      { upsert: true, new: true}
-    );
-    return true
-  } catch(error) {
-    console.error("Failed to save new data due to ", error)
-    return false
-  }
 }
 
 // Get the number of times a user has tasted each food item.
@@ -110,4 +127,4 @@ async function FindTastedItems(categoryId, userId)
   return tasted
 }
 
-module.exports = { PerformVote, CreateSession, FindTastedItems}
+module.exports = { CreateCategory, CreateSession, PerformVote, FindTastedItems}

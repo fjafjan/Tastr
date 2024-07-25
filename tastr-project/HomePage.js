@@ -37,7 +37,7 @@ const HomePage = () => {
       return acc;
     }, {});
     // Send the data to the server.
-    await axios.post('http://localhost:5000/sessions/add', {
+    await axios.post('http://localhost:5000/category/add', {
       categoryId: categoryId,
       foodNames: foodNames
     })

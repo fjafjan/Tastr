@@ -60,7 +60,7 @@ const userSchema = new Schema({
 const sessionSchema = new Schema({
   sessionId: {type: String, required: true, unique: true},
   categoryId: {type: String, required: true},
-  userIds: [{type: String}],
+  tasterIds: [{type: String}],
   hostId: {type: String, required: true},
   url: {type: String, default: ""},
   name: {type: String, default: ""},

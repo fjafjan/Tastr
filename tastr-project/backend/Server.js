@@ -5,7 +5,7 @@ const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { FoodCategoryData, VoteData, UserData } = require('./Models')
-const { PerformVote, CreateSession, FindTastedItems } = require('./DatabaseUtility')
+const { PerformVote, CreateSession: CreateCategory, FindTastedItems, CreateSession } = require('./DatabaseUtility')
 
 const app = express()
 const server = http.createServer(app)
@@ -22,7 +22,7 @@ const io = socketIo(server, {
   }
 })
 
-let users = []
+let users = {}
 
 // Connect to database.
 mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
@@ -36,27 +36,38 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
 io.on('connection', (socket) => {
   console.log(`New client ${socket.id} connected`);
 
-  socket.on('join', () => {
-    users.push(socket.id);
+  socket.on('join', (data) => {
+    console.log(`User ${data.userId} has joined`)
+    users[socket.id] = data.userId; // TODO: We could store some other field here, but the key is to make the users unique.
   });
 
-  socket.on('start', () => {
+  socket.on('start', (data) => {
     console.log("Got start request", socket.id)
+    const { categoryId: categoryId, hostId: hostId } = data
+    const userNames = Object.values(users)
+    console.log(`Starting new voting session for category ${categoryId} with host ${hostId} and users ${userNames}`)
+    if(!CreateSession(categoryId, hostId, userNames)) {
+      console.error("Failed to create new session")
+    } else {
+      console.log("Created new session")
+    }
     io.emit('start');
   });
 
   socket.on('disconnect', () => {
     console.log(`Client ${socket.id} disconnected`);
-    users = users.filter(user => user !== socket.id);
+    if(socket.id in users) {
+      delete users[socket.id]
+    }
   });
 });
 
 
 // Endpoint to save data sent from a user.
-app.post('/sessions/add', async(req, res) => {
+app.post('/category/add', async(req, res) => {
   const { categoryId: categoryId, foodNames: foodNames } = req.body
   console.log("Creating new category with ", categoryId, foodNames)
-  const result = await CreateSession(categoryId, foodNames)
+  const result = await CreateCategory(categoryId, foodNames)
   if (result) {
     res.sendStatus(200) // Ok!
   } else {
