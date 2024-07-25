@@ -17,7 +17,7 @@ app.use(bodyParser.json())
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:9000/*", // Ask about this. Seems I should change it to https://fjafjan.github.io
+    origin: "http://localhost:9000", // Ask about this. Seems I should change it to https://fjafjan.github.io
     methods: ["GET", "POST"]
   }
 })
@@ -190,6 +190,6 @@ app.get('/:categoryId/:userId/tasted', async (req, res) => {
   }
 })
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`)
 })

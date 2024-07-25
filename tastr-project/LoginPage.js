@@ -23,7 +23,7 @@ const LoginPage = () => {
   };
 
   const handleStart = () => {
-    socket.send('start')
+    socket.emit('start')
   }
   return (
     <SafeAreaView style={styles.container}>
