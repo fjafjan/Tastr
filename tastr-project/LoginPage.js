@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000'); // Replace with your server URL
 
 const LoginPage = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
@@ -19,6 +22,9 @@ const LoginPage = () => {
     navigate(`/${categoryId}/voting`);
   };
 
+  const handleStart = () => {
+    socket.send('start')
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
@@ -35,7 +41,7 @@ const LoginPage = () => {
           onChangeText={setEmail}
         />
         <Button title="Continue" onPress={handleLogin} />
-        {wasCreated && <Button title="RemoveThis"/>}
+        {wasCreated && <Button title="RemoveThis" onPress={handleStart}/>}
       </View>
     </SafeAreaView>
   );

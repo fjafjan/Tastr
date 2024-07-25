@@ -1,16 +1,28 @@
 const express = require('express')
+const http = require('http')
 const cors = require('cors')
+const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { FoodCategoryData, VoteData, UserData } = require('./Models')
 const { PerformVote, CreateSession, FindTastedItems } = require('./DatabaseUtility')
 
 const app = express()
+const server = http.createServer(app)
 const port = 5000
 
 // Middleware
 app.use(cors())
 app.use(bodyParser.json())
+
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:9000/*", // Ask about this. Seems I should change it to https://fjafjan.github.io
+    methods: ["GET", "POST"]
+  }
+})
+
+let users = []
 
 // Connect to database.
 mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
@@ -19,6 +31,26 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
   console.error("Failed to connect to database", err)
   return 1
 })
+
+// Ask: How can I add the ID of the user here and on disconnect.
+io.on('connection', (socket) => {
+  console.log(`New client ${socket.id} connected`);
+
+  socket.on('join', () => {
+    users.push(socket.id);
+  });
+
+  socket.on('start', () => {
+    console.log("Got start request", socket.id)
+    io.emit('start');
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Client ${socket.id} disconnected`);
+    users = users.filter(user => user !== socket.id);
+  });
+});
+
 
 // Endpoint to save data sent from a user.
 app.post('/sessions/add', async(req, res) => {
