@@ -1,4 +1,5 @@
-const { FoodCategoryData, VoteData, SessionData } = require('./Models')
+const { FoodCategoryData, VoteData, SessionData, SelectionData } = require('./Models')
+const { GenerateMatchups } = require('./SelectionUtility')
 
 // Constants defining how quickly the ELO changes.
 const s = 400
@@ -61,6 +62,52 @@ async function CreateSession(categoryId, hostId, tasterIds)
   return true
 }
 
+async function GenerateSelections(categoryId, userIds, round)
+{
+  const categoryEntry = await FoodCategoryData.findOne({categoryId: categoryId})
+  if (!categoryEntry) {
+    console.error("Failed to find category with ID ", categoryId)
+    return false
+  }
+  const foodItemsDictionary = categoryEntry.foodObjects.reduce((acc, item) => {
+    acc[item.id] = item.name
+    return acc;
+  }, {});
+
+  const promises  =  userIds.map(userId => FindTastedItems(categoryId, userId))
+  const userHistory = await Promise.all(promises)
+  const selections = await GenerateMatchups(Object.keys(foodItemsDictionary), userHistory)
+
+  // await selections.map(async (selection) => {
+  //   await SelectionData.create({
+  //     categoryId: categoryId,
+  //     round: round,
+  //     tasterId: userIds,
+  //     choice: {selection.choiceA, selection.choiceB},
+  //   })
+  // })
+}
+
+async function GetSelection(categoryId, userId, round)
+{
+  try {
+    const entry = await SelectionData.findOne({
+      categoryId: categoryId,
+      tasterId: userId,
+      round: round,
+    })
+    if (!entry) {
+      console.error(`Failed to find selection in category ${categoryId} for user ${userId} round ${round}`)
+      return false
+    }
+    // TODO Should return the selection here instead of true or false, and should
+    return { firstOption: entry.choice.foodIdA, secondOption: entry.choice.foodIdB }
+  } catch(error) {
+    console.error("Error when getting selection data")
+    return false
+  }
+}
+
 async function PerformVote(userId, categoryId, winnerId, loserId) {
   console.log(`Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${categoryId}`)
 
@@ -72,14 +119,14 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
     loserId: loserId
   })
 
-  const sessionEntry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
-  if (!sessionEntry) {
+  const categoryEntry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
+  if (!categoryEntry) {
     console.error("Failed to find category with ID ", categoryId)
     return false
   }
 
-  const winnerEntry = sessionEntry.foodObjects.find(food => food.id === winnerId)
-  const loserEntry = sessionEntry.foodObjects.find(food => food.id === loserId)
+  const winnerEntry = categoryEntry.foodObjects.find(food => food.id === winnerId)
+  const loserEntry = categoryEntry.foodObjects.find(food => food.id === loserId)
   if (typeof(winnerEntry) === "undefined" || typeof(loserEntry) === "undefined") {
     console.error(`Missing entry with id ${loserId} or ${winnerId}`)
     return false
@@ -88,7 +135,7 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
   // Update the MMR.
   ({ winnerAfter: winnerEntry.MMR, loserAfter: loserEntry.MMR } = elo_change(winnerEntry.MMR, loserEntry.MMR))
   console.log(`After vote, MMR for winner: ${winnerEntry.MMR}, loser: ${loserEntry.MMR}`)
-  sessionEntry.save()
+  categoryEntry.save()
   return true
 }
 
@@ -124,7 +171,7 @@ async function FindTastedItems(categoryId, userId)
     tasted[item.winnerId] = tasted[item.winnerId] + 1
     tasted[item.loserId] = tasted[item.loserId] + 1
   })
-  return tasted
+  return {userId: userId, tasted: tasted}
 }
 
-module.exports = { CreateCategory, CreateSession, PerformVote, FindTastedItems}
+module.exports = { CreateCategory, CreateSession, GenerateSelections, PerformVote, FindTastedItems}

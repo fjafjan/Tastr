@@ -5,7 +5,8 @@ const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { FoodCategoryData, VoteData, UserData } = require('./Models')
-const { PerformVote, CreateSession: CreateCategory, FindTastedItems, CreateSession } = require('./DatabaseUtility')
+const { PerformVote, CreateCategory, FindTastedItems, CreateSession, GenerateSelections } = require('./DatabaseUtility')
+const { GenerateMatchups } = require('./SelectionUtility')
 
 const app = express()
 const server = http.createServer(app)
@@ -51,6 +52,9 @@ io.on('connection', (socket) => {
     } else {
       console.log("Created new session")
     }
+    // We test generating the first round.
+    GenerateSelections(categoryId, userNames, 0)
+
     io.emit('start');
   });
 
@@ -88,6 +92,13 @@ app.post('/users/add', async(req, res) => {
     console.error("Failed to add user", userId, name, error)
     res.sendStatus(404)
   }
+})
+
+app.get('/:categoryId/selection/:round/:userId', async (req, res) => {
+  const { categoryId, round, userId } = req.params
+  console.log(`Requesting vote selection for ${categoryId} round ${round} from user ${userId}`)
+  // We could potentially just check the current round here?
+  await GetSelection(categoryId, round, userId)
 })
 
 app.post('/:categoryId/vote/:winnerId/:loserId', async (req, res) => {

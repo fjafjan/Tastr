@@ -66,14 +66,30 @@ const sessionSchema = new Schema({
   name: {type: String, default: ""},
 })
 
+// Simply describes the choice between two food items.
+const choiceSchema = new Schema({
+  foodIdA: {type: String, required: true},
+  foodIdB: {type: String, required: true},
+})
+
+
+const selectionSchema = new Schema({
+  categoryId: {type: String, required: true},
+  tasterId: {type: String, required: true},
+  round: {type: Number, required: true},
+  choice: {type: choiceSchema, required: true},
+})
+
 const FoodCategoryData = mongoose.model('FoodCategoryData', foodCategorySchema)
 const VoteData = mongoose.model('VoteData', voteSchema)
 const UserData = mongoose.model("UserData", userSchema)
 const SessionData = mongoose.model("SessionData", sessionSchema)
+const SelectionData = mongoose.model('SelectionData', selectionSchema)
 
 module.exports = {
   FoodCategoryData,
   VoteData,
   UserData,
   SessionData,
+  SelectionData,
 }
