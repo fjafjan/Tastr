@@ -23,11 +23,12 @@ const WaitingRoom = () => {
     socket.emit('join', {userId: userId})
     // Cleanup on unmount
     return () => socket.off('start');
-  }, [history]);
+  }, [navigate]);
 
   const handleStart = () => {
     const userId = localStorage.getItem('userId')
-    socket.emit('start', {categoryId: categoryId, hostId: userId})
+    // TODO we should replace this temporary with finding if there is an active session for this user.
+    socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: "temporary"})
   }
 
   return (

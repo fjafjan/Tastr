@@ -19,7 +19,7 @@ const LoginPage = () => {
     localStorage.setItem('userId', name);
 
     // Navigate to the Voting page for the category
-    navigate(`/${categoryId}/voting`);
+    navigate(`/${categoryId}/waiting`);
   };
 
   return (

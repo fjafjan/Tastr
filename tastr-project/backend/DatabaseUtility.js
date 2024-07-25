@@ -46,13 +46,13 @@ async function CreateCategory(categoryId, foodNames) {
   }
 }
 
-async function CreateSession(categoryId, hostId, tasterIds)
+async function CreateSession(sessionId, categoryId, hostId, tasterIds)
 {
   try {
     await SessionData.create({
+      sessionId: sessionId,
       categoryId: categoryId,
       hostId: hostId,
-      sessionId: Math.random().toString(),
       tasterIds: tasterIds
     })
   } catch(error) {
@@ -76,16 +76,22 @@ async function GenerateSelections(categoryId, userIds, round)
 
   const promises  =  userIds.map(userId => FindTastedItems(categoryId, userId))
   const userHistory = await Promise.all(promises)
-  const selections = await GenerateMatchups(Object.keys(foodItemsDictionary), userHistory)
+  const selections = GenerateMatchups(Object.keys(foodItemsDictionary), userHistory)
 
-  await selections.map(async selection => {
-    await SelectionData.create({
-      categoryId: categoryId,
-      round: round,
-      tasterId: userIds,
-      choice: {itemA: selection.itemA, itemB: selection.itemB},
+  try {
+    let userSelectionPromises = Object.keys(selections).map(async userId => {
+      await SelectionData.create({
+        categoryId: categoryId,
+        round: round,
+        tasterId: userId,
+        choice: {foodIdA: selections[userId].itemA, foodIdB: selections[userId].itemB},
+      })
     })
-  })
+    await Promise.all(userSelectionPromises)
+  } catch(error) {
+    console.error("Failed to create selection data from due to ", selections, error)
+    return false
+  }
 }
 
 async function GetSelection(categoryId, userId, round)
@@ -101,9 +107,9 @@ async function GetSelection(categoryId, userId, round)
       return false
     }
     // TODO Should return the selection here instead of true or false, and should
-    return { firstOption: entry.choice.foodIdA, secondOption: entry.choice.foodIdB }
+    return { foodIdA: entry.choice.foodIdA, foodIdB: entry.choice.foodIdB }
   } catch(error) {
-    console.error("Error when getting selection data")
+    console.error("Error when getting selection data", error)
     return false
   }
 }
@@ -174,4 +180,4 @@ async function FindTastedItems(categoryId, userId)
   return {userId: userId, tasted: tasted}
 }
 
-module.exports = { CreateCategory, CreateSession, GenerateSelections, PerformVote, FindTastedItems}
+module.exports = { CreateCategory, CreateSession, GenerateSelections, GetSelection, PerformVote, FindTastedItems}

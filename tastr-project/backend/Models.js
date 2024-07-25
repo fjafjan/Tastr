@@ -64,6 +64,8 @@ const sessionSchema = new Schema({
   hostId: {type: String, required: true},
   url: {type: String, default: ""},
   name: {type: String, default: ""},
+  active: {type: Boolean, default: false},
+  round: {type: Number, default: 0}
 })
 
 // Simply describes the choice between two food items.

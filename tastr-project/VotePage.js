@@ -4,12 +4,18 @@ import { useLocation, useParams } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
+import { io } from 'socket.io-client';
+
+// Connect websocket.
+const socket = io('http://localhost:5000'); // Replace with your server URL
+let waiting = true
 
 const VotePage = () => {
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
   const [foodNames, setFoodNames] = useState({});
   const [foodAliases, setFoodAliases] = useState({})
   const [votes, setVotes] = useState({});
+  const userId = localStorage.getItem("userId")
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -24,24 +30,35 @@ const VotePage = () => {
   });
   const [selectedFoods, setSelectedFoods] = useState([]);
 
-  const fetchFields = async () => {
+  const fetchNames = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/${categoryId}/names`);
-      const data = response.data;
+      // TODO we only need to do this step once!
+      const namesResponse = await axios.get(`http://localhost:5000/${categoryId}/names`);
+      const data = namesResponse.data;
       setFoodNames(data);
       const aliasResponse = await axios.get(`http://localhost:5000/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
       // Randomly select two fields
-      const foodAliases = Object.keys(aliasResponse.data);
-      const shuffled = foodAliases.sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 2).sort();
-
-      setSelectedFoods(selected);
     } catch (error) {
       console.error('Error fetching names', error);
     }
   };
+
+  const fetchOptions = async (round) => {
+    try {
+      const user = localStorage.getItem("userId")
+      console.log("Trying to get options from ", `http://localhost:5000/${categoryId}/selection/${round}/${user}`)
+      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${user}`);
+      console.log("Got response ", optionsResponse)
+      const options = optionsResponse.data
+      let newFoods = [ options.foodIdA, options.foodIdB ]
+      console.log("Setting new foods", newFoods)
+      setSelectedFoods(newFoods);
+    } catch(error) {
+      console.error("Error fetching options", error)
+    }
+  }
 
   const fetchVotes = async () => {
     try {
@@ -70,10 +87,25 @@ const VotePage = () => {
   };
 
   useEffect(() => {
-    fetchFields();
+    fetchNames();
     fetchVotes();
+    fetchOptions(0);
   }, [categoryId]);
 
+  // Configure websocket behavior
+  useEffect(() => {
+    socket.on('round ready', (data) => {
+      console.log(`Round ${data.round} is ready`)
+      // Fetch the new votes.
+      fetchOptions(data.round)
+      waiting = false
+    })
+
+    // Remove subscription on unmount.
+    return () => {
+      socket.off('round ready')
+    }
+  })
   const handleSelect = async (foodIdA, foodIdB) => {
     Alert.alert(`You selected ${foodIdA}: ${foodNames[foodIdA]} over ${foodNames[foodIdB]}`);
     const userId = localStorage.getItem('userId');
@@ -83,10 +115,9 @@ const VotePage = () => {
     }
     try {
       await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
-      fetchFields()
       fetchVotes();
-      // remove this
-      const test = await axios.get(`http://localhost:5000/${categoryId}/${userId}/tasted`)
+      // Hide the options here and just post ready.
+      waiting = true
     } catch (error) {
       console.error('Error submitting vote', error);
     }
