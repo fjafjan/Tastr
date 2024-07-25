@@ -78,14 +78,14 @@ async function GenerateSelections(categoryId, userIds, round)
   const userHistory = await Promise.all(promises)
   const selections = await GenerateMatchups(Object.keys(foodItemsDictionary), userHistory)
 
-  // await selections.map(async (selection) => {
-  //   await SelectionData.create({
-  //     categoryId: categoryId,
-  //     round: round,
-  //     tasterId: userIds,
-  //     choice: {selection.choiceA, selection.choiceB},
-  //   })
-  // })
+  await selections.map(async selection => {
+    await SelectionData.create({
+      categoryId: categoryId,
+      round: round,
+      tasterId: userIds,
+      choice: {itemA: selection.itemA, itemB: selection.itemB},
+    })
+  })
 }
 
 async function GetSelection(categoryId, userId, round)
