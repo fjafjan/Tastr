@@ -50,7 +50,7 @@ const VotePage = () => {
       console.log(`Round ${data.round} is ready`)
       // Fetch the new votes.
       fetchOptions(data.round)
-      waiting = false
+      setWaiting(false)
     })
 
     // Remove subscription on unmount.
@@ -70,7 +70,7 @@ const VotePage = () => {
       // TODO: We need to trigger a re-draw here though, and when we trigger  re-draw we need the
       // result page to re-load the votes count.
       // Hide the options here and just post ready.
-      waiting = true
+      setWaiting(true)
     } catch (error) {
       console.error('Error submitting vote', error);
     }

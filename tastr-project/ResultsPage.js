@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, Button, Alert, TouchableOpacity } from 'react-native';
-import { useLocation, useParams } from 'react-router-dom';
+import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
+import { useParams } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
@@ -8,8 +8,6 @@ import 'chart.js/auto';
 const ResultsPage = () => {
 
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
-  const [foodNames, setFoodNames] = useState({});
-  const [votes, setVotes] = useState({});
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -24,18 +22,6 @@ const ResultsPage = () => {
   });
 
 
-  const fetchNames = async () => {
-    try {
-      // TODO we only need to do this step once!
-      const namesResponse = await axios.get(`http://localhost:5000/${categoryId}/names`);
-      const data = namesResponse.data;
-      setFoodNames(data);
-      // Randomly select two fields
-    } catch (error) {
-      console.error('Error fetching names', error);
-    }
-  };
-
   const fetchVotes = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/${categoryId}/mmr`);
@@ -43,7 +29,6 @@ const ResultsPage = () => {
 
       const names = Object.keys(data);
       const values = Object.values(data);
-      setVotes(data);
 
       setChartData({
         labels: names,
@@ -63,7 +48,6 @@ const ResultsPage = () => {
   };
 
   useEffect(() => {
-    fetchNames();
     fetchVotes();
   }, [categoryId]);
 
@@ -93,27 +77,6 @@ title: {
   fontSize: 24,
   fontWeight: 'bold',
   marginBottom: 20,
-},
-resultContainer: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  width: '100%',
-  paddingHorizontal: 10,
-},
-selectButton: {
-  flex: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 1,  // Increase the padding for larger button size
-  paddingHorizontal: 1, // Increase the padding for larger button size
-  marginVertical: 20,
-  marginHorizontal: 20,
-  backgroundColor: '#4CAF50',
-  borderRadius: 5,
-},
-buttonText: {
-  fontSize: 24,
-  color: 'white',
 },
 chartContainer: {
   width: '80%',
