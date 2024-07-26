@@ -84,17 +84,19 @@ app.post('/category/add', async(req, res) => {
   }
 })
 
+// Endpoint to add user to the user database.
 app.post('/users/add', async(req, res) => {
-  const { userId: userId, name } = req.body
+  const { userId: userId, name: name, email: email } = req.body
   console.log("Adding new user", userId, name)
   try {
     UserData.create({
       name: name,
       userId: userId,
+      email: email,
     })
     res.sendStatus(200) // Ok!
   } catch(error) {
-    console.error("Failed to add user", userId, name, error)
+    console.error("Failed to add user", userId, name, email, error)
     res.sendStatus(404)
   }
 })
@@ -182,28 +184,6 @@ app.get('/:categoryId/names', async (req, res) => {
     }
   } catch(error) {
     console.error(`Failed to get foods for ${categoryId}`, error)
-  }
-})
-
-// Endpoint to get votes.
-app.get('/:categoryId/votes', async (req, res) => {
-  const { categoryId } = req.params
-  console.log("Getting votes for category ", categoryId)
-  try {
-    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
-    if (entry) {
-      const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
-        acc[item.name] = item.voteCount
-        return acc;
-      }, {});
-
-      console.log("Returning", foodItemsDictionary)
-      res.json(foodItemsDictionary)
-    } else {
-      res.sendStatus(404) // Not found
-    }
-  } catch(error) {
-    console.error(`Failed to find votes for ${categoryId}`, error)
   }
 })
 

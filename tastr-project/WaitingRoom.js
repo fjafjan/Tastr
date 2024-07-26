@@ -1,7 +1,7 @@
 // src/components/WaitingRoom.js
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, SafeAreaView, StyleSheet } from 'react-native-web';
 
 const socket = io('http://localhost:5000'); // Replace with your server URL
@@ -10,6 +10,14 @@ const WaitingRoom = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
   const [waiting, setWaiting] = useState(true);
   const navigate = useNavigate();
+
+  // We expect user to enter here from login-screen. If they do not, they have to log in.
+  // We could add check that the user exists in the session to make it better.
+  const location = useLocation()
+  const userId = location.state?.userId
+  if (!userId) {
+    navigate(`/${categoryId}`)
+  }
 
 
   useEffect(() => {
