@@ -35,7 +35,6 @@ mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
   return 1
 })
 
-// Ask: How can I add the ID of the user here and on disconnect.
 io.on('connection', (socket) => {
   console.log(`New client ${socket.id} connected`);
 
@@ -67,7 +66,6 @@ io.on('connection', (socket) => {
     }
   });
 });
-
 
 // Endpoint to save data sent from a user.
 app.post('/category/add', addCategory)

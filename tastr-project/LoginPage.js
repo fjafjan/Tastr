@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
 import { io } from 'socket.io-client';
 import axios from 'axios';

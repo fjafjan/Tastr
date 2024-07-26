@@ -1,94 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, Button, Alert, TouchableOpacity } from 'react-native';
-import { useLocation, useParams } from 'react-router-dom';
-import { Bar } from 'react-chartjs-2';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import 'chart.js/auto';
 import { io } from 'socket.io-client';
+import ResultsPage from './ResultsPage';
 
 // Connect websocket.
 const socket = io('http://localhost:5000'); // Replace with your server URL
-let waiting = true
 
 const VotePage = () => {
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
-  const [foodNames, setFoodNames] = useState({});
   const [foodAliases, setFoodAliases] = useState({})
-  const [votes, setVotes] = useState({});
   const userId = localStorage.getItem("userId")
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: 'Votes',
-        data: [],
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  });
   const [selectedFoods, setSelectedFoods] = useState([]);
+  const [waiting, setWaiting] = useState(true)
 
-  const fetchNames = async () => {
+  const fetchAliases = async () => {
     try {
-      // TODO we only need to do this step once!
-      const namesResponse = await axios.get(`http://localhost:5000/${categoryId}/names`);
-      const data = namesResponse.data;
-      setFoodNames(data);
       const aliasResponse = await axios.get(`http://localhost:5000/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
       // Randomly select two fields
     } catch (error) {
-      console.error('Error fetching names', error);
+      console.error('Error fetching aliases', error);
     }
   };
 
   const fetchOptions = async (round) => {
     try {
       const user = localStorage.getItem("userId")
-      console.log("Trying to get options from ", `http://localhost:5000/${categoryId}/selection/${round}/${user}`)
       const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${user}`);
-      console.log("Got response ", optionsResponse)
       const options = optionsResponse.data
       let newFoods = [ options.foodIdA, options.foodIdB ]
-      console.log("Setting new foods", newFoods)
       setSelectedFoods(newFoods);
     } catch(error) {
       console.error("Error fetching options", error)
     }
   }
 
-  const fetchVotes = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/${categoryId}/mmr`);
-      const data = response.data;
-
-      const names = Object.keys(data);
-      const values = Object.values(data);
-      setVotes(data);
-
-      setChartData({
-        labels: names,
-        datasets: [
-          {
-            label: 'Votes',
-            data: values,
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-          },
-        ],
-      });
-    } catch (error) {
-      console.error('Error fetching votes', error);
-    }
-  };
-
   useEffect(() => {
-    fetchNames();
-    fetchVotes();
+    fetchAliases();
     fetchOptions(0);
   }, [categoryId]);
 
@@ -107,7 +59,6 @@ const VotePage = () => {
     }
   })
   const handleSelect = async (foodIdA, foodIdB) => {
-    Alert.alert(`You selected ${foodIdA}: ${foodNames[foodIdA]} over ${foodNames[foodIdB]}`);
     const userId = localStorage.getItem('userId');
     if (!userId) {
       console.error('No user ID found');
@@ -116,8 +67,8 @@ const VotePage = () => {
     try {
       await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
       await axios.post(`http://localhost:5000/${categoryId}/waiting/remove`, { userId });
-
-      fetchVotes();
+      // TODO: We need to trigger a re-draw here though, and when we trigger  re-draw we need the
+      // result page to re-load the votes count.
       // Hide the options here and just post ready.
       waiting = true
     } catch (error) {
@@ -139,12 +90,8 @@ const VotePage = () => {
           </TouchableOpacity>
         ))}
       </View>
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Current Votes</Text>
-        <Bar
-          data={chartData}
-          options={{ maintainAspectRatio: false }}
-        />
+      <View>
+        <ResultsPage></ResultsPage>
       </View>
     </SafeAreaView>
   );
