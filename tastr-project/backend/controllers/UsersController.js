@@ -4,7 +4,7 @@ exports.addUser = async(req, res) => {
   const { userId: userId, name: name, email: email } = req.body
   console.log("Adding new user", userId, name)
   try {
-    UserData.create({
+    await UserData.create({
       name: name,
       userId: userId,
       email: email,

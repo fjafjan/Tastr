@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { CreateSession, GenerateSelections } = require('./DatabaseUtility')
 const { addCategory, getAliases, getNames, getMmr } = require('./controllers/FoodCategoryController')
-const { getTasted, performVote, getSelection } = require('./controllers/VotingSessionController')
+const { getTasted, performVote, getSelection, getActiveSession } = require('./controllers/VotingSessionController')
 const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
@@ -72,6 +72,9 @@ app.post('/category/add', addCategory)
 
 // Endpoint to add user to the user database.
 app.post('/users/add', addUser)
+
+// Gets an active session for the given category.
+app.get('/:categoryId/session/get', getActiveSession)
 
 app.get('/:categoryId/selection/:round/:userId', getSelection)
 

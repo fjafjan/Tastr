@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, SafeAreaView, StyleSheet } from 'react-native-web';
+import axios from 'axios';
 
 const socket = io('http://localhost:5000'); // Replace with your server URL
 
@@ -19,6 +20,11 @@ const WaitingRoom = () => {
     navigate(`/${categoryId}`)
   }
 
+  const getSessionId = () => {
+    // This will either get an active session for this category, or create a new one.
+    let sessionEntry = axios.get(`http://localhost:5000/${categoryId}/session/get`, {userId: userId} )
+    return sessionEntry.sessionId
+  }
 
   useEffect(() => {
     // Listen for the 'start' event from the server
@@ -35,8 +41,9 @@ const WaitingRoom = () => {
 
   const handleStart = () => {
     const userId = localStorage.getItem('userId')
+    let sessionId = getSessionId()
     // TODO we should replace this temporary with finding if there is an active session for this user.
-    socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: "temporary"})
+    socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: sessionId})
   }
 
   return (

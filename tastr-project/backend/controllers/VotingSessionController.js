@@ -1,6 +1,32 @@
 const { GetSelection, FindTastedItems, PerformVote, GenerateSelections } = require("../DatabaseUtility")
 const { SessionData } = require("../Models")
 
+exports.getActiveSession = async (req, res) => {
+  const { categoryId: categoryId } = req.params
+  const { userId: userId } = req.body
+  console.log(`Requesting an active session for ${categoryId}`)
+  try {
+    let sessionEntry = await SessionData.findOne({
+      categoryId: categoryId,
+      active: true
+    })
+    // If there is no such session, we create one.
+    if (!sessionEntry) {
+      console.log(`No active session with category ${categoryId}, will create new one.`)
+      sessionEntry = await SessionData.create({
+        sessionId: Math.random().toString(), // TODO Replace this with proper ID generation.
+        categoryId: categoryId,
+        hostId: userId, // TODO: If we have this structure...
+        active: true,
+      })
+    }
+    return sessionEntry
+  } catch(error) {
+    console.error("Failed to find active session with ", categoryId)
+  }
+}
+
+
 exports.getSelection = async (req, res) => {
   const { categoryId, round, userId } = req.params
   console.log(`Requesting vote selection for ${categoryId} round ${round} from user ${userId}`)

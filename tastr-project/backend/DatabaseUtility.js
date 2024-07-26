@@ -109,7 +109,6 @@ async function GetSelection(categoryId, userId, round)
       console.error(`Failed to find selection in category ${categoryId} for user ${userId} round ${round}`)
       return false
     }
-    // TODO Should return the selection here instead of true or false, and should
     return { foodIdA: entry.choice.foodIdA, foodIdB: entry.choice.foodIdB }
   } catch(error) {
     console.error("Error when getting selection data", error)

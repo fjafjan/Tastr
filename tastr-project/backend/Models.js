@@ -21,17 +21,17 @@ const validateEmail = function(email) {
   return re.test(email)
 };
 
-const emailSchema = new Schema({
-  email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      unique: true,
-      required: 'Email address is required',
-      validate: [validateEmail, 'Please fill a valid email address'],
-      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
-  }
-})
+// const emailSchema = new Schema({
+//   email: {
+//       type: String,
+//       trim: true,
+//       lowercase: true,
+//       unique: true,
+//       required: 'Email address is required',
+//       validate: [validateEmail, 'Please fill a valid email address'],
+//       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+//   }
+// })
 
 // This defines the data for an individual vote. This allows us to e.g. remove malicious users
 // and generate sub-section preferences. So we store each individual vote instead of storing it
