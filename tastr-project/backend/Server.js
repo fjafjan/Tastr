@@ -4,8 +4,10 @@ const cors = require('cors')
 const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
-const { FoodCategoryData, VoteData, UserData, SessionData } = require('./Models')
-const { PerformVote, CreateCategory, FindTastedItems, CreateSession, GenerateSelections, GetSelection } = require('./DatabaseUtility')
+const { CreateSession, GenerateSelections } = require('./DatabaseUtility')
+const { addCategory, getAliases, getNames, getMmr } = require('./controllers/FoodCategoryController')
+const { getTasted, performVote, getSelection } = require('./controllers/VotingSessionController')
+const { addUser } = require('./controllers/UsersController')
 
 const app = express()
 const server = http.createServer(app)
@@ -73,153 +75,23 @@ io.on('connection', (socket) => {
 
 
 // Endpoint to save data sent from a user.
-app.post('/category/add', async(req, res) => {
-  const { categoryId: categoryId, foodNames: foodNames } = req.body
-  console.log("Creating new category with ", categoryId, foodNames)
-  const result = await CreateCategory(categoryId, foodNames)
-  if (result) {
-    res.sendStatus(200) // Ok!
-  } else {
-    console.error("Failed to create new category ", categoryId, foodNames)
-  }
-})
+app.post('/category/add', addCategory)
 
 // Endpoint to add user to the user database.
-app.post('/users/add', async(req, res) => {
-  const { userId: userId, name: name, email: email } = req.body
-  console.log("Adding new user", userId, name)
-  try {
-    UserData.create({
-      name: name,
-      userId: userId,
-      email: email,
-    })
-    res.sendStatus(200) // Ok!
-  } catch(error) {
-    console.error("Failed to add user", userId, name, email, error)
-    res.sendStatus(404)
-  }
-})
+app.post('/users/add', addUser)
 
-app.get('/:categoryId/selection/:round/:userId', async (req, res) => {
-  const { categoryId, round, userId } = req.params
-  console.log(`Requesting vote selection for ${categoryId} round ${round} from user ${userId}`)
-  // We could potentially just check the current round here?
-  options = await GetSelection(categoryId, userId, round)
-  if (options) {
-    res.json(options)
-  } else {
-    res.sendStatus(404)
-  }
-})
+app.get('/:categoryId/selection/:round/:userId', getSelection)
 
-app.post('/:categoryId/vote/:winnerId/:loserId', async (req, res) => {
-  const { categoryId, winnerId, loserId} = req.params
-  const { userId } = req.body
-  console.log(`Got vote for ${winnerId} over ${loserId} in Session ${categoryId}`)
-  const result = await PerformVote(userId, categoryId, winnerId, loserId)
+app.post('/:categoryId/vote/:winnerId/:loserId', performVote)
 
-  console.log(`Removing ${userId} from ${waitingUsers}`)
-  waitingUsers.splice(waitingUsers.indexOf(userId), 1)
-  if (waitingUsers.length === 0) {
-    console.log("All clients are ready. Preparing next round.")
-    // Should move this to a utility function.
-    // TODO: This is not sufficient to actually identify the session, but lets leave it for now.
-    const sessionEntry = await SessionData.findOne({categoryId: categoryId})
-    if (!sessionEntry) {
-      console.error("Failed to find session for ", categoryId)
-    }
-    sessionEntry.round += 1
-    let userIds = sessionEntry.tasterIds
-    await GenerateSelections(categoryId, userIds, sessionEntry.round)
-    waitingUsers.push(userIds)
-    io.emit('round ready', { round: sessionEntry.round})
-    sessionEntry.save()
-  }
-
-  if (result) {
-    res.sendStatus(200)
-  } else {
-    res.sendStatus(500)
-  }
-})
-
-app.get('/:categoryId/aliases', async (req, res) => {
-  const { categoryId } = req.params
-  console.log("Getting aliases for category ", categoryId)
-
-  try {
-    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
-    if (entry) {
-      const idToAliasDictionary = entry.foodObjects.reduce((acc, item) => {
-        acc[item.id] = item.alias
-        return acc
-      }, {});
-      console.log("Returning", idToAliasDictionary)
-      res.json(idToAliasDictionary)
-    } else {
-      res.sendStatus(404) // Not found
-    }
-  } catch(error) {
-    console.error(`Failed to get foods for ${categoryId}`, error)
-  }
-})
+app.get('/:categoryId/aliases', getAliases)
 
 // Endpoint to get data.
-app.get('/:categoryId/names', async (req, res) => {
-  const { categoryId } = req.params
-  console.log("Getting food names for category ", categoryId)
+app.get('/:categoryId/names', getNames)
 
-  try {
-    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
-    if (entry) {
-      const idToNamesDictionary = entry.foodObjects.reduce((acc, item) => {
-        acc[item.id] = item.name
-        return acc
-      }, {});
-      console.log("Returning", idToNamesDictionary)
-      res.json(idToNamesDictionary)
-    } else {
-      res.sendStatus(404) // Not found
-    }
-  } catch(error) {
-    console.error(`Failed to get foods for ${categoryId}`, error)
-  }
-})
+app.get('/:categoryId/mmr', getMmr)
 
-app.get('/:categoryId/mmr', async (req, res) => {
-  const { categoryId } = req.params
-  console.log("Getting MMR for category", categoryId)
-  try {
-    const entry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
-    if (entry) {
-      const foodItemsDictionary = entry.foodObjects.reduce((acc, item) => {
-        acc[item.name] = item.MMR
-        return acc;
-      }, {});
-
-      console.log("Returning", foodItemsDictionary)
-      res.json(foodItemsDictionary)
-    } else {
-      res.sendStatus(404) // Not found
-    }
-  } catch(error) {
-    console.error(`Failed to find MMR for ${categoryId}`, error)
-  }
-})
-
-app.get('/:categoryId/:userId/tasted', async (req, res) => {
-  const { categoryId: categoryId, userId: userId } = req.params
-  console.log(`Getting the votes in ${categoryId} for ${userId}`)
-  const result = await FindTastedItems(categoryId, userId)
-
-  if (result) {
-    console.log("Returning tasted map:", result)
-    res.json(result)
-  } else {
-    res.sendStatus(500)
-  }
-})
+app.get('/:categoryId/:userId/tasted', getTasted)
 
 server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`)

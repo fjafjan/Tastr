@@ -64,7 +64,7 @@ async function CreateSession(sessionId, categoryId, hostId, tasterIds)
 
 async function GenerateSelections(categoryId, userIds, round)
 {
-  const categoryEntry = await FoodCategoryData.findOne({categoryId: categoryId})
+  const categoryEntry = await TryFindCategory(categoryId)
   if (!categoryEntry) {
     console.error("Failed to find category with ID ", categoryId)
     return false
@@ -125,9 +125,8 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
     loserId: loserId
   })
 
-  const categoryEntry = await FoodCategoryData.findOne({ categoryId: categoryId }).exec()
+  const categoryEntry = await TryFindCategory(categoryId)
   if (!categoryEntry) {
-    console.error("Failed to find category with ID ", categoryId)
     return false
   }
 
@@ -148,36 +147,54 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
 // Get the number of times a user has tasted each food item.
 async function FindTastedItems(categoryId, userId)
 {
-  console.log(`Computing MMR for ${categoryId} in ${userId}`)
+  console.log(`Generating taste-map for ${categoryId} and user ${userId}`)
 
-  const foodVotes = await VoteData.find(
+  try {
+    const foodVotes = await VoteData.find(
     {
       categoryId: categoryId,
       userId: userId
     }
-  ).select(['winnerId', 'loserId'])
-  if (!foodVotes) {
-    console.error("Failed to find any votes in category with user", categoryId, userId)
+    ).select(['winnerId', 'loserId'])
+    if (!foodVotes) {
+      console.error("Failed to find any votes in category with user", categoryId, userId)
+      return false
+    }
+
+    const categoryEntry = await TryFindCategory(categoryId)
+    if (!categoryEntry) {
+      return false
+    }
+
+    // We will return a dictionary mapping food ID to the number of times this user has tasted it.
+    let tasted = {}
+    // Initialize all food IDs to 0
+    categoryEntry.foodObjects.forEach(item => tasted[item.id] = 0)
+
+    // Increment once for each win or loss.
+    foodVotes.forEach(item => {
+      tasted[item.winnerId] = tasted[item.winnerId] + 1
+      tasted[item.loserId] = tasted[item.loserId] + 1
+    })
+    return {userId: userId, tasted: tasted}
+  } catch (error) {
+    console.error("Failed to generate taste map due to", error)
     return false
   }
+}
 
-  const categoryEntry = await FoodCategoryData.findOne({categoryId: categoryId})
-  if (!categoryEntry) {
-    console.error("Failed to find category with ID ", categoryId)
+async function TryFindCategory(categoryId) {
+  try {
+    let categoryEntry = await FoodCategoryData.findOne({categoryId: categoryId})
+    if (!categoryEntry) {
+      console.error("No category with ID ", categoryId)
+      return false
+    }
+    return categoryEntry
+  } catch (error) {
+    console.error(`Failed to find category with ${categoryId} due to `, error)
     return false
   }
-
-  // We will return a dictionary mapping food ID to the number of times this user has tasted it.
-  const tasted = {}
-  // Initialize all food IDs to 0
-  categoryEntry.foodObjects.forEach(item => tasted[item.id] = 0)
-
-  // Increment once for each win or loss.
-  foodVotes.forEach(item => {
-    tasted[item.winnerId] = tasted[item.winnerId] + 1
-    tasted[item.loserId] = tasted[item.loserId] + 1
-  })
-  return {userId: userId, tasted: tasted}
 }
 
 module.exports = { CreateCategory, CreateSession, GenerateSelections, GetSelection, PerformVote, FindTastedItems}
