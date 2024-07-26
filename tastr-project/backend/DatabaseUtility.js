@@ -49,12 +49,15 @@ async function CreateCategory(categoryId, foodNames) {
 async function CreateSession(sessionId, categoryId, hostId, tasterIds)
 {
   try {
-    await SessionData.create({
-      sessionId: sessionId,
-      categoryId: categoryId,
-      hostId: hostId,
-      tasterIds: tasterIds
-    })
+    await SessionData.findOneAndUpdate(
+      {
+        sessionId: sessionId,
+        categoryId: categoryId,
+        hostId: hostId,
+        tasterIds: tasterIds
+      },
+      { upsert: true, new: true}
+    );
   } catch(error) {
     console.error("Failed to create new session data due to", error)
     return false

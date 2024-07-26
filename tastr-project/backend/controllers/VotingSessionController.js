@@ -1,4 +1,5 @@
 const { GetSelection, FindTastedItems, PerformVote, GenerateSelections } = require("../DatabaseUtility")
+const { SessionData } = require("../Models")
 
 exports.getSelection = async (req, res) => {
   const { categoryId, round, userId } = req.params
@@ -31,25 +32,8 @@ exports.performVote = async (req, res) => {
   const { categoryId, winnerId, loserId} = req.params
   const { userId } = req.body
   console.log(`Got vote for ${winnerId} over ${loserId} in Session ${categoryId}`)
-  const result = await PerformVote(userId, categoryId, winnerId, loserId)
 
-  console.log(`Removing ${userId} from ${waitingUsers}`)
-  waitingUsers.splice(waitingUsers.indexOf(userId), 1)
-  if (waitingUsers.length === 0) {
-    console.log("All clients are ready. Preparing next round.")
-    // Should move this to a utility function.
-    // TODO: This is not sufficient to actually identify the session, but lets leave it for now.
-    const sessionEntry = await SessionData.findOne({categoryId: categoryId})
-    if (!sessionEntry) {
-      console.error("Failed to find session for ", categoryId)
-    }
-    sessionEntry.round += 1
-    let userIds = sessionEntry.tasterIds
-    await GenerateSelections(categoryId, userIds, sessionEntry.round)
-    waitingUsers.push(userIds)
-    io.emit('round ready', { round: sessionEntry.round})
-    sessionEntry.save()
-  }
+  const result = await PerformVote(userId, categoryId, winnerId, loserId)
 
   if (result) {
     res.sendStatus(200)

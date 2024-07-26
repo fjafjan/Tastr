@@ -8,6 +8,7 @@ const { CreateSession, GenerateSelections } = require('./DatabaseUtility')
 const { addCategory, getAliases, getNames, getMmr } = require('./controllers/FoodCategoryController')
 const { getTasted, performVote, getSelection } = require('./controllers/VotingSessionController')
 const { addUser } = require('./controllers/UsersController')
+const { SessionData } = require('./Models')
 
 const app = express()
 const server = http.createServer(app)
@@ -25,8 +26,6 @@ const io = socketIo(server, {
 })
 
 let users = {}
-let waitingUsers = []
-let currentRound = 0
 
 // Connect to database.
 mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
@@ -55,12 +54,8 @@ io.on('connection', (socket) => {
     } else {
       console.log("Created new session")
     }
-    // We test generating the first round.
-    currentRound = 0
-    GenerateSelections(categoryId, userIds, currentRound)
 
-    // Wait for all users to load.
-    waitingUsers.push(users)
+    GenerateSelections(categoryId, userIds, 0)
 
     io.emit('start');
   });
@@ -83,6 +78,37 @@ app.post('/users/add', addUser)
 app.get('/:categoryId/selection/:round/:userId', getSelection)
 
 app.post('/:categoryId/vote/:winnerId/:loserId', performVote)
+
+app.post('/:categoryId/waiting/remove', async (req, res) => {
+  const { categoryId: categoryId } = req.params
+  const { userId: userId } = req.body
+  // TODO I need to find some way of handling IO on the controllers.
+  const sessionEntry = await SessionData.findOne({categoryId: categoryId})
+  if (!sessionEntry) {
+    console.error("Failed to find session for ", categoryId)
+    res.sendStatus(404)
+  }
+
+  let waitingUsers = sessionEntry.waitingIds
+  console.log(`Removing ${userId} from [${waitingUsers}]`)
+  waitingUsers.splice(waitingUsers.indexOf(userId), 1)
+
+  if (waitingUsers.length === 0) {
+    console.log("All clients are ready. Preparing next round.")
+    // Should move this to a utility function.
+    // TODO: This is not sufficient to actually identify the session, but lets leave it for now.
+    sessionEntry.round += 1
+    let userIds = sessionEntry.tasterIds
+    await GenerateSelections(categoryId, userIds, sessionEntry.round)
+    userIds.forEach(userId => {
+      waitingUsers.push(userId)
+    });
+    io.emit('round ready', { round: sessionEntry.round})
+    sessionEntry.save()
+    res.sendStatus(200)
+  }
+})
+
 
 app.get('/:categoryId/aliases', getAliases)
 

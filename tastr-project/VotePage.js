@@ -115,6 +115,8 @@ const VotePage = () => {
     }
     try {
       await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
+      await axios.post(`http://localhost:5000/${categoryId}/waiting/remove`, { userId });
+
       fetchVotes();
       // Hide the options here and just post ready.
       waiting = true

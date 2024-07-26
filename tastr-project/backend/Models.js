@@ -48,7 +48,9 @@ const voteSchema = new Schema({
 const userSchema = new Schema({
   userId: {type: String, required: true, unique: true}, // Uniquely identifies the user
   name: {type: String, required: true}, // A more descriptive name of the user.
-  email: {type: emailSchema, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
+  // TODO: Restore this and test it properly
+  // email: {type: emailSchema, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
+  email: {type: String, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
 })
 
 // We need something which ties together:
@@ -57,10 +59,14 @@ const userSchema = new Schema({
 // The host ID, who is allowed to declare it done.
 // Maybe some optional name, and the URL.
 
+
+// This is arguably growing too much? Should probably introduce a round schema and move
+// stuff there, but for now lets grow the session concept.
 const sessionSchema = new Schema({
   sessionId: {type: String, required: true, unique: true},
   categoryId: {type: String, required: true},
   tasterIds: [{type: String}],
+  waitingIds: [{type: String}], // Tasters waiting for the next round.
   hostId: {type: String, required: true},
   url: {type: String, default: ""},
   name: {type: String, default: ""},
