@@ -14,7 +14,7 @@ const VotePage = () => {
   const [foodAliases, setFoodAliases] = useState({})
   const userId = localStorage.getItem("userId")
   const [selectedFoods, setSelectedFoods] = useState([]);
-  const [waiting, setWaiting] = useState(true)
+  const [waiting, setWaiting] = useState(false)
 
   const fetchAliases = async () => {
     try {
@@ -80,7 +80,7 @@ const VotePage = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Which do you prefer</Text>
       <View style={styles.resultContainer}>
-        {selectedFoods.map((foodId, index) => (
+        {!waiting && selectedFoods.map((foodId, index) => (
           <TouchableOpacity
             key={index}
             style={styles.selectButton}

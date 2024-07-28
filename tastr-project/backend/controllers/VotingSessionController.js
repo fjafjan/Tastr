@@ -22,7 +22,27 @@ exports.getActiveSession = async (req, res) => {
     }
     return sessionEntry
   } catch(error) {
-    console.error("Failed to find active session with ", categoryId)
+    console.error("Failed to find active session with ", categoryId, error)
+  }
+}
+
+exports.addUserToSession = async (req, res) => {
+  const { sessionId: sessionId, tasterId: tasterId } = req.body
+  console.log(`Adding ${tasterId} to session ${sessionId}`)
+
+  try {
+    let sessionEntry = await SessionData.findOne({sessionId: sessionId})
+    if (!sessionEntry) {
+      console.error(`No session with ID ${sessionId} found`)
+      res.sendStatus(404)
+      return
+    }
+
+    sessionEntry.tasterIds.push(tasterId)
+    res.sendStatus(200)
+  } catch (error) {
+    console.error("Failed to add taster to session due to ", error)
+    res.sendStatus(500)
   }
 }
 

@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const { default: mongoose } = require('mongoose')
 const { CreateSession, GenerateSelections } = require('./DatabaseUtility')
 const { addCategory, getAliases, getNames, getMmr } = require('./controllers/FoodCategoryController')
-const { getTasted, performVote, getSelection, getActiveSession } = require('./controllers/VotingSessionController')
+const { getTasted, performVote, getSelection, getActiveSession, addUserToSession } = require('./controllers/VotingSessionController')
 const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
@@ -25,8 +25,6 @@ const io = socketIo(server, {
   }
 })
 
-let users = {}
-
 // Connect to database.
 mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
   console.log("Connected to database")
@@ -40,30 +38,33 @@ io.on('connection', (socket) => {
 
   socket.on('join', (data) => {
     console.log(`User ${data.userId} has joined`)
-    users[socket.id] = data.userId; // TODO: We could store some other field here, but the key is to make the users unique.
   });
 
-  socket.on('startSession', (data) => {
+  socket.on('startSession', async (data) => {
     console.log("Got start request", socket.id)
     const { categoryId: categoryId, hostId: hostId, sessionId: sessionId } = data
-    let userIds = Object.values(users)
-    console.log(`Starting new voting session for category ${categoryId} with host ${hostId} and users ${userIds}`)
-    if(!CreateSession(sessionId, categoryId, hostId, userIds)) {
-      console.error("Failed to create new session")
-    } else {
-      console.log("Created new session")
+    let sessionEntry = await SessionData.findOne({ sessionId: sessionId })
+    if (!sessionEntry) {
+      console.error("No session with session Id found!")
     }
+    let tasterIds = sessionEntry.tasterIds
 
-    GenerateSelections(categoryId, userIds, 0)
+    // We should create the session before this! We create the session when the host enters the waiting room.
+    // if(!CreateSession(sessionId, categoryId, hostId, userIds)) {
+    //   console.error("Failed to create new session")
+    // } else {
+    //   console.log("Created new session")
+    // }
+
+    console.log(`Starting new voting session for category ${categoryId} with host ${hostId} and users ${tasterIds}`)
+    GenerateSelections(categoryId, tasterIds, 0)
 
     io.emit('start');
   });
 
+  // Remove this?
   socket.on('disconnect', () => {
     console.log(`Client ${socket.id} disconnected`);
-    if(socket.id in users) {
-      delete users[socket.id]
-    }
   });
 });
 
@@ -75,6 +76,9 @@ app.post('/users/add', addUser)
 
 // Gets an active session for the given category.
 app.get('/:categoryId/session/get', getActiveSession)
+
+// Add a user to a session.
+app.get('/:categoryId/session/add', addUserToSession)
 
 app.get('/:categoryId/selection/:round/:userId', getSelection)
 
@@ -88,6 +92,7 @@ app.post('/:categoryId/waiting/remove', async (req, res) => {
   if (!sessionEntry) {
     console.error("Failed to find session for ", categoryId)
     res.sendStatus(404)
+    return
   }
 
   let waitingUsers = sessionEntry.waitingIds

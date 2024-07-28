@@ -4,7 +4,7 @@ exports.addUser = async(req, res) => {
   const { userId: userId, name: name, email: email } = req.body
   console.log("Adding new user", userId, name)
   try {
-    await UserData.create({
+    await UserData.findOneAndUpdate({
       name: name,
       userId: userId,
       email: email,
