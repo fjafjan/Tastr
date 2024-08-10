@@ -20,7 +20,7 @@ app.use(bodyParser.json())
 
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Ask about this. Seems I should change it to https://fjafjan.github.io
+    origin: ["localhost:9000", "https://tastr-production.up.railway.app/*"], // Ask about this. Seems I should change it to https://fjafjan.github.io
     methods: ["GET", "POST"]
   }
 })
