@@ -1,5 +1,5 @@
 const express = require('express')
-const http = require('http')
+const https = require('https')
 const cors = require('cors')
 const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
@@ -11,7 +11,7 @@ const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
 const app = express()
-const server = http.createServer(app)
+const server = https.createServer(app)
 const port = process.env.REST_PORT || 443;
 
 // Middleware
@@ -126,5 +126,5 @@ app.get('/:categoryId/mmr', getMmr)
 app.get('/:categoryId/:userId/tasted', getTasted)
 
 server.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`)
+  console.log(`Server running on https://localhost:${port}`)
 })
