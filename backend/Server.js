@@ -133,7 +133,6 @@ server.listen(port, () => {
   console.log(`Server running on port ${port}`)
 })
 
-const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 function logAwake() {
   console.log("Still running");
 }

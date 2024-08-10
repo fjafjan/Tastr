@@ -8,6 +8,7 @@ exports.addCategory = async(req, res) => {
   if (result) {
     res.sendStatus(200) // Ok!
   } else {
+    res.sendStatus(500) // Sadness
     console.error("Failed to create new category ", categoryId, foodNames)
   }
 }

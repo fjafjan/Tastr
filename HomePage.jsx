@@ -39,10 +39,14 @@ const HomePage = () => {
       return acc;
     }, {});
     // Send the data to the server.
-    await axios.post(`${serverUrl}/category/add`, {
-      categoryId: categoryId,
-      foodNames: foodNames
-    })
+    try {
+      await axios.post(`${serverUrl}/category/add`, {
+        categoryId: categoryId,
+        foodNames: foodNames
+      })  
+    } catch (error) {
+      console.error("Failed to create new category due to ", error)
+    }
 
     navigate(`/${categoryId}`, { state: { creator: true}});
   }
