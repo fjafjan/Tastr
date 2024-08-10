@@ -68,6 +68,10 @@ io.on('connection', (socket) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.status(200).send({ status: "Alright"})
+})
+
 // Endpoint to save data sent from a user.
 app.post('/category/add', addCategory)
 
