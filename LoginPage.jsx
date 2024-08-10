@@ -4,9 +4,7 @@ import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-
 import { io } from 'socket.io-client';
 import axios from 'axios';
 
-const serverName = import.meta.env.VITE_SERVER_URL || "http://localhost" 
-const serverPort = import.meta.env.VITE_SERVER_PORT || "5000"
-const serverUrl = `${serverName}:${serverPort}`
+const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
 
 const socket = io(`${serverUrl}`); // Replace with your server URL
 

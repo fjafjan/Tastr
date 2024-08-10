@@ -6,9 +6,7 @@ import 'chart.js/auto';
 import { io } from 'socket.io-client';
 import ResultsPage from './ResultsPage';
 
-const serverName = import.meta.env.VITE_SERVER_URL || "http://localhost" 
-const serverPort = import.meta.env.VITE_SERVER_PORT || "5000"
-const serverUrl = `${serverName}:${serverPort}`
+const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
 
 // Connect websocket.
 
