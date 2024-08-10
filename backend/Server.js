@@ -1,5 +1,5 @@
 const express = require('express')
-const https = require('https')
+const http = require('http')
 const cors = require('cors')
 const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
@@ -11,8 +11,8 @@ const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
 const app = express()
-const server = https.createServer(app)
-const port = process.env.REST_PORT || 443;
+const server = http.createServer(app)
+const port = process.env.REST_PORT || 5000;
 
 // Middleware
 app.use(cors())
@@ -130,5 +130,11 @@ app.get('/:categoryId/mmr', getMmr)
 app.get('/:categoryId/:userId/tasted', getTasted)
 
 server.listen(port, () => {
-  console.log(`Server running on https://localhost:${port}`)
+  console.log(`Server running on port ${port}`)
 })
+
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+function logAwake() {
+  console.log("Still running");
+}
+setInterval(logAwake, 10000);
