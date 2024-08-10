@@ -103,7 +103,7 @@ async function GetSelection(categoryId, userId, round)
     const entry = await SelectionData.findOne({
       categoryId: categoryId,
       tasterId: userId,
-      round: round,
+      round: parseInt(round),
     })
     if (!entry) {
       console.error(`Failed to find selection in category ${categoryId} for user ${userId} round ${round}`)

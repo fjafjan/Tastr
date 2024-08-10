@@ -26,7 +26,7 @@ const io = socketIo(server, {
 })
 
 // Connect to database.
-mongoose.connect('mongodb://localhost:27017/Tastr').then(() => {
+mongoose.connect('mongodb+srv://staffanankardal:JTs0IZj3KtJBxLMs@cluster0.toagz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0').then(() => {
   console.log("Connected to database")
 }).catch(err => {
   console.error("Failed to connect to database", err)
@@ -75,10 +75,10 @@ app.post('/category/add', addCategory)
 app.post('/users/add', addUser)
 
 // Gets an active session for the given category.
-app.get('/:categoryId/session/get', getActiveSession)
+app.get('/:categoryId/session/:userId/get', getActiveSession)
 
 // Add a user to a session.
-app.get('/:categoryId/session/add', addUserToSession)
+app.post('/:categoryId/session/add', addUserToSession)
 
 app.get('/:categoryId/selection/:round/:userId', getSelection)
 

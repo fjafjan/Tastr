@@ -2,8 +2,8 @@ const { GetSelection, FindTastedItems, PerformVote, GenerateSelections } = requi
 const { SessionData } = require("../Models")
 
 exports.getActiveSession = async (req, res) => {
-  const { categoryId: categoryId } = req.params
-  const { userId: userId } = req.body
+  const { categoryId: categoryId, userId: userId } = req.params
+  // const { userId: userId } = req.body // TODO: Investigate why this does not work.
   console.log(`Requesting an active session for ${categoryId}`)
   try {
     let sessionEntry = await SessionData.findOne({
@@ -20,13 +20,15 @@ exports.getActiveSession = async (req, res) => {
         active: true,
       })
     }
-    return sessionEntry
+    res.json(sessionEntry)
   } catch(error) {
     console.error("Failed to find active session with ", categoryId, error)
+    res.sendStatus(500)
   }
 }
 
 exports.addUserToSession = async (req, res) => {
+  console.log("Got request to add user to session.")
   const { sessionId: sessionId, tasterId: tasterId } = req.body
   console.log(`Adding ${tasterId} to session ${sessionId}`)
 
@@ -39,6 +41,7 @@ exports.addUserToSession = async (req, res) => {
     }
 
     sessionEntry.tasterIds.push(tasterId)
+    sessionEntry.save()
     res.sendStatus(200)
   } catch (error) {
     console.error("Failed to add taster to session due to ", error)

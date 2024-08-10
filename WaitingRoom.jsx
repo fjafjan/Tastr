@@ -23,15 +23,18 @@ const WaitingRoom = () => {
   const getSessionId = async () => {
     // This will either get an active session for this category, or create a new one.
     try {
-      let sessionEntry = await axios.get(`http://localhost:5000/${categoryId}/session/get`, {categoryId: categoryId} )
+      console.log("Trying to get session ID from ", )
+      const sessionEntryResponse = await axios.get(`http://localhost:5000/${categoryId}/session/${userId}/get`)
+      const sessionEntry = sessionEntryResponse.data
+      console.log("Got session ID ", sessionEntry.sessionId)
       // Add us to this session.
       if (!(userId in sessionEntry.tasterIds)) {
-        await axios.post(`http://localhost:5000/${categoryId}/session/add`, { tasterId: userId})
+        await axios.post(`http://localhost:5000/${categoryId}/session/add`, { sessionId: sessionEntry.sessionId, tasterId: userId})
       }
+      return sessionEntry.sessionId
     } catch(error) {
       console.error("Failed to get active session ID", error)
     }
-  return sessionEntry.sessionId
   }
 
   useEffect(() => {
@@ -47,9 +50,9 @@ const WaitingRoom = () => {
     return () => socket.off('start');
   }, [navigate]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const userId = localStorage.getItem('userId')
-    let sessionId = getSessionId()
+    const sessionId = await getSessionId()
 
     // TODO we should replace this temporary with finding if there is an active session for this user.
     socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: sessionId})

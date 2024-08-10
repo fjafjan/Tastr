@@ -29,8 +29,7 @@ const VotePage = () => {
 
   const fetchOptions = async (round) => {
     try {
-      const user = localStorage.getItem("userId")
-      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${user}`);
+      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${userId}`);
       const options = optionsResponse.data
       let newFoods = [ options.foodIdA, options.foodIdB ]
       setSelectedFoods(newFoods);
