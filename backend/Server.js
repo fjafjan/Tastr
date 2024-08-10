@@ -12,7 +12,7 @@ const { SessionData } = require('./Models')
 
 const app = express()
 const server = http.createServer(app)
-const port = process.env.PORT || 5000;
+const port = process.env.REST_PORT || 443;
 
 // Middleware
 app.use(cors())
