@@ -12,7 +12,7 @@ const { SessionData } = require('./Models')
 
 const app = express()
 const server = http.createServer(app)
-const port = 5000
+const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors())
@@ -20,13 +20,13 @@ app.use(bodyParser.json())
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:9000", // Ask about this. Seems I should change it to https://fjafjan.github.io
+    origin: "*", // Ask about this. Seems I should change it to https://fjafjan.github.io
     methods: ["GET", "POST"]
   }
 })
 
 // Connect to database.
-mongoose.connect('mongodb+srv://staffanankardal:JTs0IZj3KtJBxLMs@cluster0.toagz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0').then(() => {
+mongoose.connect(process.env.MONGO_URL).then(() => {
   console.log("Connected to database")
 }).catch(err => {
   console.error("Failed to connect to database", err)

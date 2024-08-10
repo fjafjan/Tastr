@@ -21,15 +21,14 @@ const VotePage = () => {
       const aliasResponse = await axios.get(`http://localhost:5000/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
-      // Randomly select two fields
     } catch (error) {
       console.error('Error fetching aliases', error);
     }
   };
 
-  const fetchOptions = async (round) => {
+  const fetchOptions = async (round, user) => {
     try {
-      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${userId}`);
+      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${user}`);
       const options = optionsResponse.data
       let newFoods = [ options.foodIdA, options.foodIdB ]
       setSelectedFoods(newFoods);
@@ -40,15 +39,15 @@ const VotePage = () => {
 
   useEffect(() => {
     fetchAliases();
-    fetchOptions(0);
-  }, [categoryId]);
+    fetchOptions(0, userId);
+  }, [categoryId, userId]);
 
   // Configure websocket behavior
   useEffect(() => {
     socket.on('round ready', (data) => {
       console.log(`Round ${data.round} is ready`)
       // Fetch the new votes.
-      fetchOptions(data.round)
+      fetchOptions(data.round, userId)
       setWaiting(false)
     })
 
@@ -57,19 +56,26 @@ const VotePage = () => {
       socket.off('round ready')
     }
   })
+
+  useEffect(() => {
+    if (!waiting) {
+      fetchAliases()
+    }
+  }, [waiting])
+
   const handleSelect = async (foodIdA, foodIdB) => {
-    const userId = localStorage.getItem('userId');
+    // const userId = localStorage.getItem('userId');
     if (!userId) {
       console.error('No user ID found');
       return;
     }
     try {
-      await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId });
-      await axios.post(`http://localhost:5000/${categoryId}/waiting/remove`, { userId });
+      setWaiting(true)
+      await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId: userId });
+      await axios.post(`http://localhost:5000/${categoryId}/waiting/remove`, { userId: userId });
       // TODO: We need to trigger a re-draw here though, and when we trigger  re-draw we need the
       // result page to re-load the votes count.
       // Hide the options here and just post ready.
-      setWaiting(true)
     } catch (error) {
       console.error('Error submitting vote', error);
     }
