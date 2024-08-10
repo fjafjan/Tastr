@@ -3,6 +3,8 @@ import { SafeAreaView, ScrollView, TextInput, StyleSheet, View, Button } from 'r
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
+
 const HomePage = () => {
   const [category, setCategory] = useState("")
   const [fields, setFields] = useState([{ id: 1, value: '' }]);
@@ -37,7 +39,7 @@ const HomePage = () => {
       return acc;
     }, {});
     // Send the data to the server.
-    await axios.post('http://localhost:5000/category/add', {
+    await axios.post(`${serverUrl}/category/add`, {
       categoryId: categoryId,
       foodNames: foodNames
     })

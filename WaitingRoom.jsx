@@ -5,7 +5,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, SafeAreaView, StyleSheet } from 'react-native-web';
 import axios from 'axios';
 
-const socket = io('http://localhost:5000'); // Replace with your server URL
+const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
+
+const socket = io(`${serverUrl}`); // Replace with your server URL
 
 const WaitingRoom = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
@@ -24,12 +26,12 @@ const WaitingRoom = () => {
     // This will either get an active session for this category, or create a new one.
     try {
       console.log("Trying to get session ID from ", )
-      const sessionEntryResponse = await axios.get(`http://localhost:5000/${categoryId}/session/${userId}/get`)
+      const sessionEntryResponse = await axios.get(`${serverUrl}/${categoryId}/session/${userId}/get`)
       const sessionEntry = sessionEntryResponse.data
       console.log("Got session ID ", sessionEntry.sessionId)
       // Add us to this session.
       if (!(userId in sessionEntry.tasterIds)) {
-        await axios.post(`http://localhost:5000/${categoryId}/session/add`, { sessionId: sessionEntry.sessionId, tasterId: userId})
+        await axios.post(`${serverUrl}/${categoryId}/session/add`, { sessionId: sessionEntry.sessionId, tasterId: userId})
       }
       return sessionEntry.sessionId
     } catch(error) {

@@ -6,8 +6,13 @@ import 'chart.js/auto';
 import { io } from 'socket.io-client';
 import ResultsPage from './ResultsPage';
 
+const serverName = import.meta.env.VITE_SERVER_URL || "http://localhost" 
+const serverPort = import.meta.env.VITE_SERVER_PORT || "5000"
+const serverUrl = `${serverName}:${serverPort}`
+
 // Connect websocket.
-const socket = io('http://localhost:5000'); // Replace with your server URL
+
+const socket = io(`${serverUrl}`); // Replace with your server URL
 
 const VotePage = () => {
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
@@ -18,7 +23,7 @@ const VotePage = () => {
 
   const fetchAliases = async () => {
     try {
-      const aliasResponse = await axios.get(`http://localhost:5000/${categoryId}/aliases`)
+      const aliasResponse = await axios.get(`${serverUrl}/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
     } catch (error) {
@@ -28,7 +33,7 @@ const VotePage = () => {
 
   const fetchOptions = async (round, user) => {
     try {
-      const optionsResponse = await axios.get(`http://localhost:5000/${categoryId}/selection/${round}/${user}`);
+      const optionsResponse = await axios.get(`${serverUrl}/${categoryId}/selection/${round}/${user}`);
       const options = optionsResponse.data
       let newFoods = [ options.foodIdA, options.foodIdB ]
       setSelectedFoods(newFoods);
@@ -71,8 +76,8 @@ const VotePage = () => {
     }
     try {
       setWaiting(true)
-      await axios.post(`http://localhost:5000/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId: userId });
-      await axios.post(`http://localhost:5000/${categoryId}/waiting/remove`, { userId: userId });
+      await axios.post(`${serverUrl}/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId: userId });
+      await axios.post(`${serverUrl}/${categoryId}/waiting/remove`, { userId: userId });
       // TODO: We need to trigger a re-draw here though, and when we trigger  re-draw we need the
       // result page to re-load the votes count.
       // Hide the options here and just post ready.

@@ -5,6 +5,8 @@ import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
 
+const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
+
 const ResultsPage = () => {
 
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
@@ -24,7 +26,7 @@ const ResultsPage = () => {
 
   const fetchVotes = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/${categoryId}/mmr`);
+      const response = await axios.get(`${serverUrl}/${categoryId}/mmr`);
       const data = response.data;
 
       const names = Object.keys(data);

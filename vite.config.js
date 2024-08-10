@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { createHtmlPlugin } from 'vite-plugin-html';
@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => {
 
   const development = process.env.NODE_ENV === "development";
 
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
+
   return {
     root: './', // Ensure the root is set correctly for Vite to find the entry point
     plugins: [
@@ -37,6 +41,11 @@ export default defineConfig(({ mode }) => {
       // https://tamagui.dev/docs/intro/installation
       DEV: JSON.stringify(development),
       "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+      // TODO: This can almost certainly be removed.
+      "process.env.VITE_SERVER_URL": JSON.stringify(process.env.SERVER_URL),
+      "process.env.VITE_SERVER_PORT": JSON.stringify(process.env.SERVER_PORT),
+      __APP_ENV__: JSON.stringify(env.APP_ENV),
+
     },
     resolve: {
       alias: {
