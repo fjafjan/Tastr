@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
+import { SERVER_URL } from './constants/Constants';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 
-const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
-
-const socket = io(`${serverUrl}`); // Replace with your server URL
+const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
 const LoginPage = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
@@ -20,7 +19,7 @@ const LoginPage = () => {
     localStorage.setItem('userId', name);
 
     // Add the name to the database of users. TODO: Replace userId with an actual ID and not the name.
-    await axios.post(`${serverUrl}/users/add`, { userId: name, name: name, email: email });
+    await axios.post(`${SERVER_URL}/users/add`, { userId: name, name: name, email: email });
 
     // Navigate to the Voting page for the category
     navigate(`/${categoryId}/waiting`, {state: { userId: name } });

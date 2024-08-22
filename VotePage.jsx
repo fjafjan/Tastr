@@ -5,12 +5,11 @@ import axios from 'axios';
 import 'chart.js/auto';
 import { io } from 'socket.io-client';
 import ResultsPage from './ResultsPage';
-
-const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
+import { SERVER_URL } from './constants/Constants';
 
 // Connect websocket.
 
-const socket = io(`${serverUrl}`); // Replace with your server URL
+const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
 const VotePage = () => {
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
@@ -21,7 +20,7 @@ const VotePage = () => {
 
   const fetchAliases = async () => {
     try {
-      const aliasResponse = await axios.get(`${serverUrl}/${categoryId}/aliases`)
+      const aliasResponse = await axios.get(`${SERVER_URL}/${categoryId}/aliases`)
       const aliases = aliasResponse.data
       setFoodAliases(aliases)
     } catch (error) {
@@ -31,7 +30,7 @@ const VotePage = () => {
 
   const fetchOptions = async (round, user) => {
     try {
-      const optionsResponse = await axios.get(`${serverUrl}/${categoryId}/selection/${round}/${user}`);
+      const optionsResponse = await axios.get(`${SERVER_URL}/${categoryId}/selection/${round}/${user}`);
       const options = optionsResponse.data
       let newFoods = [ options.foodIdA, options.foodIdB ]
       setSelectedFoods(newFoods);
@@ -74,8 +73,8 @@ const VotePage = () => {
     }
     try {
       setWaiting(true)
-      await axios.post(`${serverUrl}/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId: userId });
-      await axios.post(`${serverUrl}/${categoryId}/waiting/remove`, { userId: userId });
+      await axios.post(`${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`, { userId: userId });
+      await axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, { userId: userId });
       // TODO: We need to trigger a re-draw here though, and when we trigger  re-draw we need the
       // result page to re-load the votes count.
       // Hide the options here and just post ready.

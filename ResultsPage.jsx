@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
 import { useParams } from 'react-router-dom';
+import { SERVER_URL } from './constants/Constants';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
 import 'chart.js/auto';
-
-const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
 
 const ResultsPage = () => {
 
@@ -26,7 +25,7 @@ const ResultsPage = () => {
 
   const fetchVotes = async () => {
     try {
-      const response = await axios.get(`${serverUrl}/${categoryId}/mmr`);
+      const response = await axios.get(`${SERVER_URL}/${categoryId}/mmr`);
       const data = response.data;
 
       const names = Object.keys(data);

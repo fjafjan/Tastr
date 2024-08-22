@@ -1,9 +1,9 @@
 import React, {useState} from 'react'
 import { SafeAreaView, ScrollView, TextInput, StyleSheet, View, Button } from 'react-native-web'
 import { useNavigate } from 'react-router-dom'
+import { SERVER_URL } from './constants/Constants';
 import axios from 'axios'
 
-const serverUrl = `${process.env.VITE_SERVER_URL}` || "http://localhost:5000"
 
 const HomePage = () => {
   const [category, setCategory] = useState("")
@@ -40,7 +40,7 @@ const HomePage = () => {
     }, {});
     // Send the data to the server.
     try {
-      await axios.post(`${serverUrl}/category/add`, {
+      await axios.post(`${SERVER_URL}/category/add`, {
         categoryId: categoryId,
         foodNames: foodNames
       })  
