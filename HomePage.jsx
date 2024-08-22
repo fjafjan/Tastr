@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, TextInput, StyleSheet, View, Button } from 'r
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const serverUrl = `${process.env.VITE_SERVER_URL}:${process.env.VITE_SERVER_PORT}` || "http://localhost:5000"
+const serverUrl = `${process.env.VITE_SERVER_URL}` || "http://localhost:5000"
 
 const HomePage = () => {
   const [category, setCategory] = useState("")
