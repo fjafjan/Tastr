@@ -1,5 +1,7 @@
 const express = require('express')
-const http = require('http')
+const https = require('https')
+const fs = require('fs')
+const path = require('path')
 const cors = require('cors')
 const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
@@ -11,6 +13,13 @@ const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
 const app = express()
+
+// Read SSL certificate and key files
+// const options = {
+//   key: fs.readFileSync(path.join(__dirname, "rootCA.key")),
+//   cert: fs.readFileSync(path.join(__dirname, "rootCA.crt")),
+// };
+
 const server = http.createServer(app)
 const port = process.env.REST_PORT || 5000;
 
@@ -129,7 +138,7 @@ app.get('/:categoryId/mmr', getMmr)
 
 app.get('/:categoryId/:userId/tasted', getTasted)
 
-server.listen(port, () => {
+server.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`)
 })
 

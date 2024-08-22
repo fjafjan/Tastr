@@ -44,11 +44,12 @@ const HomePage = () => {
         categoryId: categoryId,
         foodNames: foodNames
       })  
+      navigate(`/${categoryId}`, { state: { creator: true}});
     } catch (error) {
       console.error("Failed to create new category due to ", error)
     }
 
-    navigate(`/${categoryId}`, { state: { creator: true}});
+    
   }
 
   return (
