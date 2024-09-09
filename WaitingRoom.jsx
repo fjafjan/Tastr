@@ -8,7 +8,7 @@ import { SERVER_URL } from './constants/Constants';
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
-const WaitingRoom = () => {
+const  WaitingRoom = async () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
   const [waiting, setWaiting] = useState(true);
   const navigate = useNavigate();
@@ -21,18 +21,26 @@ const WaitingRoom = () => {
     navigate(`/${categoryId}`)
   }
 
-  const getSessionId = async () => {
-    // This will either get an active session for this category, or create a new one.
+  await addUserToSession()
+
+  const addUserToSession = async () => {
+    const sessionEntry = await getSession()
+    let sessionId = sessionEntry.sessionId
+    console.log("Got session ID ", sessionId)
+    // Add us to this session.
     try {
-      console.log("Trying to get session ID from ", )
-      const sessionEntryResponse = await axios.get(`${SERVER_URL}/${categoryId}/session/${userId}/get`)
-      const sessionEntry = sessionEntryResponse.data
-      console.log("Got session ID ", sessionEntry.sessionId)
-      // Add us to this session.
       if (!(userId in sessionEntry.tasterIds)) {
         await axios.post(`${SERVER_URL}/${categoryId}/session/add`, { sessionId: sessionEntry.sessionId, tasterId: userId})
-      }
-      return sessionEntry.sessionId
+      }  
+    } catch(error) {
+      console.error(`Failed to add user ${userId} to sessionId ${sessionId}`)
+    }
+  }
+  const getSession = async () => {
+    // This will either get an active session for this category, or create a new one.
+    try {
+      const sessionEntryResponse = await axios.get(`${SERVER_URL}/${categoryId}/session/${userId}/get`)
+      return  sessionEntryResponse.data
     } catch(error) {
       console.error("Failed to get active session ID", error)
     }
@@ -42,6 +50,7 @@ const WaitingRoom = () => {
     // Listen for the 'start' event from the server
     socket.on('start', () => {
       setWaiting(false);
+      // TODO> So the issue is here, we don't add the user that are just passively waiting! 
       navigate(`/${categoryId}/voting`);
     });
     const userId = localStorage.getItem('userId')
@@ -52,11 +61,11 @@ const WaitingRoom = () => {
   }, [navigate]);
 
   const handleStart = async () => {
-    const userId = localStorage.getItem('userId')
-    const sessionId = await getSessionId()
+    // const userId = localStorage.getItem('userId')
+    const session = await getSession()
 
     // TODO we should replace this temporary with finding if there is an active session for this user.
-    socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: sessionId})
+    socket.emit('startSession', {categoryId: categoryId, hostId: userId, sessionId: session.sessionId})
   }
 
   return (

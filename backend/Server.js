@@ -1,7 +1,5 @@
 const express = require('express')
 const http = require('http')
-const fs = require('fs')
-const path = require('path')
 const cors = require('cors')
 const socketIo = require('socket.io')
 const bodyParser = require('body-parser')
@@ -13,12 +11,6 @@ const { addUser } = require('./controllers/UsersController')
 const { SessionData } = require('./Models')
 
 const app = express()
-
-// Read SSL certificate and key files
-// const options = {
-//   key: fs.readFileSync(path.join(__dirname, "rootCA.key")),
-//   cert: fs.readFileSync(path.join(__dirname, "rootCA.crt")),
-// };
 
 const server = http.createServer(app)
 const port = process.env.REST_PORT || 5000;
@@ -57,13 +49,6 @@ io.on('connection', (socket) => {
       console.error("No session with session Id found!")
     }
     let tasterIds = sessionEntry.tasterIds
-
-    // We should create the session before this! We create the session when the host enters the waiting room.
-    // if(!CreateSession(sessionId, categoryId, hostId, userIds)) {
-    //   console.error("Failed to create new session")
-    // } else {
-    //   console.log("Created new session")
-    // }
 
     console.log(`Starting new voting session for category ${categoryId} with host ${hostId} and users ${tasterIds}`)
     GenerateSelections(categoryId, tasterIds, 0)

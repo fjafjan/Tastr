@@ -21,17 +21,19 @@ const validateEmail = function(email) {
   return re.test(email)
 };
 
-// const emailSchema = new Schema({
-//   email: {
-//       type: String,
-//       trim: true,
-//       lowercase: true,
-//       unique: true,
-//       required: 'Email address is required',
-//       validate: [validateEmail, 'Please fill a valid email address'],
-//       match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
-//   }
-// })
+const emailSchema = new Schema({
+  email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      validate: {
+          validator: function(v) {
+              return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+          },
+          message: "Please enter a valid email"
+      },
+      required: [true, "Email required"]
+  }})
 
 // This defines the data for an individual vote. This allows us to e.g. remove malicious users
 // and generate sub-section preferences. So we store each individual vote instead of storing it
@@ -49,8 +51,7 @@ const userSchema = new Schema({
   userId: {type: String, required: true, unique: true}, // Uniquely identifies the user
   name: {type: String, required: true}, // A more descriptive name of the user.
   // TODO: Restore this and test it properly
-  // email: {type: emailSchema, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
-  email: {type: String, default: "fake@fakemail.fk"}, // An email to the user, which allows us to notify them by email after testing is done.
+  email: {type: emailSchema, default: { email: "fake@fakemail.fk"} }, // An email to the user, which allows us to notify them by email after testing is done.
 })
 
 // We need something which ties together:

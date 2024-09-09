@@ -63,11 +63,11 @@ const HomePage = () => {
             value={category}
             onChangeText={setCategory}
           />
-          {fields.map((field) => (
+          {category === "" ? <div></div> : fields.map((field) => (
           <TextInput
             key={field.id}
             style={styles.input}
-            placeholder={`Enter text for ${field.id}`}
+            placeholder={field.id === 0 ? `Enter a ${category}` : `Enter another ${category}`}
             value={field.value}
             onChangeText={(value) => handleChange(field.id, value)}
           />

@@ -7,7 +7,7 @@ exports.addUser = async(req, res) => {
     await UserData.findOneAndUpdate({
       name: name,
       userId: userId,
-      email: email,
+      email: { email : email },
     })
     res.sendStatus(200) // Ok!
   } catch(error) {
