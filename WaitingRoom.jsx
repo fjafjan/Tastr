@@ -8,7 +8,7 @@ import { SERVER_URL } from './constants/Constants';
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
-const  WaitingRoom = async () => {
+const  WaitingRoom = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
   const [waiting, setWaiting] = useState(true);
   const navigate = useNavigate();
@@ -44,8 +44,11 @@ const  WaitingRoom = async () => {
     }
   }
 
-  await addUserToSession()
 
+  useEffect(async () => { 
+    await addUserToSession();
+  })
+  
   useEffect(() => {
     // Listen for the 'start' event from the server
     socket.on('start', () => {
@@ -58,7 +61,7 @@ const  WaitingRoom = async () => {
     socket.emit('join', {userId: userId})
     // Cleanup on unmount
     return () => socket.off('start');
-  }, [navigate]);
+  }, [navigate, categoryId, socket]);
 
   const handleStart = async () => {
     // const userId = localStorage.getItem('userId')
@@ -77,7 +80,7 @@ const  WaitingRoom = async () => {
           <p>Starting...</p>
         )}
       </div>
-      {<Button title="Start" onPress={handleStart}/>}
+      {<Button title="Start" onClick={handleStart}/>}
     </SafeAreaView>
   );
 };
