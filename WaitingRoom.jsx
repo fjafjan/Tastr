@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button, SafeAreaView, StyleSheet, Text } from 'react-native-web';
-import axios from 'axios';
-import { SERVER_URL } from './constants/Constants';
+import React, { useState, useEffect } from "react";
+import io from "socket.io-client";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Button, SafeAreaView, StyleSheet, Text } from "react-native-web";
+import axios from "axios";
+import { SERVER_URL } from "./constants/Constants";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -12,7 +12,7 @@ const WaitingRoom = () => {
   const [waiting, setWaiting] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = location.state?.userId || localStorage.getItem('userId');
+  const userId = location.state?.userId || localStorage.getItem("userId");
 
   if (!userId) {
     navigate(`/${categoryId}`);
@@ -26,17 +26,22 @@ const WaitingRoom = () => {
       if (!sessionEntry.tasterIds.includes(userId)) {
         await axios.post(`${SERVER_URL}/${categoryId}/session/add`, {
           sessionId,
-          tasterId: userId
+          tasterId: userId,
         });
       }
     } catch (error) {
-      console.error(`Failed to add user ${userId} to sessionId ${sessionId}`, error);
+      console.error(
+        `Failed to add user ${userId} to sessionId ${sessionId}`,
+        error
+      );
     }
   };
 
   const getSession = async () => {
     try {
-      const sessionEntryResponse = await axios.get(`${SERVER_URL}/${categoryId}/session/${userId}/get`);
+      const sessionEntryResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/session/${userId}/get`
+      );
       return sessionEntryResponse.data;
     } catch (error) {
       console.error("Failed to get active session ID", error);
@@ -51,22 +56,22 @@ const WaitingRoom = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    socket.on('start', () => {
+    socket.on("start", () => {
       setWaiting(false);
       navigate(`/${categoryId}/voting`);
     });
 
-    socket.emit('join', { userId });
+    socket.emit("join", { userId });
 
-    return () => socket.off('start');
+    return () => socket.off("start");
   }, [categoryId, navigate]);
 
   const handleStart = async () => {
     const session = await getSession();
-    socket.emit('startSession', {
+    socket.emit("startSession", {
       categoryId,
       hostId: userId,
-      sessionId: session.sessionId
+      sessionId: session.sessionId,
     });
   };
 
@@ -87,8 +92,8 @@ const WaitingRoom = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

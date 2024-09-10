@@ -1,28 +1,37 @@
-import React, { useState } from 'react';
-import { SERVER_URL } from './constants/Constants';
-import { useNavigate, useParams } from 'react-router-dom';
-import { SafeAreaView, TextInput, Button, StyleSheet, View } from 'react-native-web';
-import { io } from 'socket.io-client';
-import axios from 'axios';
+import React, { useState } from "react";
+import { SERVER_URL } from "./constants/Constants";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  SafeAreaView,
+  TextInput,
+  Button,
+  StyleSheet,
+  View,
+} from "react-native-web";
+import { io } from "socket.io-client";
+import axios from "axios";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
 const LoginPage = () => {
   const { categoryId } = useParams(); // Extract session Id from URL.
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('')
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
-
-  const handleLogin = async() => {
+  const handleLogin = async () => {
     // Save the name in local storage or cookies as needed
-    localStorage.setItem('userId', name);
+    localStorage.setItem("userId", name);
 
     // Add the name to the database of users. TODO: Replace userId with an actual ID and not the name.
-    await axios.post(`${SERVER_URL}/users/add`, { userId: name, name: name, email: email });
+    await axios.post(`${SERVER_URL}/users/add`, {
+      userId: name,
+      name: name,
+      email: email,
+    });
 
     // Navigate to the Voting page for the category
-    navigate(`/${categoryId}/waiting`, {state: { userId: name } });
+    navigate(`/${categoryId}/waiting`, { state: { userId: name } });
   };
 
   return (
@@ -36,7 +45,9 @@ const LoginPage = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder={'Optionally your email, to be notified of testing results'}
+          placeholder={
+            "Optionally your email, to be notified of testing results"
+          }
           values={email}
           onChangeText={setEmail}
         />
@@ -49,19 +60,19 @@ const LoginPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   inputContainer: {
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   input: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     marginBottom: 20,
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 10,
   },
 });
