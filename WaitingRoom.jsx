@@ -21,8 +21,6 @@ const  WaitingRoom = async () => {
     navigate(`/${categoryId}`)
   }
 
-  await addUserToSession()
-
   const addUserToSession = async () => {
     const sessionEntry = await getSession()
     let sessionId = sessionEntry.sessionId
@@ -45,6 +43,8 @@ const  WaitingRoom = async () => {
       console.error("Failed to get active session ID", error)
     }
   }
+
+  await addUserToSession()
 
   useEffect(() => {
     // Listen for the 'start' event from the server
