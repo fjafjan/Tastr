@@ -10,6 +10,7 @@ const socket = io(`${SERVER_URL}`); // Replace with your server URL
 const WaitingRoom = () => {
   const { categoryId } = useParams();
   const [waiting, setWaiting] = useState(true);
+  const [hostId, setHostId] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
@@ -18,8 +19,24 @@ const WaitingRoom = () => {
     navigate(`/${categoryId}`);
   }
 
+  const getSession = async () => {
+    try {
+      const sessionEntryResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/session/${userId}/get`
+      );
+      return sessionEntryResponse.data;
+    } catch (error) {
+      console.error("Failed to get active session ID", error);
+    }
+  };
+
   const addUserToSession = async () => {
     const sessionEntry = await getSession();
+    if (sessionEntry === undefined) {
+      console.error("Failed to get add user to session");
+      return;
+    }
+    setHostId(sessionEntry.hostId);
     const sessionId = sessionEntry.sessionId;
     console.log("Got session ID ", sessionId);
     try {
@@ -37,23 +54,12 @@ const WaitingRoom = () => {
     }
   };
 
-  const getSession = async () => {
-    try {
-      const sessionEntryResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/session/${userId}/get`
-      );
-      return sessionEntryResponse.data;
-    } catch (error) {
-      console.error("Failed to get active session ID", error);
-    }
-  };
-
   useEffect(() => {
     const setupSession = async () => {
       await addUserToSession();
     };
     setupSession();
-  }, [categoryId]);
+  }, [categoryId, hostId]);
 
   useEffect(() => {
     socket.on("start", () => {
@@ -70,7 +76,7 @@ const WaitingRoom = () => {
     const session = await getSession();
     socket.emit("startSession", {
       categoryId,
-      hostId: userId,
+      hostId: session.hostId,
       sessionId: session.sessionId,
     });
   };
@@ -84,7 +90,7 @@ const WaitingRoom = () => {
           <Text>Starting...</Text>
         )}
       </div>
-      <Button title="Start" onPress={handleStart} />
+      {hostId === userId && <Button title="Start" onPress={handleStart} />}
     </SafeAreaView>
   );
 };
