@@ -20,19 +20,9 @@ const VotePage = () => {
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
 
-  useEffect(() => {
-    const fetchAliases = async () => {
-      try {
-        const aliasResponse = await axios.get(
-          `${SERVER_URL}/${categoryId}/aliases`
-        );
-        setFoodAliases(aliasResponse.data);
-      } catch (error) {
-        console.error("Error fetching aliases", error);
-      }
-    };
-
-    const fetchOptions = async (round) => {
+  // Define fetchOptions before useEffect hooks
+  const fetchOptions = useCallback(
+    async (round) => {
       try {
         const optionsResponse = await axios.get(
           `${SERVER_URL}/${categoryId}/selection/${round}/${userId}`
@@ -42,27 +32,46 @@ const VotePage = () => {
           optionsResponse.data.foodIdB,
         ]);
       } catch (error) {
+        Alert.alert("Error", "Failed to load food options.");
         console.error("Error fetching options", error);
+      }
+    },
+    [categoryId, userId]
+  );
+
+  useEffect(() => {
+    const fetchAliases = async () => {
+      try {
+        const aliasResponse = await axios.get(
+          `${SERVER_URL}/${categoryId}/aliases`
+        );
+        setFoodAliases(aliasResponse.data);
+      } catch (error) {
+        Alert.alert("Error", "Failed to load food aliases.");
+        console.error("Error fetching aliases", error);
       }
     };
 
     fetchAliases();
     fetchOptions(0);
-  }, [categoryId, userId]);
+  }, [categoryId, userId, fetchOptions]);
+
+  // Memoize socket connection
+  const socket = useMemo(() => io(`${SERVER_URL}`), [categoryId]);
 
   useEffect(() => {
-    const socket = io(`${SERVER_URL}`);
-
-    socket.on("round ready", (data) => {
-      fetchOptions(data.round);
+    const handleRoundReady = async (data) => {
+      await fetchOptions(data.round);
       setWaiting(false);
-    });
+    };
+
+    socket.on("round ready", handleRoundReady);
 
     return () => {
-      socket.off("round ready");
+      socket.off("round ready", handleRoundReady);
       socket.disconnect();
     };
-  }, [categoryId, userId]);
+  }, [socket, fetchOptions]);
 
   const handleSelect = useCallback(
     async (foodIdA, foodIdB) => {
@@ -84,8 +93,6 @@ const VotePage = () => {
           "Something went wrong while submitting your vote."
         );
         console.error("Error submitting vote", error);
-      } finally {
-        setWaiting(false);
       }
     },
     [categoryId, userId]
