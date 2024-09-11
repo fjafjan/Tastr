@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
     console.log(
       `Starting new voting session for category ${categoryId} with host ${hostId} and users ${tasterIds}`
     );
-    GenerateSelections(categoryId, tasterIds, 0);
+    await GenerateSelections(categoryId, tasterIds, 0);
 
     io.emit("start");
   });
