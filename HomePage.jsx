@@ -8,6 +8,7 @@ import {
   Button,
   ActivityIndicator,
   Alert,
+  Text,
 } from "react-native-web";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "./constants/Constants";
@@ -18,6 +19,9 @@ const HomePage = () => {
   const [foodItems, setFoodItems] = useState([{ id: 1, value: "" }]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Function to return alphabet letter based on index (A, B, C...)
+  const getLetter = (index) => String.fromCharCode(65 + index);
 
   const handleChange = (id, value) => {
     setFoodItems((prevItems) =>
@@ -71,14 +75,17 @@ const HomePage = () => {
             value={categoryName}
             onChangeText={setCategoryName}
           />
-          {foodItems.map((item) => (
-            <TextInput
-              key={item.id}
-              style={styles.input}
-              placeholder={`Enter a ${categoryName || "item"}`}
-              value={item.value}
-              onChangeText={(value) => handleChange(item.id, value)}
-            />
+          {foodItems.map((item, index) => (
+            <View key={item.id} style={styles.inputWithLetter}>
+              {/* Display the corresponding letter */}
+              <Text style={styles.letter}>{getLetter(index)}.</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={`Enter a ${categoryName || "item"}`}
+                value={item.value}
+                onChangeText={(value) => handleChange(item.id, value)}
+              />
+            </View>
           ))}
         </View>
         {isLoading ? (
@@ -117,11 +124,20 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     paddingHorizontal: 20,
   },
+  inputWithLetter: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  letter: {
+    fontSize: 18,
+    marginRight: 10,
+  },
   input: {
+    flex: 1,
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
-    marginBottom: 10,
     paddingHorizontal: 10,
   },
 });

@@ -59,12 +59,12 @@ async function CreateCategory(categoryId, foodNames) {
   try {
     // Shuffle the letters.
     const selection = letters.slice(0, Object.keys(foodNames).length);
-    const shuffled = selection.sort(() => 0.5 - Math.random());
+    // const shuffled = selection.sort(() => 0.5 - Math.random());
 
     const foodObjects = Object.keys(foodNames).map((key, index) => ({
       id: key,
       name: foodNames[key],
-      alias: shuffled[index],
+      alias: selection[index],
       MMR: 1000, // Default MMR
     }));
     await FoodCategoryData.findOneAndUpdate(
