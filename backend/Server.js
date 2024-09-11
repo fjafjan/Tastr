@@ -120,7 +120,7 @@ app.post("/:categoryId/waiting/remove", async (req, res) => {
   let waitingUsers = sessionEntry.waitingIds;
   console.log(`Removing ${userId} from [${waitingUsers}]`);
   waitingUsers.splice(waitingUsers.indexOf(userId), 1);
-
+  sessionEntry.save();
   if (waitingUsers.length === 0) {
     console.log("All clients are ready. Preparing next round.");
     // Should move this to a utility function.
@@ -129,7 +129,9 @@ app.post("/:categoryId/waiting/remove", async (req, res) => {
     let userIds = sessionEntry.tasterIds;
     await GenerateSelections(categoryId, userIds, sessionEntry.round);
     userIds.forEach((userId) => {
-      waitingUsers.push(userId);
+      if (!waitingUsers.includes(userId)) {
+        waitingUsers.push(userId);
+      }
     });
     io.emit("round ready", { round: sessionEntry.round });
     sessionEntry.save();
