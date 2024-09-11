@@ -6,44 +6,46 @@ import {
   StyleSheet,
   View,
   Button,
+  ActivityIndicator,
+  Alert,
 } from "react-native-web";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "./constants/Constants";
 import axios from "axios";
 
 const HomePage = () => {
-  const [category, setCategory] = useState("");
-  const [fields, setFields] = useState([{ id: 1, value: "" }]);
-
-  // TODO: The homepage should navigate to a new user session directly
+  const [categoryName, setCategoryName] = useState("");
+  const [foodItems, setFoodItems] = useState([{ id: 1, value: "" }]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (id, value) => {
-    setFields((prevFields) =>
-      prevFields.map((field) => (field.id === id ? { ...field, value } : field))
+    setFoodItems((prevItems) =>
+      prevItems.map((item) => (item.id === id ? { ...item, value } : item))
     );
 
-    // Add new field if the last visible field is filled
-    if (value !== "" && id === fields[fields.length - 1].id) {
-      setFields((prevFields) => [
-        ...prevFields,
-        { id: prevFields.length + 1, value: "" },
+    if (value !== "" && id === foodItems[foodItems.length - 1].id) {
+      setFoodItems((prevItems) => [
+        ...prevItems,
+        { id: prevItems.length + 1, value: "" },
       ]);
     }
   };
 
   const handleDone = async () => {
-    // The category name is used as  Id for now.
-    const categoryId = category.toLowerCase();
+    if (!categoryName || foodItems.every((item) => item.value === "")) {
+      Alert.alert("Error", "Please enter a category and at least one item.");
+      return;
+    }
 
-    // Filter out any fields that are empty
-    const filledFields = fields.filter((field) => field.value !== "");
-
-    const foodNames = filledFields.reduce((acc, field, index) => {
-      acc[`${index + 1}`] = field.value;
+    const categoryId = categoryName.toLowerCase();
+    const filledItems = foodItems.filter((item) => item.value !== "");
+    const foodNames = filledItems.reduce((acc, item, index) => {
+      acc[`${index + 1}`] = item.value;
       return acc;
     }, {});
-    // Send the data to the server.
+
+    setIsLoading(true); // Start loading
     try {
       await axios.post(`${SERVER_URL}/category/add`, {
         categoryId: categoryId,
@@ -51,10 +53,13 @@ const HomePage = () => {
       });
       navigate(`/${categoryId}`, { state: { creator: true } });
     } catch (error) {
-      console.error("Failed to create new category due to ", error);
+      console.error("Failed to create new category:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
-  const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -62,29 +67,31 @@ const HomePage = () => {
           <TextInput
             key="Category"
             style={styles.category}
-            placeholder={"What are you Sampling?"}
-            value={category}
-            onChangeText={setCategory}
+            placeholder="What are you Sampling?"
+            value={categoryName}
+            onChangeText={setCategoryName}
           />
-          {category === "" ? (
-            <div></div>
-          ) : (
-            fields.map((field) => (
-              <TextInput
-                key={field.id}
-                style={styles.input}
-                placeholder={
-                  field.id === 0
-                    ? `Enter a ${category}`
-                    : `Enter another ${category}`
-                }
-                value={field.value}
-                onChangeText={(value) => handleChange(field.id, value)}
-              />
-            ))
-          )}
+          {foodItems.map((item) => (
+            <TextInput
+              key={item.id}
+              style={styles.input}
+              placeholder={`Enter a ${categoryName || "item"}`}
+              value={item.value}
+              onChangeText={(value) => handleChange(item.id, value)}
+            />
+          ))}
         </View>
-        <Button title="Done" onPress={handleDone} />
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <Button
+            title="Done"
+            onPress={handleDone}
+            disabled={
+              !categoryName || foodItems.every((item) => item.value === "")
+            }
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -108,7 +115,7 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 30,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
   },
   input: {
     height: 40,
