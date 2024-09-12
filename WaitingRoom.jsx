@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Button, SafeAreaView, StyleSheet, Text } from "react-native-web";
+import {
+  Button,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from "react-native-web";
 import axios from "axios";
 import { SERVER_URL } from "./constants/Constants";
 
@@ -14,6 +23,7 @@ const WaitingRoom = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
+  const [shareUrl, setShareUrl] = useState(""); // For the share link
 
   if (!userId) {
     navigate(`/${categoryId}`);
@@ -59,6 +69,9 @@ const WaitingRoom = () => {
       await addUserToSession();
     };
     setupSession();
+
+    // Set the share URL when the component is mounted
+    setShareUrl(window.location.href);
   }, [categoryId, hostId]);
 
   useEffect(() => {
@@ -81,6 +94,17 @@ const WaitingRoom = () => {
     });
   };
 
+  const handleCopyToClipboard = () => {
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        Alert.alert("Success", "Link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <div>
@@ -91,6 +115,22 @@ const WaitingRoom = () => {
         )}
       </div>
       {hostId === userId && <Button title="Start" onPress={handleStart} />}
+
+      {/* Share link input box and copy button */}
+      <Text style={styles.shareText}>Share this link with others:</Text>
+      <View style={styles.shareContainer}>
+        <TextInput
+          style={styles.shareInput}
+          value={shareUrl}
+          editable={false} // Make it read-only
+        />
+        <TouchableOpacity
+          style={styles.copyButton}
+          onPress={handleCopyToClipboard}
+        >
+          <Text style={styles.copyButtonText}>Copy</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -100,6 +140,36 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  shareText: {
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  shareContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  shareInput: {
+    height: 40,
+    width: 250,
+    borderColor: "gray",
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    backgroundColor: "#f0f0f0",
+  },
+  copyButton: {
+    marginLeft: 10,
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  copyButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
 
