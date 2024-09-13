@@ -24,6 +24,7 @@ const WaitingRoom = () => {
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
   const [shareUrl, setShareUrl] = useState(""); // For the share link
+  const [isUserAdded, setIsUserAdded] = useState(false); // Flag to track if user is added
 
   if (!userId) {
     navigate(`/${categoryId}`);
@@ -41,6 +42,8 @@ const WaitingRoom = () => {
   };
 
   const addUserToSession = async () => {
+    if (isUserAdded) return; // Prevent multiple additions
+
     const sessionEntry = await getSession();
     if (sessionEntry === undefined) {
       console.error("Failed to get add user to session");
@@ -55,6 +58,7 @@ const WaitingRoom = () => {
           sessionId,
           tasterId: userId,
         });
+        setIsUserAdded(true);
       }
     } catch (error) {
       console.error(
@@ -72,7 +76,7 @@ const WaitingRoom = () => {
 
     // Set the share URL when the component is mounted
     setShareUrl(window.location.href);
-  }, [categoryId, hostId]);
+  }, [categoryId, hostId, isUserAdded]);
 
   useEffect(() => {
     socket.on("start", () => {

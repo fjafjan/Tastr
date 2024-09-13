@@ -19,25 +19,23 @@ const VotePage = () => {
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [round, setRound] = useState(0);
 
   // Define fetchOptions before useEffect hooks
-  const fetchOptions = useCallback(
-    async (round) => {
-      try {
-        const optionsResponse = await axios.get(
-          `${SERVER_URL}/${categoryId}/selection/${round}/${userId}`
-        );
-        setSelectedFoods([
-          optionsResponse.data.foodIdA,
-          optionsResponse.data.foodIdB,
-        ]);
-      } catch (error) {
-        Alert.alert("Error", "Failed to load food options.");
-        console.error("Error fetching options", error);
-      }
-    },
-    [categoryId, userId]
-  );
+  const fetchOptions = useCallback(async () => {
+    try {
+      const optionsResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/selection/${round}/${userId}`
+      );
+      setSelectedFoods([
+        optionsResponse.data.foodIdA,
+        optionsResponse.data.foodIdB,
+      ]);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load food options.");
+      console.error("Error fetching options", error);
+    }
+  }, [categoryId, userId]);
 
   useEffect(() => {
     const fetchAliases = async () => {
@@ -53,15 +51,16 @@ const VotePage = () => {
     };
 
     fetchAliases();
-    fetchOptions(0);
-  }, [categoryId, userId, fetchOptions]);
+    fetchOptions();
+  }, [categoryId, userId, fetchOptions, round]);
 
   // Memoize socket connection
   const socket = useMemo(() => io(`${SERVER_URL}`), [categoryId]);
 
   useEffect(() => {
     const handleRoundReady = async (data) => {
-      await fetchOptions(data.round);
+      setRound(data.round);
+      await fetchOptions();
       setWaiting(false);
     };
 
@@ -71,7 +70,7 @@ const VotePage = () => {
       socket.off("round ready", handleRoundReady);
       socket.disconnect();
     };
-  }, [socket, fetchOptions]);
+  }, [socket, fetchOptions, setRound]);
 
   const handleSelect = useCallback(
     async (foodIdA, foodIdB) => {
@@ -81,12 +80,15 @@ const VotePage = () => {
       }
       try {
         setWaiting(true);
-        await Promise.all([
-          axios.post(`${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`, {
+        await axios.post(
+          `${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`,
+          {
             userId,
-          }),
-          axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, { userId }),
-        ]);
+          }
+        );
+        await axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, {
+          userId,
+        });
       } catch (error) {
         Alert.alert(
           "Error",
