@@ -21,21 +21,24 @@ const VotePage = () => {
   const [waiting, setWaiting] = useState(false);
   const [round, setRound] = useState(0);
 
-  // Define fetchOptions before useEffect hooks
-  const fetchOptions = useCallback(async () => {
-    try {
-      const optionsResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/selection/${round}/${userId}`
-      );
-      setSelectedFoods([
-        optionsResponse.data.foodIdA,
-        optionsResponse.data.foodIdB,
-      ]);
-    } catch (error) {
-      Alert.alert("Error", "Failed to load food options.");
-      console.error("Error fetching options", error);
-    }
-  }, [categoryId, userId]);
+  // Fetch options for the current round
+  const fetchOptions = useCallback(
+    async (currentRound) => {
+      try {
+        const optionsResponse = await axios.get(
+          `${SERVER_URL}/${categoryId}/selection/${currentRound}/${userId}`
+        );
+        setSelectedFoods([
+          optionsResponse.data.foodIdA,
+          optionsResponse.data.foodIdB,
+        ]);
+      } catch (error) {
+        Alert.alert("Error", "Failed to load food options.");
+        console.error("Error fetching options", error);
+      }
+    },
+    [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
+  );
 
   useEffect(() => {
     const fetchAliases = async () => {
@@ -51,16 +54,17 @@ const VotePage = () => {
     };
 
     fetchAliases();
-    fetchOptions();
-  }, [categoryId, userId, fetchOptions, round]);
+    fetchOptions(round); // Use the round state explicitly here
+  }, [categoryId, userId, fetchOptions]);
 
   // Memoize socket connection
   const socket = useMemo(() => io(`${SERVER_URL}`), [categoryId]);
 
   useEffect(() => {
     const handleRoundReady = async (data) => {
+      console.log("Round ready event received: ", data.round);
       setRound(data.round);
-      await fetchOptions();
+      await fetchOptions(data.round); // Fetch options for the new round
       setWaiting(false);
     };
 
@@ -68,9 +72,9 @@ const VotePage = () => {
 
     return () => {
       socket.off("round ready", handleRoundReady);
-      socket.disconnect();
+      socket.disconnect(); // Ensure socket disconnects on component unmount
     };
-  }, [socket, fetchOptions, setRound]);
+  }, [socket, fetchOptions]); // Do not include `round` here as it's updated inside the effect
 
   const handleSelect = useCallback(
     async (foodIdA, foodIdB) => {
