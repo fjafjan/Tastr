@@ -46,7 +46,7 @@ exports.addUserToSession = async (req, res) => {
       res.sendStatus(404);
       return;
     }
-    if (sessionEntry.tastedIds.includes(userId)) {
+    if (sessionEntry.tasterIds.includes(userId)) {
       console.error(`User ${userId} already exists in session ${sessionId}`);
       res.sendStatus(403);
     }
