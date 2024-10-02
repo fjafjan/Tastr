@@ -1,10 +1,11 @@
-const {
+// Import the necessary models and utilities with types.
+import {
   FoodCategoryData,
   VoteData,
   SessionData,
   SelectionData,
-} = require("./Models");
-const { GenerateMatchups } = require("./SelectionUtility");
+} from "./models";
+import { GenerateMatchups } from "./selection_utility";
 
 // Constants defining how quickly the ELO changes.
 const s = 400;
@@ -41,35 +42,51 @@ const letters = [
   "Ö",
 ];
 
-function sigma(r) {
+// Type for food objects
+type FoodObject = {
+  id: string;
+  name: string;
+  alias: string;
+  MMR: number;
+};
+
+// Helper function to calculate ELO change
+function sigma(r: number): number {
   const exponent = -r / s;
   return 1 / (1 + Math.pow(10, exponent));
 }
 
-// Computes the ELO after a and b play.
-function elo_change(winner_elo, loser_elo) {
-  rho = winner_elo - loser_elo;
-  likelihood = sigma(-rho);
-  winner_after = winner_elo + likelihood * K; // For some reason using + converts the results to a string...
-  loser_after = loser_elo - likelihood * K;
+function elo_change(
+  winner_elo: number,
+  loser_elo: number
+): { winnerAfter: number; loserAfter: number } {
+  const rho = winner_elo - loser_elo;
+  const likelihood = sigma(-rho);
+  const winner_after = winner_elo + likelihood * K;
+  const loser_after = loser_elo - likelihood * K;
   return { winnerAfter: winner_after, loserAfter: loser_after };
 }
 
-async function CreateCategory(categoryId, foodNames) {
+// Create a new category
+async function CreateCategory(
+  categoryId: string,
+  foodNames: Record<string, string>
+): Promise<boolean> {
   try {
-    // Shuffle the letters.
     const selection = letters.slice(0, Object.keys(foodNames).length);
-    // const shuffled = selection.sort(() => 0.5 - Math.random());
 
-    const foodObjects = Object.keys(foodNames).map((key, index) => ({
-      id: key,
-      name: foodNames[key],
-      alias: selection[index],
-      MMR: 1000, // Default MMR
-    }));
+    const foodObjects: FoodObject[] = Object.keys(foodNames).map(
+      (key, index) => ({
+        id: key,
+        name: foodNames[key],
+        alias: selection[index],
+        MMR: 1000,
+      })
+    );
+
     await FoodCategoryData.findOneAndUpdate(
-      { categoryId: categoryId },
-      { $set: { foodObjects: foodObjects } },
+      { categoryId },
+      { $set: { foodObjects } },
       { upsert: true, new: true }
     );
     return true;
@@ -79,74 +96,90 @@ async function CreateCategory(categoryId, foodNames) {
   }
 }
 
-async function CreateSession(sessionId, categoryId, hostId, tasterIds) {
+// Create a new session
+async function CreateSession(
+  sessionId: string,
+  categoryId: string,
+  hostId: string,
+  tasterIds: string[]
+): Promise<boolean> {
   try {
     await SessionData.findOneAndUpdate(
-      {
-        sessionId: sessionId,
-        categoryId: categoryId,
-        hostId: hostId,
-        tasterIds: tasterIds,
-      },
+      { sessionId, categoryId, hostId, tasterIds },
       { upsert: true, new: true }
     );
+    return true;
   } catch (error) {
     console.error("Failed to create new session data due to", error);
     return false;
   }
-  return true;
 }
 
-async function GenerateSelections(categoryId, userIds, round) {
+// Generate selections for the voting session
+async function GenerateSelections(
+  categoryId: string,
+  userIds: string[],
+  round: number
+): Promise<boolean> {
   const categoryEntry = await TryFindCategory(categoryId);
   if (!categoryEntry) {
     console.error("Failed to find category with ID ", categoryId);
     return false;
   }
-  const foodItemsDictionary = categoryEntry.foodObjects.reduce((acc, item) => {
-    acc[item.id] = item.name;
-    return acc;
-  }, {});
+
+  const foodItemsDictionary: Record<string, string> =
+    categoryEntry.foodObjects.reduce(
+      (acc: Record<string, string>, item: FoodObject) => {
+        acc[item.id] = item.name;
+        return acc;
+      },
+      {}
+    );
 
   const promises = userIds.map((userId) => FindTastedItems(categoryId, userId));
   const userHistory = await Promise.all(promises);
+
   const selections = GenerateMatchups(
     Object.keys(foodItemsDictionary),
     userHistory
   );
 
   try {
-    let userSelectionPromises = Object.keys(selections).map(async (userId) => {
-      await SelectionData.create({
-        categoryId: categoryId,
-        round: round,
-        tasterId: userId,
-        choice: {
-          foodIdA: selections[userId].itemA,
-          foodIdB: selections[userId].itemB,
-        },
-      });
-    });
+    const userSelectionPromises = Object.keys(selections).map(
+      async (userId) => {
+        await SelectionData.create({
+          categoryId,
+          round,
+          tasterId: userId,
+          choice: {
+            foodIdA: selections[userId].itemA,
+            foodIdB: selections[userId].itemB,
+          },
+        });
+      }
+    );
     await Promise.all(userSelectionPromises);
     console.log(
       `Generated selections for category ${categoryId} round ${round}`
     );
+    return true;
   } catch (error) {
-    console.error(
-      "Failed to create selection data from due to ",
-      selections,
-      error
-    );
+    console.error("Failed to create selection data due to ", selections, error);
     return false;
   }
 }
 
-async function GetSelection(categoryId, userId, round) {
+// Get a selection for a user
+async function GetSelection(
+  categoryId: string,
+  userId: string,
+  round: number
+): Promise<{ foodIdA: string; foodIdB: string } | false> {
   try {
     const entry = await SelectionData.findOne({
-      categoryId: categoryId,
+      categoryId,
       tasterId: userId,
-      round: parseInt(round),
+      round: parseInt(String(round), 10),
     });
     if (!entry) {
       console.error(
@@ -154,9 +187,6 @@ async function GetSelection(categoryId, userId, round) {
       );
       return false;
     }
-    console.log(
-      `Returning options ${entry.choice.foodIdA} and ${entry.choice.foodIdB} for user ${userId} round ${round}`
-    );
     return { foodIdA: entry.choice.foodIdA, foodIdB: entry.choice.foodIdB };
   } catch (error) {
     console.error("Error when getting selection data", error);
@@ -164,17 +194,23 @@ async function GetSelection(categoryId, userId, round) {
   }
 }
 
-async function PerformVote(userId, categoryId, winnerId, loserId) {
+// Perform a vote in the session
+async function PerformVote(
+  userId: string,
+  categoryId: string,
+  winnerId: string,
+  loserId: string
+): Promise<boolean> {
   console.log(
     `Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${categoryId}`
   );
 
   await VoteData.create({
-    voteId: Math.random().toString(), // TODO: Just use the default ID instead?
-    userId: userId,
-    categoryId: categoryId,
-    winnerId: winnerId,
-    loserId: loserId,
+    voteId: Math.random().toString(),
+    userId,
+    categoryId,
+    winnerId,
+    loserId,
   });
 
   const categoryEntry = await TryFindCategory(categoryId);
@@ -188,32 +224,31 @@ async function PerformVote(userId, categoryId, winnerId, loserId) {
   const loserEntry = categoryEntry.foodObjects.find(
     (food) => food.id === loserId
   );
-  if (typeof winnerEntry === "undefined" || typeof loserEntry === "undefined") {
+  if (!winnerEntry || !loserEntry) {
     console.error(`Missing entry with id ${loserId} or ${winnerId}`);
     return false;
   }
 
-  // Update the MMR.
   ({ winnerAfter: winnerEntry.MMR, loserAfter: loserEntry.MMR } = elo_change(
     winnerEntry.MMR,
     loserEntry.MMR
   ));
-  console.log(
-    `After vote, MMR for winner: ${winnerEntry.MMR}, loser: ${loserEntry.MMR}`
-  );
-  categoryEntry.save();
+  await categoryEntry.save();
   return true;
 }
 
-// Get the number of times a user has tasted each food item.
-async function FindTastedItems(categoryId, userId) {
+// Find tasted items for a user
+async function FindTastedItems(
+  categoryId: string,
+  userId: string
+): Promise<{ userId: string; tasted: Record<string, number> } | false> {
   console.log(`Generating taste-map for ${categoryId} and user ${userId}`);
 
   try {
-    const foodVotes = await VoteData.find({
-      categoryId: categoryId,
-      userId: userId,
-    }).select(["winnerId", "loserId"]);
+    const foodVotes = await VoteData.find({ categoryId, userId }).select([
+      "winnerId",
+      "loserId",
+    ]);
     if (!foodVotes) {
       console.error(
         "Failed to find any votes in category with user",
@@ -228,28 +263,24 @@ async function FindTastedItems(categoryId, userId) {
       return false;
     }
 
-    // We will return a dictionary mapping food ID to the number of times this user has tasted it.
-    let tasted = {};
-    // Initialize all food IDs to 0
+    const tasted: Record<string, number> = {};
     categoryEntry.foodObjects.forEach((item) => (tasted[item.id] = 0));
 
-    // Increment once for each win or loss.
     foodVotes.forEach((item) => {
-      tasted[item.winnerId] = tasted[item.winnerId] + 1;
-      tasted[item.loserId] = tasted[item.loserId] + 1;
+      tasted[item.winnerId] += 1;
+      tasted[item.loserId] += 1;
     });
-    return { userId: userId, tasted: tasted };
+    return { userId, tasted };
   } catch (error) {
     console.error("Failed to generate taste map due to", error);
     return false;
   }
 }
 
-async function TryFindCategory(categoryId) {
+// Find a category by ID
+async function TryFindCategory(categoryId: string): Promise<any> {
   try {
-    let categoryEntry = await FoodCategoryData.findOne({
-      categoryId: categoryId,
-    });
+    const categoryEntry = await FoodCategoryData.findOne({ categoryId });
     if (!categoryEntry) {
       console.error("No category with ID ", categoryId);
       return false;
@@ -261,7 +292,7 @@ async function TryFindCategory(categoryId) {
   }
 }
 
-module.exports = {
+export {
   CreateCategory,
   CreateSession,
   GenerateSelections,
