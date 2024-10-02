@@ -10,7 +10,7 @@ function shuffleArray<T>(array: T[]): void {
 type TastedMap = Record<string, number>;
 
 // Type for a judge's tasting history
-interface Judge {
+export interface Judge {
   userId: string;
   tasted: TastedMap;
 }

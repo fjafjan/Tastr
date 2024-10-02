@@ -10,21 +10,21 @@ import {
   getAliases,
   getNames,
   getMmr,
-} from "./controllers/FoodCategoryController";
+} from "./controllers/food_category_controller";
 import {
   getTasted,
   performVote,
   getSelection,
   getActiveSession,
   addUserToSession,
-} from "./controllers/VotingSessionController";
-import { addUser } from "./controllers/UsersController";
-import { SessionData } from "./Models";
+} from "./controllers/voting_session_controller";
+import { addUser } from "./controllers/user_controller";
+import { SessionData } from "./models";
 
 const app = express();
 
 const server = http.createServer(app);
-const port = process.env.REST_PORT || 5000;
+const port = process.env.REST_PORT ? parseInt(process.env.REST_PORT, 10) : 5000;
 
 // Middleware
 app.use(cors());
@@ -143,7 +143,7 @@ app.get("/:categoryId/mmr", getMmr);
 
 app.get("/:categoryId/:userId/tasted", getTasted);
 
-server.listen(port, "0.0.0.0", () => {
+server.listen(port, "0.0.0.0", 511, () => {
   console.log(`Server running on port ${port}`);
 });
 

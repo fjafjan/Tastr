@@ -19,7 +19,7 @@ const foodObjectSchema = new Schema<IFoodObject>({
 });
 
 // Define the interface for FoodCategory
-interface IFoodCategory extends Document {
+export interface IFoodCategory extends Document {
   categoryId: string;
   foodObjects: IFoodObject[];
 }

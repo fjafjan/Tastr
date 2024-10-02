@@ -4,8 +4,9 @@ import {
   VoteData,
   SessionData,
   SelectionData,
+  IFoodCategory,
 } from "./models";
-import { GenerateMatchups } from "./selection_utility";
+import { GenerateMatchups, Judge } from "./selection_utility";
 
 // Constants defining how quickly the ELO changes.
 const s = 400;
@@ -139,9 +140,14 @@ async function GenerateSelections(
   const promises = userIds.map((userId) => FindTastedItems(categoryId, userId));
   const userHistory = await Promise.all(promises);
 
+  // Filter out any false values from userHistory
+  const validUserHistory = userHistory.filter(
+    (result): result is Judge => result !== false
+  );
+
   const selections = GenerateMatchups(
     Object.keys(foodItemsDictionary),
-    userHistory
+    validUserHistory
   );
 
   try {
@@ -241,7 +247,7 @@ async function PerformVote(
 async function FindTastedItems(
   categoryId: string,
   userId: string
-): Promise<{ userId: string; tasted: Record<string, number> } | false> {
+): Promise<Judge | false> {
   console.log(`Generating taste-map for ${categoryId} and user ${userId}`);
 
   try {
@@ -278,7 +284,9 @@ async function FindTastedItems(
 }
 
 // Find a category by ID
-async function TryFindCategory(categoryId: string): Promise<any> {
+async function TryFindCategory(
+  categoryId: string
+): Promise<IFoodCategory | false> {
   try {
     const categoryEntry = await FoodCategoryData.findOne({ categoryId });
     if (!categoryEntry) {
