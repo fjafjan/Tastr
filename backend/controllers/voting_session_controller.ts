@@ -1,32 +1,36 @@
-const {
+import { Request, Response } from "express";
+import {
   GetSelection,
   FindTastedItems,
   PerformVote,
   GenerateSelections,
-} = require("../DatabaseUtility");
-const { SessionData } = require("../Models");
+} from "../database_utility";
+import { SessionData } from "../models";
 
-exports.getActiveSession = async (req, res) => {
-  const { categoryId: categoryId, userId: userId } = req.params;
-  // const { userId: userId } = req.body // TODO: Investigate why this does not work.
+// Get the active session for a category and user
+export const getActiveSession = async (req: Request, res: Response) => {
+  const { categoryId, userId } = req.params;
   console.log(`Requesting an active session for ${categoryId}`);
+
   try {
     let sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
       active: true,
     });
-    // If there is no such session, we create one.
+
+    // If there is no such session, create one
     if (!sessionEntry) {
       console.log(
         `No active session with category ${categoryId}, will create new one.`
       );
       sessionEntry = await SessionData.create({
-        sessionId: Math.random().toString(), // TODO Replace this with proper ID generation.
+        sessionId: Math.random().toString(), // TODO: Replace with proper ID generation
         categoryId: categoryId,
-        hostId: userId, // TODO: If we have this structure...
+        hostId: userId, // TODO: Validate host ID
         active: true,
       });
     }
+
     res.json(sessionEntry);
   } catch (error) {
     console.error("Failed to find active session with ", categoryId, error);
@@ -34,24 +38,30 @@ exports.getActiveSession = async (req, res) => {
   }
 };
 
-exports.addUserToSession = async (req, res) => {
+// Add a user to a session
+export const addUserToSession = async (req: Request, res: Response) => {
   console.log("Got request to add user to session.");
-  const { sessionId: sessionId, tasterId: tasterId } = req.body;
+  const { sessionId, tasterId } = req.body;
   console.log(`Adding ${tasterId} to session ${sessionId}`);
 
   try {
     let sessionEntry = await SessionData.findOne({ sessionId: sessionId });
+
     if (!sessionEntry) {
       console.error(`No session with ID ${sessionId} found`);
       res.sendStatus(404);
       return;
     }
+
     if (sessionEntry.tasterIds.includes(tasterId)) {
-      console.error(`User ${userId} already exists in session ${sessionId}`);
+      console.error(`User ${tasterId} already exists in session ${sessionId}`);
       res.sendStatus(403);
+      return;
     }
+
     sessionEntry.tasterIds.push(tasterId);
-    sessionEntry.save();
+    await sessionEntry.save();
+
     res.sendStatus(200);
   } catch (error) {
     console.error("Failed to add taster to session due to ", error);
@@ -59,13 +69,15 @@ exports.addUserToSession = async (req, res) => {
   }
 };
 
-exports.getSelection = async (req, res) => {
+// Get the selection for a user
+export const getSelection = async (req: Request, res: Response) => {
   const { categoryId, round, userId } = req.params;
   console.log(
     `Requesting vote selection for ${categoryId} round ${round} from user ${userId}`
   );
-  // We could potentially just check the current round here?
-  options = await GetSelection(categoryId, userId, round);
+
+  const options = await GetSelection(categoryId, userId, parseInt(round));
+
   if (options) {
     res.json(options);
   } else {
@@ -73,9 +85,11 @@ exports.getSelection = async (req, res) => {
   }
 };
 
-exports.getTasted = async (req, res) => {
-  const { categoryId: categoryId, userId: userId } = req.params;
+// Get the tasted items for a user in a category
+export const getTasted = async (req: Request, res: Response) => {
+  const { categoryId, userId } = req.params;
   console.log(`Getting the votes in ${categoryId} for ${userId}`);
+
   const result = await FindTastedItems(categoryId, userId);
 
   if (result) {
@@ -86,9 +100,8 @@ exports.getTasted = async (req, res) => {
   }
 };
 
-// this function is broken now because we are explicitly calling io here. But I think that makes sense? We
-// don't really want the server to be doing that many different things....
-exports.performVote = async (req, res) => {
+// Perform a vote
+export const performVote = async (req: Request, res: Response) => {
   const { categoryId, winnerId, loserId } = req.params;
   const { userId } = req.body;
   console.log(
