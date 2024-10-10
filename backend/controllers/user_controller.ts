@@ -11,7 +11,7 @@ export const addUser = async (req: Request, res: Response) => {
       { userId: userId }, // Find user by userId
       {
         name: name,
-        email: email, // Update the email directly
+        email: { email: email }, // Update the email directly
       },
       { upsert: true } // Create a new document if no matching document is found
     );

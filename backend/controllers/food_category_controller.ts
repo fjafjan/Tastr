@@ -1,6 +1,38 @@
 import { Request, Response } from "express";
-import { CreateCategory } from "../database_utility";
+import { FoodObject } from "../database_utility";
 import { FoodCategoryData } from "../models";
+
+const letters = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "Å",
+  "Ä",
+  "Ö",
+];
 
 export const addCategory = async (
   req: Request,
@@ -109,3 +141,32 @@ export const getMmr = async (req: Request, res: Response): Promise<void> => {
     res.sendStatus(500); // Internal Server Error
   }
 };
+
+// Create a new category
+async function CreateCategory(
+  categoryId: string,
+  foodNames: Record<string, string>
+): Promise<boolean> {
+  try {
+    const selection = letters.slice(0, Object.keys(foodNames).length);
+
+    const foodObjects: FoodObject[] = Object.keys(foodNames).map(
+      (key, index) => ({
+        id: key,
+        name: foodNames[key],
+        alias: selection[index],
+        MMR: 1000,
+      })
+    );
+
+    await FoodCategoryData.findOneAndUpdate(
+      { categoryId },
+      { $set: { foodObjects } },
+      { upsert: true, new: true }
+    );
+    return true;
+  } catch (error) {
+    console.error("Failed to save new data due to ", error);
+    return false;
+  }
+}
