@@ -11,37 +11,6 @@ import { GenerateMatchups, Judge } from "./selection_utility";
 // Constants defining how quickly the ELO changes.
 const s = 400;
 const K = 32;
-const letters = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-  "Å",
-  "Ä",
-  "Ö",
-];
 
 // Type for food objects
 type FoodObject = {
@@ -66,35 +35,6 @@ function elo_change(
   const winner_after = winner_elo + likelihood * K;
   const loser_after = loser_elo - likelihood * K;
   return { winnerAfter: winner_after, loserAfter: loser_after };
-}
-
-// Create a new category
-async function CreateCategory(
-  categoryId: string,
-  foodNames: Record<string, string>
-): Promise<boolean> {
-  try {
-    const selection = letters.slice(0, Object.keys(foodNames).length);
-
-    const foodObjects: FoodObject[] = Object.keys(foodNames).map(
-      (key, index) => ({
-        id: key,
-        name: foodNames[key],
-        alias: selection[index],
-        MMR: 1000,
-      })
-    );
-
-    await FoodCategoryData.findOneAndUpdate(
-      { categoryId },
-      { $set: { foodObjects } },
-      { upsert: true, new: true }
-    );
-    return true;
-  } catch (error) {
-    console.error("Failed to save new data due to ", error);
-    return false;
-  }
 }
 
 // Create a new session
@@ -301,7 +241,7 @@ async function TryFindCategory(
 }
 
 export {
-  CreateCategory,
+  FoodObject,
   CreateSession,
   GenerateSelections,
   GetSelection,
