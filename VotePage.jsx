@@ -40,6 +40,46 @@ const VotePage = () => {
     [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
   );
 
+  const getSession = async () => {
+    try {
+      const sessionEntryResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/session/${userId}/get`
+      );
+      return sessionEntryResponse.data;
+    } catch (error) {
+      console.error("Failed to get active session ID", error);
+    }
+  };
+
+  const addUserToSession = async () => {
+    const sessionEntry = await getSession();
+    if (sessionEntry === undefined) {
+      console.error("Failed to get add user to session");
+      return;
+    }
+    const sessionId = sessionEntry.sessionId;
+    console.log("Got session ID ", sessionId);
+    try {
+      if (!sessionEntry.tasterIds.includes(userId)) {
+        await axios.post(`${SERVER_URL}/${categoryId}/session/add`, {
+          sessionId,
+          tasterId: userId,
+        });
+      }
+    } catch (error) {
+      console.error(
+        `Failed to add user ${userId} to sessionId ${sessionId}`,
+        error
+      );
+    }
+  };
+  useEffect(() => {
+    const setupSession = async () => {
+      await addUserToSession();
+    };
+    setupSession();
+  }, [categoryId]);
+
   useEffect(() => {
     const fetchAliases = async () => {
       try {
