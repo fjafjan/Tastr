@@ -41,6 +41,33 @@ const io = new SocketIOServer(server, {
   },
 });
 
+const startNewRound = async (sessionId: string, categoryId: string) => {
+  console.log("All clients are ready. Preparing next round.");
+  const sessionEntry = await SessionData.findOne({ sessionId });
+
+  if (!sessionEntry) {
+    console.error("No session with session Id found!");
+    return;
+  }
+
+  const tasterIds = sessionEntry.tasterIds;
+  console.log(
+    `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`
+  );
+
+  await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
+
+  sessionEntry.round += 1;
+  if (sessionEntry.round === 1) {
+    io.emit("start");
+  } else {
+    io.emit("round ready", { round: sessionEntry.round });
+  }
+
+  sessionEntry.waitingIds = Object.assign([], tasterIds);
+  await sessionEntry.save();
+};
+
 // Connect to database.
 mongoose
   .connect(process.env.MONGO_URL as string)
@@ -64,20 +91,7 @@ io.on("connection", (socket: Socket) => {
     async (data: { categoryId: string; hostId: string; sessionId: string }) => {
       console.log("Got start request", socket.id);
       const { categoryId, hostId, sessionId } = data;
-      const sessionEntry = await SessionData.findOne({ sessionId });
-
-      if (!sessionEntry) {
-        console.error("No session with session Id found!");
-        return;
-      }
-
-      const tasterIds = sessionEntry.tasterIds;
-      console.log(
-        `Starting new voting session for category ${categoryId} with host ${hostId} and users ${tasterIds}`
-      );
-
-      await GenerateSelections(categoryId, tasterIds, 0);
-      io.emit("start");
+      await startNewRound(sessionId, categoryId);
     }
   );
 
@@ -102,6 +116,23 @@ app.get("/:categoryId/session/:userId/get", getActiveSession);
 // Add a user to a session.
 app.post("/:categoryId/session/add", addUserToSession);
 
+// Force the start of a new round.
+app.post(
+  "/:categoryId/session/nextRound",
+  async (req: Request, res: Response) => {
+    const { categoryId } = req.params;
+
+    const sessionEntry = await SessionData.findOne({ categoryId });
+
+    if (!sessionEntry) {
+      console.error("Failed to find session for ", categoryId);
+      res.sendStatus(404);
+      return;
+    }
+    await startNewRound(sessionEntry.sessionId, categoryId);
+  }
+);
+
 app.get("/:categoryId/selection/:round/:userId", getSelection);
 
 app.post("/:categoryId/vote/:winnerId/:loserId", performVote);
@@ -123,13 +154,7 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
   waitingUsers.splice(waitingUsers.indexOf(userId), 1);
 
   if (waitingUsers.length === 0) {
-    console.log("All clients are ready. Preparing next round.");
-    sessionEntry.round += 1;
-    const userIds = sessionEntry.tasterIds;
-
-    await GenerateSelections(categoryId, userIds, sessionEntry.round);
-    io.emit("round ready", { round: sessionEntry.round });
-    sessionEntry.waitingIds = Object.assign([], userIds);
+    await startNewRound(sessionEntry.sessionId, categoryId);
   }
   await sessionEntry.save();
   res.sendStatus(200);

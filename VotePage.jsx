@@ -16,6 +16,8 @@ import { SERVER_URL } from "./constants/Constants";
 const VotePage = () => {
   const { categoryId } = useParams();
   const [foodAliases, setFoodAliases] = useState({});
+  const [hostId, setHostId] = useState("");
+  const [sessionId, setSessionId] = useState("");
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
@@ -57,7 +59,8 @@ const VotePage = () => {
       console.error("Failed to get add user to session");
       return;
     }
-    const sessionId = sessionEntry.sessionId;
+    setSessionId(sessionEntry.sessionId);
+    setHostId(sessionEntry.hostId);
     console.log("Got session ID ", sessionId);
     try {
       if (!sessionEntry.tasterIds.includes(userId)) {
@@ -78,7 +81,7 @@ const VotePage = () => {
       await addUserToSession();
     };
     setupSession();
-  }, [categoryId]);
+  }, [categoryId, hostId, sessionId]);
 
   useEffect(() => {
     const fetchAliases = async () => {
@@ -144,6 +147,20 @@ const VotePage = () => {
     [categoryId, userId]
   );
 
+  const handleGoNextRound = async () => {
+    try {
+      await axios.post(`${SERVER_URL}/${categoryId}/session/nextRound`, {
+        sessionId,
+      });
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Something went wrong while trying to start next round."
+      );
+      console.error("Error starting next round of voting", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Which do you prefer</Text>
@@ -162,6 +179,12 @@ const VotePage = () => {
 
       <View>
         <ResultsPage />
+      </View>
+
+      <View>
+        {hostId === userId && (
+          <Button title="Go to next round" onPress={handleGoNextRound} />
+        )}
       </View>
     </SafeAreaView>
   );
