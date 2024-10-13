@@ -3,7 +3,6 @@ import {
   GetSelection,
   FindTastedItems,
   PerformVote,
-  GenerateSelections,
 } from "../database_utility";
 import { SessionData } from "../models";
 

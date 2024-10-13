@@ -100,6 +100,12 @@ interface ISession extends Document {
   round: number;
 }
 
+interface IVoteRound extends Document {
+  sessionId: string;
+  roundNumber: number;
+  shouldTaste: string[];
+}
+
 // Define the schema for Session
 const sessionSchema = new Schema<ISession>({
   sessionId: { type: String, required: true, unique: true },
