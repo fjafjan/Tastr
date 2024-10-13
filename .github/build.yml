@@ -1,7 +1,6 @@
 name: Build Application
 
 on:
-  workflow_dispatch: # Can add custom configuration parameters for the workflow, but not necessary at this time.
   push:
 
 env:
