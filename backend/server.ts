@@ -130,6 +130,7 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
 
     await GenerateSelections(categoryId, userIds, sessionEntry.round);
     io.emit("round ready", { round: sessionEntry.round });
+    sessionEntry.waitingIds = sessionEntry.tasterIds;
     await sessionEntry.save();
     res.sendStatus(200);
   }
