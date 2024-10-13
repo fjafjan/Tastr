@@ -16,6 +16,9 @@
     "deploy": "gh-pages -d dist",
     "test": "jest --silent=false"
   },
+  "engines": {
+    "node": "22.9.0"
+  },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "axios": "^1.7.2",
