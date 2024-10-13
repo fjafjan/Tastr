@@ -121,7 +121,7 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
   const waitingUsers = sessionEntry.waitingIds;
   console.log(`Removing ${userId} from [${waitingUsers}]`);
   waitingUsers.splice(waitingUsers.indexOf(userId), 1);
-  await sessionEntry.save();
+  await sessionEntry.update();
 
   if (waitingUsers.length === 0) {
     console.log("All clients are ready. Preparing next round.");
@@ -130,8 +130,8 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
 
     await GenerateSelections(categoryId, userIds, sessionEntry.round);
     io.emit("round ready", { round: sessionEntry.round });
-    sessionEntry.waitingIds = sessionEntry.tasterIds;
-    await sessionEntry.save();
+    sessionEntry.waitingIds = Object.assign([], userIds);
+    await SessionData.update();
     res.sendStatus(200);
   }
 });
