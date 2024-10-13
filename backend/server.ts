@@ -55,17 +55,17 @@ const startNewRound = async (sessionId: string, categoryId: string) => {
     `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`
   );
 
+  sessionEntry.round += 1;
+  sessionEntry.waitingIds = Object.assign([], tasterIds);
+  await sessionEntry.save();
+
   await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
 
-  sessionEntry.round += 1;
   if (sessionEntry.round === 1) {
     io.emit("start");
   } else {
     io.emit("round ready", { round: sessionEntry.round });
   }
-
-  sessionEntry.waitingIds = Object.assign([], tasterIds);
-  await sessionEntry.save();
 };
 
 // Connect to database.
