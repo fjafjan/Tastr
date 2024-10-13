@@ -104,6 +104,7 @@ interface IVoteRound extends Document {
   sessionId: string;
   roundNumber: number;
   shouldTaste: string[];
+  haveTasted: string[];
 }
 
 // Define the schema for Session

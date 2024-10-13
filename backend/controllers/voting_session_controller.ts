@@ -4,12 +4,16 @@ import {
   FindTastedItems,
   PerformVote,
 } from "../database_utility";
+import { v4 as uuidv4 } from "uuid";
 import { SessionData } from "../models";
 
 // Get the active session for a category and user
 export const getActiveSession = async (req: Request, res: Response) => {
   const { categoryId, userId } = req.params;
-  console.log(`Requesting an active session for ${categoryId}`);
+
+  if (!categoryId || !userId) {
+    return res.status(400).json({ message: "Invalid category or user ID." });
+  }
 
   try {
     let sessionEntry = await SessionData.findOne({
@@ -17,85 +21,102 @@ export const getActiveSession = async (req: Request, res: Response) => {
       active: true,
     });
 
-    // If there is no such session, create one
+    // If no session found, create one
     if (!sessionEntry) {
-      console.log(
-        `No active session with category ${categoryId}, will create new one.`
-      );
       sessionEntry = await SessionData.create({
-        sessionId: Math.random().toString(), // TODO: Replace with proper ID generation
+        sessionId: uuidv4(),
         categoryId: categoryId,
-        hostId: userId, // TODO: Validate host ID
+        hostId: userId,
         active: true,
       });
     }
 
     res.json(sessionEntry);
   } catch (error) {
-    console.error("Failed to find active session with ", categoryId, error);
-    res.sendStatus(500);
+    console.error("Error fetching session: ", error);
+    res.status(500).json({ message: "Server error. Unable to fetch session." });
   }
 };
 
 // Add a user to a session
 export const addUserToSession = async (req: Request, res: Response) => {
-  console.log("Got request to add user to session.");
   const { sessionId, tasterId } = req.body;
-  console.log(`Adding ${tasterId} to session ${sessionId}`);
+
+  if (!sessionId || !tasterId) {
+    return res.status(400).json({ message: "Invalid session or user ID." });
+  }
 
   try {
     let sessionEntry = await SessionData.findOne({ sessionId: sessionId });
 
     if (!sessionEntry) {
-      console.error(`No session with ID ${sessionId} found`);
-      res.sendStatus(404);
-      return;
+      return res
+        .status(404)
+        .json({ message: `Session ${sessionId} not found.` });
     }
 
     if (sessionEntry.tasterIds.includes(tasterId)) {
-      console.error(`User ${tasterId} already exists in session ${sessionId}`);
-      res.sendStatus(403);
-      return;
+      return res
+        .status(403)
+        .json({ message: `User ${tasterId} already in session.` });
     }
 
-    sessionEntry.tasterIds.push(tasterId);
+    sessionEntry.tasterIds = [...sessionEntry.tasterIds, tasterId];
     await sessionEntry.save();
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("Failed to add taster to session due to ", error);
-    res.sendStatus(500);
+    console.error("Error adding user to session: ", error);
+    res
+      .status(500)
+      .json({ message: "Server error. Unable to add user to session." });
   }
 };
 
 // Get the selection for a user
 export const getSelection = async (req: Request, res: Response) => {
   const { categoryId, round, userId } = req.params;
-  console.log(
-    `Requesting vote selection for ${categoryId} round ${round} from user ${userId}`
-  );
 
-  const options = await GetSelection(categoryId, userId, parseInt(round));
+  if (!categoryId || !round || !userId) {
+    return res.status(400).json({ message: "Invalid parameters." });
+  }
 
-  if (options) {
-    res.json(options);
-  } else {
-    res.sendStatus(404);
+  try {
+    const options = await GetSelection(categoryId, userId, parseInt(round));
+    if (options) {
+      res.json(options);
+    } else {
+      res.status(404).json({ message: "No selection found." });
+    }
+  } catch (error) {
+    console.error("Error fetching selection: ", error);
+    res
+      .status(500)
+      .json({ message: "Server error. Unable to fetch selection." });
   }
 };
 
-// Get the tasted items for a user in a category
+// Get tasted items for a user in a category
 export const getTasted = async (req: Request, res: Response) => {
   const { categoryId, userId } = req.params;
-  console.log(`Getting the votes in ${categoryId} for ${userId}`);
 
-  const result = await FindTastedItems(categoryId, userId);
+  if (!categoryId || !userId) {
+    return res.status(400).json({ message: "Invalid category or user ID." });
+  }
 
-  if (result) {
-    console.log("Returning tasted map:", result);
-    res.json(result);
-  } else {
-    res.sendStatus(500);
+  try {
+    const result = await FindTastedItems(categoryId, userId);
+
+    if (result) {
+      res.json(result);
+    } else {
+      res.status(404).json({ message: "No tasted items found." });
+    }
+  } catch (error) {
+    console.error("Error fetching tasted items: ", error);
+    res
+      .status(500)
+      .json({ message: "Server error. Unable to fetch tasted items." });
   }
 };
 
@@ -103,15 +124,21 @@ export const getTasted = async (req: Request, res: Response) => {
 export const performVote = async (req: Request, res: Response) => {
   const { categoryId, winnerId, loserId } = req.params;
   const { userId } = req.body;
-  console.log(
-    `Got vote for ${winnerId} over ${loserId} in Session ${categoryId}`
-  );
 
-  const result = await PerformVote(userId, categoryId, winnerId, loserId);
+  if (!categoryId || !winnerId || !loserId || !userId) {
+    return res.status(400).json({ message: "Invalid parameters." });
+  }
 
-  if (result) {
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(500);
+  try {
+    const result = await PerformVote(userId, categoryId, winnerId, loserId);
+
+    if (result) {
+      res.sendStatus(200);
+    } else {
+      res.status(500).json({ message: "Error performing vote." });
+    }
+  } catch (error) {
+    console.error("Error performing vote: ", error);
+    res.status(500).json({ message: "Server error. Unable to perform vote." });
   }
 };
