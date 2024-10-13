@@ -1,0 +1,40 @@
+name: Build Application
+
+on:
+  workflow_dispatch: # Can add custom configuration parameters for the workflow, but not necessary at this time.
+  push:
+
+env:
+  NODE_VERSION: 20
+  REGISTRY_URL: https://npm.pkg.github.com
+
+jobs:
+  build-app:
+    name: Build app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node on ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          always-auth: true
+          registry-url: ${{ env.REGISTRY_URL }}
+
+      - name: Install dependencies
+        working-directory: "." # In case this will be changed.
+        run: |
+          npm ci
+          echo "Need to manually install package due to https://github.com/npm/cli/issues/4828"
+          npm i -d @rollup/rollup-linux-x64-gnu
+
+      - name: Build
+        working-directory: "./Aampro.Frontend"
+        run: npm run build --if-present
+
+      - name: Run tests
+        run: npm test --coverage
