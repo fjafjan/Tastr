@@ -131,7 +131,7 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
     io.emit("round ready", { round: sessionEntry.round });
     sessionEntry.waitingIds = Object.assign([], userIds);
   }
-  await SessionData.update();
+  await sessionEntry.save();
   res.sendStatus(200);
 });
 
