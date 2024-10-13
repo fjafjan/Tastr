@@ -130,6 +130,7 @@ app.post(
       return;
     }
     await startNewRound(sessionEntry.sessionId, categoryId);
+    res.sendStatus(200);
   }
 );
 
