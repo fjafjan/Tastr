@@ -155,8 +155,10 @@ app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
 
   if (waitingUsers.length === 0) {
     await startNewRound(sessionEntry.sessionId, categoryId);
+  } else {
+    await sessionEntry.save();
   }
-  await sessionEntry.save();
+
   res.sendStatus(200);
 });
 
