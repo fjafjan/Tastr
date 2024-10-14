@@ -11,7 +11,7 @@ import {
   Text,
 } from "react-native-web";
 import { useNavigate } from "react-router-dom";
-import { SERVER_URL } from "./constants/Constants";
+import { SERVER_URL } from "../constants/Constants";
 import axios from "axios";
 
 const HomePage = () => {

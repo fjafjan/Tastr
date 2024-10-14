@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, Text, StyleSheet, View } from "react-native";
 import { useParams } from "react-router-dom";
-import { SERVER_URL } from "./constants/Constants";
+import { SERVER_URL } from "../constants/Constants";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import "chart.js/auto";

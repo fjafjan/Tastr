@@ -11,7 +11,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import ResultsPage from "./ResultsPage";
-import { SERVER_URL } from "./constants/Constants";
+import { SERVER_URL } from "../constants/Constants";
 import { Button } from "react-native-web";
 
 const VotePage = () => {

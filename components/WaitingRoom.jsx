@@ -12,7 +12,7 @@ import {
   Alert,
 } from "react-native-web";
 import axios from "axios";
-import { SERVER_URL } from "./constants/Constants";
+import { SERVER_URL } from "../constants/Constants";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 

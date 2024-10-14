@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './HomePage';
-import VotePage from './VotePage';
-import LoginPage from './LoginPage';
-import WaitingRoom from './WaitingRoom';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./components/HomePage";
+import VotePage from "./components/VotePage";
+import LoginPage from "./components/LoginPage";
+import WaitingRoom from "./components/WaitingRoom";
 
 const App = () => {
   return (

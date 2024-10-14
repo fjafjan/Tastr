@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SERVER_URL } from "./constants/Constants";
+import { SERVER_URL } from "../constants/Constants";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   SafeAreaView,
