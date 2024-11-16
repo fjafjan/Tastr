@@ -11,6 +11,7 @@ import {
 import { io } from "socket.io-client";
 import axios from "axios";
 import useValidateCategory from "../hooks/useValidateCategory";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -41,7 +42,11 @@ const LoginPage = () => {
     navigate(`/${categoryId}/waiting`, { state: { userId: name } });
   };
 
-  useValidateCategory(categoryId);
+  // Check the category, and until we are sure, just show a spinner.
+  const validCategory = useValidateCategory(categoryId);
+  if (!validCategory) {
+    return <ClipLoader size={50} color="#36D7B7" />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

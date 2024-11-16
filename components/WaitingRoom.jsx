@@ -14,6 +14,7 @@ import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
 import useValidateCategory from "../hooks/useValidateCategory";
 import useAddUserToSession from "../hooks/useAddUserToSession";
+import { ClipLoader } from "react-spinners";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -44,12 +45,17 @@ const WaitingRoom = () => {
     }
   };
 
+  const loading = true;
   const categoryValid = useValidateCategory(categoryId);
   if (categoryValid) {
     const userAdded = useAddUserToSession(categoryId, userId, null, setHostId);
     if (userAdded) {
       proceedToVotingIfRunning();
+      loading = false;
     }
+  }
+  if (loading) {
+    return <ClipLoader size={50} color="#36D7B7" />;
   }
 
   useEffect(() => {

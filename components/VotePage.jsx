@@ -15,6 +15,7 @@ import { SERVER_URL } from "../constants/Constants";
 import { Button } from "react-native-web";
 import useValidateCategory from "../hooks/useValidateCategory";
 import useAddUserToSession from "../hooks/useAddUserToSession";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const VotePage = () => {
   const { categoryId } = useParams();
@@ -56,6 +57,9 @@ const VotePage = () => {
   const categoryValid = useValidateCategory(categoryId);
   if (categoryValid) {
     useAddUserToSession(categoryId, userId, setSessionId, setHostId);
+  } else {
+    <ClipLoader></ClipLoader>;
+    return <ClipLoader size={50} color="#36D7B7" />;
   }
 
   const fetchAliases = async () => {
