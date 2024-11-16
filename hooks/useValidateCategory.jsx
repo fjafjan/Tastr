@@ -37,9 +37,9 @@ const useValidateCategory = (categoryId, onSuccessCallback) => {
   if (onSuccessCallback) {
     useEffect(() => {
       if (isCategoryValid) {
-        useAddUserToSession(categoryId, userId, setSessionId, setHostId);
+        onSuccessCallback();
       }
-    }, [isCategoryValid, categoryId, userId, setSessionId, setHostId]);
+    });
   }
 };
 
