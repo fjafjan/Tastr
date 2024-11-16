@@ -51,13 +51,9 @@ const ResultsPage = ({ round }) => {
     maintainAspectRatio: false,
     scales: {
       y: {
-        beginAtZero: true,
-        min: 0, // Minimum value for the y-axis
-        max: 100, // Maximum value for the y-axis (adjust as needed)
-      },
-      x: {
-        // Additional options for x-axis if needed
-      },
+        min: -500, // Minimum value for the y-axis
+        max: 1500, // Maximum value for the y-axis (adjust as needed)
+      }
     },
   };
 
