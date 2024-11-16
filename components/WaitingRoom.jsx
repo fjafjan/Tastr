@@ -68,12 +68,14 @@ const WaitingRoom = () => {
     }
   };
 
-  const IsSessionRunning = async () => {
+  const proceedToVotingIfRunning = async () => {
     try {
       const runningResponse = await axios.get(
         `${SERVER_URL}/${categoryId}/session/running`
       );
-      return runningResponse.data.running;
+      if (runningResponse.data.running) {
+        navigate(`/${categoryId}/voting`);
+      }
     } catch (error) {
       console.error("Failed to check if session was running", error);
       return false;
@@ -103,10 +105,8 @@ const WaitingRoom = () => {
       await addUserToSession();
     };
     setupSession();
-
-    if (IsSessionRunning()) {
-      navigate(`/${categoryId}/voting`);
-    }
+    // Check if voting is active in the session, if so we continue to voting.
+    proceedToVotingIfRunning();
 
     // Set the share URL when the component is mounted
     setShareUrl(window.location.href);
