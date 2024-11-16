@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import ResultsPage from "./ResultsPage";
@@ -18,6 +18,7 @@ const VotePage = () => {
   const { categoryId } = useParams();
   const [foodAliases, setFoodAliases] = useState({});
   const [hostId, setHostId] = useState("");
+  const navigate = useNavigate();
   const [sessionId, setSessionId] = useState("");
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState([]);
@@ -82,7 +83,24 @@ const VotePage = () => {
       );
     }
   };
+
+  // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
+  const validateCategory = async () => {
+    try {
+      var categoryResponse = await axios.get(`${SERVER_URL}/${categoryId}/get`);
+      if (categoryResponse) {
+        return;
+      }
+    } catch (error) {
+      console.warn(`Failed to find category ${categoryId}`);
+      return false;
+    }
+    navigate(`/`);
+  };
+
   useEffect(() => {
+    validateCategory();
+
     const setupSession = async () => {
       await addUserToSession();
     };

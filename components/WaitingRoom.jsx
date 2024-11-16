@@ -68,13 +68,25 @@ const WaitingRoom = () => {
     }
   };
 
+  const IsSessionRunning = async () => {
+    try {
+      const runningResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/session/running`
+      );
+      return runningResponse.data;
+    } catch (error) {
+      console.error("Failed to check if session was running", error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const setupSession = async () => {
       await addUserToSession();
     };
     setupSession();
 
-    if (IsSessionStarted()) {
+    if (IsSessionRunning()) {
       navigate(`/${categoryId}/voting`);
     }
 

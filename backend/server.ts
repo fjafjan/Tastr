@@ -10,6 +10,7 @@ import {
   getAliases,
   getNames,
   getMmr,
+  categoryExists,
 } from "./controllers/food_category_controller";
 import {
   getTasted,
@@ -107,6 +108,9 @@ app.get("/", (req: Request, res: Response) => {
 
 // Endpoint to save data sent from a user.
 app.post("/category/add", addCategory);
+
+// Endpoint to save data sent from a user.
+app.post("/category/get", categoryExists);
 
 // Endpoint to add user to the user database.
 app.post("/users/add", addUser);

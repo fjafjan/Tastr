@@ -18,7 +18,7 @@ export const getActiveSession = async (req: Request, res: Response) => {
     let sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
       active: true,
-    });
+    }).exec();
 
     // If no session found, create one
     if (!sessionEntry) {
@@ -48,7 +48,7 @@ export const getOrCreateActiveSession = async (req: Request, res: Response) => {
     let sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
       active: true,
-    });
+    }).exec();
 
     // If no session found, create one
     if (!sessionEntry) {
@@ -78,7 +78,7 @@ export const isSessionRunning = async (req: Request, res: Response) => {
     let sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
       active: true,
-    });
+    }).exec();
 
     // If no session found, create one
     if (sessionEntry && sessionEntry.round !== 0) {
@@ -100,7 +100,7 @@ export const addUserToSession = async (req: Request, res: Response) => {
   }
 
   try {
-    let sessionEntry = await SessionData.findOne({ sessionId: sessionId });
+    let sessionEntry = await SessionData.findOne({ sessionId: sessionId }).exec();
 
     if (!sessionEntry) {
       return res

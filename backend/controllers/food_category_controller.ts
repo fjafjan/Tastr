@@ -54,6 +54,26 @@ export const addCategory = async (
   }
 };
 
+export const categoryExists = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+  if (!categoryId) {
+    return res.status(400).json({ message: "Missing category ID" });
+  }
+  try {
+    const entry = await FoodCategoryData.findOne({
+      categoryId: categoryId,
+    }).exec();
+    if (entry) {
+      res.json(200); // Found
+    } else {
+      res.json(404); // Not found
+    }
+  } catch (error) {
+    console.log(`Failed to find category ID for ${categoryId} due to ${error}`);
+    res.status(400).json({ message: `Failed to get category due to ${error}` });
+  }
+};
+
 export const getAliases = async (
   req: Request,
   res: Response
