@@ -1,5 +1,5 @@
 import {
-  getActiveSession,
+  getOrCreateActiveSession,
   addUserToSession,
   getSelection,
   getTasted,
@@ -69,7 +69,7 @@ function createMockResponse(): Response {
 }
 
 describe("VotingSessionController", () => {
-  describe("getActiveSession", () => {
+  describe("getOrCreateActiveSession", () => {
     it("should return an existing active session", async () => {
       const req = createMockRequest(
         {
@@ -81,7 +81,7 @@ describe("VotingSessionController", () => {
 
       const res = GetMockResponse();
 
-      await getActiveSession(req, res);
+      await getOrCreateActiveSession(req, res);
 
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: "existing-session" })
@@ -100,7 +100,7 @@ describe("VotingSessionController", () => {
 
       const res = GetMockResponse();
 
-      await getActiveSession(req, res);
+      await getOrCreateActiveSession(req, res);
 
       const session = await SessionData.findOne({
         categoryId: "new-category",
@@ -118,7 +118,7 @@ describe("VotingSessionController", () => {
       const req = { params: {} } as Request; // No params
       const res = GetMockResponse();
 
-      await getActiveSession(req, res);
+      await getOrCreateActiveSession(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({

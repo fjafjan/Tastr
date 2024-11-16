@@ -7,8 +7,37 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { SessionData } from "../models";
 
-// Get the active session for a category and user
 export const getActiveSession = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+
+  if (!categoryId) {
+    return res.status(400).json({ message: "Invalid category ID." });
+  }
+
+  try {
+    let sessionEntry = await SessionData.findOne({
+      categoryId: categoryId,
+      active: true,
+    });
+
+    // If no session found, create one
+    if (!sessionEntry) {
+      return res
+        .status(400)
+        .json({ message: `No session with Category ID ${categoryId} found.` });
+    }
+
+    res.json(sessionEntry);
+  } catch (error) {
+    console.error("Error fetching session: ", error);
+    return res
+      .status(500)
+      .json({ message: "Server error. Unable to fetch session." });
+  }
+};
+
+// Get the active session for a category and user
+export const getOrCreateActiveSession = async (req: Request, res: Response) => {
   const { categoryId, userId } = req.params;
 
   if (!categoryId || !userId) {
@@ -32,6 +61,30 @@ export const getActiveSession = async (req: Request, res: Response) => {
     }
 
     res.json(sessionEntry);
+  } catch (error) {
+    console.error("Error fetching session: ", error);
+    res.status(500).json({ message: "Server error. Unable to fetch session." });
+  }
+};
+
+export const isSessionRunning = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+
+  if (!categoryId) {
+    return res.status(400).json({ message: "Missing category ID" });
+  }
+
+  try {
+    let sessionEntry = await SessionData.findOne({
+      categoryId: categoryId,
+      active: true,
+    });
+
+    // If no session found, create one
+    if (sessionEntry && sessionEntry.round !== 0) {
+      res.json({ started: true });
+    }
+    res.json({ started: false });
   } catch (error) {
     console.error("Error fetching session: ", error);
     res.status(500).json({ message: "Server error. Unable to fetch session." });

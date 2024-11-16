@@ -15,8 +15,9 @@ import {
   getTasted,
   performVote,
   getSelection,
-  getActiveSession,
+  getOrCreateActiveSession,
   addUserToSession,
+  isSessionRunning,
 } from "./controllers/voting_session_controller";
 import { addUser } from "./controllers/user_controller";
 import { SessionData } from "./models";
@@ -110,8 +111,11 @@ app.post("/category/add", addCategory);
 // Endpoint to add user to the user database.
 app.post("/users/add", addUser);
 
+// Checks if the session for the given category is running.
+app.get("/:categoryId/session/running", isSessionRunning);
+
 // Gets an active session for the given category.
-app.get("/:categoryId/session/:userId/get", getActiveSession);
+app.get("/:categoryId/session/:userId/get", getOrCreateActiveSession);
 
 // Add a user to a session.
 app.post("/:categoryId/session/add", addUserToSession);

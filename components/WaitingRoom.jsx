@@ -74,6 +74,10 @@ const WaitingRoom = () => {
     };
     setupSession();
 
+    if (IsSessionStarted()) {
+      navigate(`/${categoryId}/voting`);
+    }
+
     // Set the share URL when the component is mounted
     setShareUrl(window.location.href);
   }, [categoryId, hostId, isUserAdded]);
@@ -89,7 +93,7 @@ const WaitingRoom = () => {
     return () => socket.off("start");
   }, [categoryId, navigate]);
 
-  const handleStart = async () => {
+  const handleStartButtonPressed = async () => {
     const session = await getSession();
     socket.emit("startSession", {
       categoryId,
@@ -113,12 +117,18 @@ const WaitingRoom = () => {
     <SafeAreaView style={styles.container}>
       <div>
         {waiting ? (
-          <Text>Waiting for the host to start...</Text>
+          hostId === userId ? (
+            <Text>Start when all tasters have joined</Text>
+          ) : (
+            <Text>Waiting for the host to start...</Text>
+          )
         ) : (
           <Text>Starting...</Text>
         )}
       </div>
-      {hostId === userId && <Button title="Start" onPress={handleStart} />}
+      {hostId === userId && (
+        <Button title="Start" onPress={handleStartButtonPressed} />
+      )}
 
       {/* Share link input box and copy button */}
       <Text style={styles.shareText}>Share this link with others:</Text>

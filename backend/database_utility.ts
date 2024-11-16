@@ -126,7 +126,7 @@ async function GetSelection(
       categoryId,
       tasterId: userId,
       round: parseInt(String(round), 10),
-    });
+    }).exec();
     if (!entry) {
       console.error(
         `Failed to find selection in category ${categoryId} for user ${userId} round ${round}`
@@ -191,10 +191,9 @@ async function FindTastedItems(
   console.log(`Generating taste-map for ${categoryId} and user ${userId}`);
 
   try {
-    const foodVotes = await VoteData.find({ categoryId, userId }).select([
-      "winnerId",
-      "loserId",
-    ]);
+    const foodVotes = await VoteData.find({ categoryId, userId })
+      .select(["winnerId", "loserId"])
+      .exec();
     if (!foodVotes) {
       console.error(
         "Failed to find any votes in category with user",
@@ -228,7 +227,7 @@ async function TryFindCategory(
   categoryId: string
 ): Promise<IFoodCategory | false> {
   try {
-    const categoryEntry = await FoodCategoryData.findOne({ categoryId });
+    const categoryEntry = await FoodCategoryData.findOne({ categoryId }).exec();
     if (!categoryEntry) {
       console.error("No category with ID ", categoryId);
       return false;

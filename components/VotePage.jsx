@@ -24,6 +24,11 @@ const VotePage = () => {
   const [waiting, setWaiting] = useState(false);
   const [round, setRound] = useState(0);
 
+  // Redirect user back to sign-in.
+  if (!userId) {
+    navigate(`/${categoryId}`);
+  }
+
   // Fetch options for the current round
   const fetchOptions = useCallback(
     async (currentRound) => {
