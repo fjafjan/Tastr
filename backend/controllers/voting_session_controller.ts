@@ -98,7 +98,7 @@ export const addUserToSession = async (req: Request, res: Response) => {
   if (!sessionId || !tasterId) {
     return res.status(400).json({ message: "Invalid session or user ID." });
   }
-
+  console.log(`Adding user ${tasterId} to session ${sessionId}`)
   try {
     let sessionEntry = await SessionData.findOne({ sessionId: sessionId }).exec();
 

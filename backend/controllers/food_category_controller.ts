@@ -59,6 +59,7 @@ export const categoryExists = async (req: Request, res: Response) => {
   if (!categoryId) {
     return res.status(400).json({ message: "Missing category ID" });
   }
+  console.log(`Checking if category ${categoryId} exists`);
   try {
     const entry = await FoodCategoryData.findOne({
       categoryId: categoryId,

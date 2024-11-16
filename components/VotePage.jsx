@@ -87,7 +87,9 @@ const VotePage = () => {
   // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
   const validateCategory = async () => {
     try {
-      var categoryResponse = await axios.get(`${SERVER_URL}/${categoryId}/get`);
+      var categoryResponse = await axios.get(
+        `${SERVER_URL}/category/get/${categoryId}`
+      );
       if (categoryResponse) {
         return;
       }

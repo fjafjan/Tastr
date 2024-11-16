@@ -110,7 +110,7 @@ app.get("/", (req: Request, res: Response) => {
 app.post("/category/add", addCategory);
 
 // Endpoint to save data sent from a user.
-app.post("/category/get", categoryExists);
+app.post("/category/get/:categoryId", categoryExists);
 
 // Endpoint to add user to the user database.
 app.post("/users/add", addUser);
