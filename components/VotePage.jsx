@@ -17,6 +17,7 @@ import { Button } from "react-native-web";
 const VotePage = () => {
   const { categoryId } = useParams();
   const [foodAliases, setFoodAliases] = useState({});
+  const [foodNames, setFoodNames] = useState({});
   const [hostId, setHostId] = useState("");
   const navigate = useNavigate();
   const [sessionId, setSessionId] = useState("");
@@ -109,19 +110,32 @@ const VotePage = () => {
     setupSession();
   }, [categoryId, hostId, sessionId]);
 
-  useEffect(() => {
-    const fetchAliases = async () => {
-      try {
-        const aliasResponse = await axios.get(
-          `${SERVER_URL}/${categoryId}/aliases`
-        );
-        setFoodAliases(aliasResponse.data);
-      } catch (error) {
-        Alert.alert("Error", "Failed to load food aliases.");
-        console.error("Error fetching aliases", error);
-      }
-    };
+  const fetchAliases = async () => {
+    try {
+      const aliasResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/aliases`
+      );
+      setFoodAliases(aliasResponse.data);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load food aliases.");
+      console.error("Error fetching aliases", error);
+    }
+  };
 
+  const fetchNames = async () => {
+    try {
+      const namesResponse = await axios.get(
+        `${SERVER_URL}/${categoryId}/names`
+      );
+      setFoodNames(namesResponse.data);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load food names.");
+      console.error("Error fetching names", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNames();
     fetchAliases();
     fetchOptions(round); // Use the round state explicitly here
   }, [categoryId, userId, fetchOptions]);
@@ -198,7 +212,7 @@ const VotePage = () => {
               style={styles.selectButton}
               onPress={() => handleSelect(foodId, selectedFoods[1 - index])}
             >
-              <Text style={styles.buttonText}>{foodAliases[foodId]}</Text>
+              <Text style={styles.buttonText}>{foodNames[foodId]}</Text>
             </TouchableOpacity>
           ))}
       </View>
