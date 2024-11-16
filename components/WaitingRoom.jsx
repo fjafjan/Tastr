@@ -12,6 +12,8 @@ import {
 } from "react-native-web";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
+import useValidateCategory from "../hooks/useValidateCategory";
+import useAddUserToSession from "../hooks/useAddUserToSession";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -45,16 +47,20 @@ const WaitingRoom = () => {
   // First check if category is valid.
   useValidateCategory(categoryId, () =>
     // If so, ensure user is added to session.
-    useAddUserToSession(categoryId, userId, setSessionId, setHostId, () => {
-      // Then, if voting is already ongoing, proceed to voting.
-      proceedToVotingIfRunning();
-    })
+    useAddUserToSession(
+      categoryId,
+      userId,
+      setSessionId,
+      setHostId,
+      setHostId,
+      () => {
+        // Then, if voting is already ongoing, proceed to voting.
+        proceedToVotingIfRunning();
+      }
+    )
   );
 
   useEffect(() => {
-    // Check if voting is active in the session, if so we continue to voting.
-    proceedToVotingIfRunning();
-
     // Set the share URL when the component is mounted
     setShareUrl(window.location.href);
   }, [categoryId]);
