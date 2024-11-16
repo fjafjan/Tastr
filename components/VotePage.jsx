@@ -226,7 +226,7 @@ const VotePage = () => {
       </View>
 
       <View>
-        <ResultsPage />
+        <ResultsPage round={round} />
       </View>
 
       <View>

@@ -83,10 +83,11 @@ export const isSessionRunning = async (req: Request, res: Response) => {
     // If no session found, create one
     if (sessionEntry && sessionEntry.round !== 0) {
       res.json({ running: true });
+    } else {
+      res.json({ running: false });
     }
-    res.json({ running: false });
   } catch (error) {
-    console.error("Error fetching session: ", error);
+    console.error("Error fetching session status: ", error);
     res.status(500).json({ message: "Server error. Unable to fetch session." });
   }
 };

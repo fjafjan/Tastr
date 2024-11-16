@@ -6,7 +6,7 @@ import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import "chart.js/auto";
 
-const ResultsPage = () => {
+const ResultsPage = ({ round }) => {
   const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
   const [chartData, setChartData] = useState({
     labels: [],
@@ -33,7 +33,7 @@ const ResultsPage = () => {
         labels: names,
         datasets: [
           {
-            label: "Votes",
+            label: "MMR (Tasty?)",
             data: values,
             backgroundColor: "rgba(75, 192, 192, 0.6)",
             borderColor: "rgba(75, 192, 192, 1)",
@@ -48,7 +48,7 @@ const ResultsPage = () => {
 
   useEffect(() => {
     fetchVotes();
-  }, [categoryId]);
+  }, [categoryId, round]);
 
   return (
     <SafeAreaView style={styles.container}>
