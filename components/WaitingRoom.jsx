@@ -22,6 +22,7 @@ const WaitingRoom = () => {
   const { categoryId } = useParams();
   const [waiting, setWaiting] = useState(true);
   const [hostId, setHostId] = useState("");
+  const [sessionId, setSessionId] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
@@ -49,7 +50,7 @@ const WaitingRoom = () => {
   const userAdded = useAddUserToSession(
     categoryId,
     userId,
-    null,
+    setSessionId,
     setHostId,
     categoryValid
   );
@@ -77,11 +78,10 @@ const WaitingRoom = () => {
   }
 
   const handleStartButtonPressed = async () => {
-    const session = await getSession();
     socket.emit("startSession", {
       categoryId,
-      hostId: session.hostId,
-      sessionId: session.sessionId,
+      hostId: userId,
+      sessionId: sessionId,
     });
   };
 
