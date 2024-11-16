@@ -65,9 +65,9 @@ export const categoryExists = async (req: Request, res: Response) => {
       categoryId: categoryId,
     }).exec();
     if (entry) {
-      res.json(200); // Found
+      res.sendStatus(200); // Found
     } else {
-      res.json(404); // Not found
+      res.sendStatus(404); // Not found
     }
   } catch (error) {
     console.log(`Failed to find category ID for ${categoryId} due to ${error}`);
