@@ -4,15 +4,14 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   SafeAreaView,
-  StyleSheet,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
 } from "react-native-web";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
+import useAddUserAfterValidCategory from "../hooks/useAddUserAfterValidCategory";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -24,49 +23,10 @@ const WaitingRoom = () => {
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
   const [shareUrl, setShareUrl] = useState(""); // For the share link
-  const [isUserAdded, setIsUserAdded] = useState(false); // Flag to track if user is added
 
   if (!userId) {
     navigate(`/${categoryId}`);
   }
-
-  const getSession = async () => {
-    try {
-      const sessionEntryResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/session/${userId}/get`
-      );
-      return sessionEntryResponse.data;
-    } catch (error) {
-      console.error("Failed to get active session ID", error);
-    }
-  };
-
-  const addUserToSession = async () => {
-    if (isUserAdded) return; // Prevent multiple additions
-
-    const sessionEntry = await getSession();
-    if (sessionEntry === undefined) {
-      console.error("Failed to get add user to session");
-      return;
-    }
-    setHostId(sessionEntry.hostId);
-    const sessionId = sessionEntry.sessionId;
-    console.log("Got session ID ", sessionId);
-    try {
-      if (!sessionEntry.tasterIds.includes(userId)) {
-        await axios.post(`${SERVER_URL}/${categoryId}/session/add`, {
-          sessionId,
-          tasterId: userId,
-        });
-        setIsUserAdded(true);
-      }
-    } catch (error) {
-      console.error(
-        `Failed to add user ${userId} to sessionId ${sessionId}`,
-        error
-      );
-    }
-  };
 
   const proceedToVotingIfRunning = async () => {
     try {
@@ -82,35 +42,15 @@ const WaitingRoom = () => {
     }
   };
 
-  // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
-  const validateCategory = async () => {
-    try {
-      var categoryResponse = await axios.get(
-        `${SERVER_URL}/category/get/${categoryId}`
-      );
-      if (categoryResponse) {
-        return;
-      }
-    } catch (error) {
-      console.warn(`Failed to find category ${categoryId}`);
-      return false;
-    }
-    navigate(`/`);
-  };
+  useAddUserAfterValidCategory(userId, categoryId, null, setHostId);
 
   useEffect(() => {
-    validateCategory();
-
-    const setupSession = async () => {
-      await addUserToSession();
-    };
-    setupSession();
     // Check if voting is active in the session, if so we continue to voting.
     proceedToVotingIfRunning();
 
     // Set the share URL when the component is mounted
     setShareUrl(window.location.href);
-  }, [categoryId, hostId, isUserAdded]);
+  }, [categoryId]);
 
   useEffect(() => {
     socket.on("start", () => {

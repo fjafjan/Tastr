@@ -1,0 +1,24 @@
+import useValidateCategory from "./useValidateCategory";
+import useAddUserToSession from "./useAddUserToSession";
+import { useState, useEffect } from "react";
+
+const useAddUserAfterValidCategory = (
+  categoryId,
+  userId,
+  setSessionId,
+  setHostId
+) => {
+  const [isCategoryValid, setIsCategoryValid] = useState(false);
+
+  // Validate the category and set `isCategoryValid` when successful
+  useValidateCategory(categoryId, () => setIsCategoryValid(true));
+
+  // Only run `useAddUserToSession` if the category is valid
+  useEffect(() => {
+    if (isCategoryValid) {
+      useAddUserToSession(categoryId, userId, setSessionId, setHostId);
+    }
+  }, [isCategoryValid, categoryId, userId, setSessionId, setHostId]);
+};
+
+export default useAddUserAfterValidCategory;

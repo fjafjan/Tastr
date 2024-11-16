@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { SERVER_URL } from "../constants/Constants";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  SafeAreaView,
-  TextInput,
-  Button,
-  StyleSheet,
-  View,
-} from "react-native-web";
+import { SafeAreaView, TextInput, Button, View } from "react-native-web";
 import { io } from "socket.io-client";
 import axios from "axios";
+import useValidateCategory from "../hooks/useValidateCategory";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -34,23 +29,7 @@ const LoginPage = () => {
     navigate(`/${categoryId}/waiting`, { state: { userId: name } });
   };
 
-  // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
-  const validateCategory = async () => {
-    try {
-      var categoryResponse = await axios.get(`${SERVER_URL}/category/get/${categoryId}`);
-      if (categoryResponse) {
-        return;
-      }
-    } catch (error) {
-      console.warn(`Failed to find category ${categoryId}`);
-      return false;
-    }
-    navigate(`/`);
-  };
-
-  useEffect(() => {
-    validateCategory();
-  });
+  useValidateCategory(categoryId, () => {});
 
   return (
     <SafeAreaView style={styles.container}>

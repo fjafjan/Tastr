@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import ResultsPage from "./ResultsPage";
 import { SERVER_URL } from "../constants/Constants";
 import { Button } from "react-native-web";
+import useAddUserAfterValidCategory from "../hooks/useAddUserAfterValidCategory";
 
 const VotePage = () => {
   const { categoryId } = useParams();
@@ -52,68 +53,7 @@ const VotePage = () => {
     [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
   );
 
-  const getSession = async () => {
-    try {
-      const sessionEntryResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/session/${userId}/get`
-      );
-      return sessionEntryResponse.data;
-    } catch (error) {
-      console.error("Failed to get active session ID", error);
-    }
-  };
-
-  const addUserToSession = async () => {
-    if (isUserAdded) return; // Prevent multiple additions
-
-    const sessionEntry = await getSession();
-    if (sessionEntry === undefined) {
-      console.error("Failed to get add user to session");
-      return;
-    }
-    setSessionId(sessionEntry.sessionId);
-    setHostId(sessionEntry.hostId);
-    console.log("Got session ID ", sessionId);
-    try {
-      if (!sessionEntry.tasterIds.includes(userId)) {
-        await axios.post(`${SERVER_URL}/${categoryId}/session/add`, {
-          sessionId,
-          tasterId: userId,
-        });
-        setIsUserAdded(true);
-      }
-    } catch (error) {
-      console.error(
-        `Failed to add user ${userId} to sessionId ${sessionId}`,
-        error
-      );
-    }
-  };
-
-  // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
-  const validateCategory = async () => {
-    try {
-      var categoryResponse = await axios.get(
-        `${SERVER_URL}/category/get/${categoryId}`
-      );
-      if (categoryResponse) {
-        return;
-      }
-    } catch (error) {
-      console.warn(`Failed to find category ${categoryId}`);
-      return false;
-    }
-    navigate(`/`);
-  };
-
-  useEffect(() => {
-    validateCategory();
-
-    const setupSession = async () => {
-      await addUserToSession();
-    };
-    setupSession();
-  }, [categoryId, hostId, sessionId]);
+  useAddUserAfterValidCategory(categoryId, userId, setSessionId, setHostId);
 
   const fetchAliases = async () => {
     try {
