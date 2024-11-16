@@ -82,9 +82,9 @@ export const isSessionRunning = async (req: Request, res: Response) => {
 
     // If no session found, create one
     if (sessionEntry && sessionEntry.round !== 0) {
-      res.json({ started: true });
+      res.json({ running: true });
     }
-    res.json({ started: false });
+    res.json({ running: false });
   } catch (error) {
     console.error("Error fetching session: ", error);
     res.status(500).json({ message: "Server error. Unable to fetch session." });
@@ -98,9 +98,11 @@ export const addUserToSession = async (req: Request, res: Response) => {
   if (!sessionId || !tasterId) {
     return res.status(400).json({ message: "Invalid session or user ID." });
   }
-  console.log(`Adding user ${tasterId} to session ${sessionId}`)
+  console.log(`Adding user ${tasterId} to session ${sessionId}`);
   try {
-    let sessionEntry = await SessionData.findOne({ sessionId: sessionId }).exec();
+    let sessionEntry = await SessionData.findOne({
+      sessionId: sessionId,
+    }).exec();
 
     if (!sessionEntry) {
       return res

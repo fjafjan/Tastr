@@ -73,7 +73,7 @@ const WaitingRoom = () => {
       const runningResponse = await axios.get(
         `${SERVER_URL}/${categoryId}/session/running`
       );
-      return runningResponse.data;
+      return runningResponse.data.running;
     } catch (error) {
       console.error("Failed to check if session was running", error);
       return false;
