@@ -24,7 +24,7 @@ const VotePage = () => {
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
-  const [round, setRound] = useState(0);
+  const [round, setRound] = useState(1);
 
   // Redirect user back to sign-in.
   if (!userId) {
