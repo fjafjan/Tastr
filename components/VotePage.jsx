@@ -26,7 +26,6 @@ const VotePage = () => {
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [round, setRound] = useState(1);
-  const [isUserAdded, setIsUserAdded] = useState(false); // Flag to track if user is added
 
   // Redirect user back to sign-in.
   if (!userId) {
