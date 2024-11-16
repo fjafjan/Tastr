@@ -12,7 +12,6 @@ import {
 } from "react-native-web";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
-import useAddUserAfterValidCategory from "../hooks/useAddUserAfterValidCategory";
 
 const socket = io(`${SERVER_URL}`); // Replace with your server URL
 
@@ -43,7 +42,14 @@ const WaitingRoom = () => {
     }
   };
 
-  useAddUserAfterValidCategory(userId, categoryId, null, setHostId);
+  // First check if category is valid.
+  useValidateCategory(categoryId, () =>
+    // If so, ensure user is added to session.
+    useAddUserToSession(categoryId, userId, setSessionId, setHostId, () => {
+      // Then, if voting is already ongoing, proceed to voting.
+      proceedToVotingIfRunning();
+    })
+  );
 
   useEffect(() => {
     // Check if voting is active in the session, if so we continue to voting.

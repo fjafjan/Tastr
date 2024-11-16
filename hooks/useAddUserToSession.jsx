@@ -3,8 +3,14 @@ import { useEffect } from "react";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
 
-const useAddUserToSession = (categoryId, userId, setSessionId, setHostId) => {
-  const [isUserAdded, setIsUserAdded] = useState(false); // Flag to track if user is added
+const useAddUserToSession = (
+  categoryId,
+  userId,
+  setSessionId,
+  setHostId,
+  onSuccessCallback
+) => {
+  const [userAdded, setUserAdded] = useState(false); // Flag to track if user is added
 
   const getSession = async () => {
     try {
@@ -19,7 +25,7 @@ const useAddUserToSession = (categoryId, userId, setSessionId, setHostId) => {
 
   useEffect(() => {
     const addUserToSession = async () => {
-      if (isUserAdded) return; // Prevent multiple additions
+      if (userAdded) return; // Prevent multiple additions
 
       const sessionEntry = await getSession();
       if (sessionEntry === undefined) {
@@ -37,7 +43,7 @@ const useAddUserToSession = (categoryId, userId, setSessionId, setHostId) => {
             sessionId: sessionEntry.sessionId,
             tasterId: userId,
           });
-          setIsUserAdded(true);
+          setUserAdded(true);
         }
       } catch (error) {
         console.error(
@@ -49,6 +55,14 @@ const useAddUserToSession = (categoryId, userId, setSessionId, setHostId) => {
 
     addUserToSession();
   }, [categoryId, userId]);
+
+  if (onSuccessCallback) {
+    useEffect(() => {
+      if (userAdded) {
+        onSuccessCallback();
+      }
+    });
+  }
 };
 
 export default useAddUserToSession;

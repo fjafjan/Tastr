@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
 
-const useValidateCategory = (categoryId, onSuccess) => {
+const useValidateCategory = (categoryId, onSuccessCallback) => {
   const navigate = useNavigate();
+  const [isCategoryValid, setIsCategoryValid] = useState(false);
 
   useEffect(() => {
     const validateCategory = async () => {
@@ -15,9 +16,7 @@ const useValidateCategory = (categoryId, onSuccess) => {
 
         if (categoryResponse && categoryResponse.status === 200) {
           console.log(`Found category ${categoryId}`);
-          if (onSuccess) {
-            onSuccess();
-          }
+          setIsCategoryValid(true);
         } else {
           console.warn(
             `Category ${categoryId} validation failed with status ${categoryResponse.status}`
@@ -33,7 +32,15 @@ const useValidateCategory = (categoryId, onSuccess) => {
     if (categoryId) {
       validateCategory();
     }
-  }, [categoryId, navigate, onSuccess]);
+  }, [categoryId, navigate, onSuccessCallback]);
+
+  if (onSuccessCallback) {
+    useEffect(() => {
+      if (isCategoryValid) {
+        useAddUserToSession(categoryId, userId, setSessionId, setHostId);
+      }
+    }, [isCategoryValid, categoryId, userId, setSessionId, setHostId]);
+  }
 };
 
 export default useValidateCategory;

@@ -13,7 +13,8 @@ import { io } from "socket.io-client";
 import ResultsPage from "./ResultsPage";
 import { SERVER_URL } from "../constants/Constants";
 import { Button } from "react-native-web";
-import useAddUserAfterValidCategory from "../hooks/useAddUserAfterValidCategory";
+import useValidateCategory from "../hooks/useValidateCategory";
+import useAddUserToSession from "../hooks/useAddUserToSession";
 
 const VotePage = () => {
   const { categoryId } = useParams();
@@ -52,7 +53,9 @@ const VotePage = () => {
     [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
   );
 
-  useAddUserAfterValidCategory(categoryId, userId, setSessionId, setHostId);
+  useValidateCategory(categoryId, () =>
+    useAddUserToSession(categoryId, userId, setSessionId, setHostId)
+  );
 
   const fetchAliases = async () => {
     try {
