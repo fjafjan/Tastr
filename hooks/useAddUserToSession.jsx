@@ -63,6 +63,7 @@ const useAddUserToSession = (
       }
     });
   }
+  return userAdded
 };
 
 export default useAddUserToSession;

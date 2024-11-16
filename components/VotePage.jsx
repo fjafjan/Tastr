@@ -53,9 +53,10 @@ const VotePage = () => {
     [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
   );
 
-  useValidateCategory(categoryId, () =>
-    useAddUserToSession(categoryId, userId, setSessionId, setHostId)
-  );
+  const categoryValid = useValidateCategory(categoryId);
+  if (categoryValid) {
+    useAddUserToSession(categoryId, userId, setSessionId, setHostId);
+  }
 
   const fetchAliases = async () => {
     try {

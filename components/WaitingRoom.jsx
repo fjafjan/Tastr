@@ -44,21 +44,13 @@ const WaitingRoom = () => {
     }
   };
 
-  // First check if category is valid.
-  useValidateCategory(categoryId, () =>
-    // If so, ensure user is added to session.
-    useAddUserToSession(
-      categoryId,
-      userId,
-      setSessionId,
-      setHostId,
-      setHostId,
-      () => {
-        // Then, if voting is already ongoing, proceed to voting.
-        proceedToVotingIfRunning();
-      }
-    )
-  );
+  const categoryValid = useValidateCategory(categoryId);
+  if (categoryValid) {
+    const userAdded = useAddUserToSession(categoryId, userId, null, setHostId);
+    if (userAdded) {
+      proceedToVotingIfRunning();
+    }
+  }
 
   useEffect(() => {
     // Set the share URL when the component is mounted

@@ -17,6 +17,11 @@ const useValidateCategory = (categoryId, onSuccessCallback) => {
         if (categoryResponse && categoryResponse.status === 200) {
           console.log(`Found category ${categoryId}`);
           setIsCategoryValid(true);
+
+          // Run the success callback if provided
+          if (onSuccessCallback) {
+            onSuccessCallback();
+          }
         } else {
           console.warn(
             `Category ${categoryId} validation failed with status ${categoryResponse.status}`
@@ -34,13 +39,7 @@ const useValidateCategory = (categoryId, onSuccessCallback) => {
     }
   }, [categoryId, navigate, onSuccessCallback]);
 
-  if (onSuccessCallback) {
-    useEffect(() => {
-      if (isCategoryValid) {
-        onSuccessCallback();
-      }
-    });
-  }
+  return isCategoryValid; // Optional return if needed by consuming component
 };
 
 export default useValidateCategory;
