@@ -25,6 +25,7 @@ const VotePage = () => {
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [round, setRound] = useState(1);
+  const [isUserAdded, setIsUserAdded] = useState(false); // Flag to track if user is added
 
   // Redirect user back to sign-in.
   if (!userId) {
@@ -63,6 +64,8 @@ const VotePage = () => {
   };
 
   const addUserToSession = async () => {
+    if (isUserAdded) return; // Prevent multiple additions
+
     const sessionEntry = await getSession();
     if (sessionEntry === undefined) {
       console.error("Failed to get add user to session");
@@ -77,6 +80,7 @@ const VotePage = () => {
           sessionId,
           tasterId: userId,
         });
+        setIsUserAdded(true);
       }
     } catch (error) {
       console.error(
@@ -138,6 +142,9 @@ const VotePage = () => {
   useEffect(() => {
     fetchNames();
     fetchAliases();
+  }, [categoryId, setFoodNames, setFoodAliases]);
+
+  useEffect(() => {
     fetchOptions(round); // Use the round state explicitly here
   }, [categoryId, userId, fetchOptions, round]);
 
@@ -148,7 +155,7 @@ const VotePage = () => {
     const handleRoundReady = async (data) => {
       console.log("Round ready event received: ", data.round);
       setRound(data.round);
-      // await fetchOptions(data.round); // Fetch options for the new round
+      await fetchOptions(data.round); // Fetch options for the new round
       setWaiting(false);
     };
 
