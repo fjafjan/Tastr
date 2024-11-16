@@ -80,7 +80,23 @@ const WaitingRoom = () => {
     }
   };
 
+  // Ensure that the category exists. If not, we should leave to the homepage to let the user start a new session.
+  const validateCategory = async () => {
+    try {
+      var categoryResponse = await axios.get(`${SERVER_URL}/${categoryId}/get`);
+      if (categoryResponse) {
+        return;
+      }
+    } catch (error) {
+      console.warn(`Failed to find category ${categoryId}`);
+      return false;
+    }
+    navigate(`/`);
+  };
+
   useEffect(() => {
+    validateCategory();
+
     const setupSession = async () => {
       await addUserToSession();
     };
