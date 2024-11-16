@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { SERVER_URL } from "../constants/Constants";
 import { useNavigate, useParams } from "react-router-dom";
-import { SafeAreaView, TextInput, Button, View } from "react-native-web";
+import {
+  SafeAreaView,
+  TextInput,
+  Button,
+  StyleSheet,
+  View,
+} from "react-native-web";
 import { io } from "socket.io-client";
 import axios from "axios";
 import useValidateCategory from "../hooks/useValidateCategory";
@@ -29,7 +35,7 @@ const LoginPage = () => {
     navigate(`/${categoryId}/waiting`, { state: { userId: name } });
   };
 
-  useValidateCategory(categoryId, () => {});
+  useValidateCategory(categoryId);
 
   return (
     <SafeAreaView style={styles.container}>
