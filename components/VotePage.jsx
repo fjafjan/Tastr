@@ -34,6 +34,7 @@ const VotePage = () => {
   // Fetch options for the current round
   const fetchOptions = useCallback(
     async (currentRound) => {
+      console.log(`Getting options for round ${currentRound}`);
       try {
         const optionsResponse = await axios.get(
           `${SERVER_URL}/${categoryId}/selection/${currentRound}/${userId}`
@@ -138,7 +139,7 @@ const VotePage = () => {
     fetchNames();
     fetchAliases();
     fetchOptions(round); // Use the round state explicitly here
-  }, [categoryId, userId, fetchOptions]);
+  }, [categoryId, userId, fetchOptions, round]);
 
   // Memoize socket connection
   const socket = useMemo(() => io(`${SERVER_URL}`), [categoryId]);
@@ -147,7 +148,7 @@ const VotePage = () => {
     const handleRoundReady = async (data) => {
       console.log("Round ready event received: ", data.round);
       setRound(data.round);
-      await fetchOptions(data.round); // Fetch options for the new round
+      // await fetchOptions(data.round); // Fetch options for the new round
       setWaiting(false);
     };
 
@@ -157,7 +158,7 @@ const VotePage = () => {
       socket.off("round ready", handleRoundReady);
       socket.disconnect(); // Ensure socket disconnects on component unmount
     };
-  }, [socket, fetchOptions]); // Do not include `round` here as it's updated inside the effect
+  }, [socket, fetchOptions, setRound]); // Do not include `round` here as it's updated inside the effect
 
   const handleSelect = useCallback(
     async (foodIdA, foodIdB) => {
