@@ -55,12 +55,14 @@ const VotePage = () => {
   );
 
   const categoryValid = useValidateCategory(categoryId);
-  if (categoryValid) {
-    useAddUserToSession(categoryId, userId, setSessionId, setHostId);
-  } else {
-    <ClipLoader></ClipLoader>;
-    return <ClipLoader size={50} color="#36D7B7" />;
-  }
+
+  const userAdded = useAddUserToSession(
+    categoryId,
+    userId,
+    setSessionId,
+    setHostId,
+    categoryValid
+  );
 
   const fetchAliases = async () => {
     try {
@@ -155,6 +157,10 @@ const VotePage = () => {
       console.error("Error starting next round of voting", error);
     }
   };
+
+  if (!(categoryValid && userAdded)) {
+    return <ClipLoader size={50} color="#36D7B7" />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

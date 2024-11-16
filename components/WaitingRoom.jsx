@@ -45,18 +45,14 @@ const WaitingRoom = () => {
     }
   };
 
-  const loading = true;
   const categoryValid = useValidateCategory(categoryId);
-  if (categoryValid) {
-    const userAdded = useAddUserToSession(categoryId, userId, null, setHostId);
-    if (userAdded) {
-      proceedToVotingIfRunning();
-      loading = false;
-    }
-  }
-  if (loading) {
-    return <ClipLoader size={50} color="#36D7B7" />;
-  }
+  const userAdded = useAddUserToSession(
+    categoryId,
+    userId,
+    null,
+    setHostId,
+    categoryValid
+  );
 
   useEffect(() => {
     // Set the share URL when the component is mounted
@@ -73,6 +69,12 @@ const WaitingRoom = () => {
 
     return () => socket.off("start");
   }, [categoryId, navigate]);
+
+  if (categoryValid && userAdded) {
+    proceedToVotingIfRunning();
+  } else {
+    return <ClipLoader size={50} color="#36D7B7" />;
+  }
 
   const handleStartButtonPressed = async () => {
     const session = await getSession();

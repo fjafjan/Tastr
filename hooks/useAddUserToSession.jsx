@@ -8,6 +8,7 @@ const useAddUserToSession = (
   userId,
   setSessionId,
   setHostId,
+  precondition,
   onSuccessCallback
 ) => {
   const [userAdded, setUserAdded] = useState(false); // Flag to track if user is added
@@ -52,9 +53,10 @@ const useAddUserToSession = (
         );
       }
     };
-
-    addUserToSession();
-  }, [categoryId, userId]);
+    if (precondition) {
+      addUserToSession();
+    }
+  }, [categoryId, userId, precondition]);
 
   if (onSuccessCallback) {
     useEffect(() => {
@@ -63,7 +65,7 @@ const useAddUserToSession = (
       }
     });
   }
-  return userAdded
+  return userAdded;
 };
 
 export default useAddUserToSession;
