@@ -19,6 +19,12 @@ const LoginPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const userId = location.state?.userId || localStorage.getItem("userId");
+
+  // If we already know who this is.
+  if (userId) {
+    navigate(`/${categoryId}/waiting`);
+  }
 
   const handleLogin = async () => {
     // Save the name in local storage or cookies as needed
