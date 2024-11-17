@@ -23,6 +23,8 @@ const WaitingRoom = () => {
   const [waiting, setWaiting] = useState(true);
   const [hostId, setHostId] = useState("");
   const [sessionId, setSessionId] = useState("");
+  const [categoryValid, setCategoryValid] = useState(false);
+  const [userAdded, setUserAdded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
@@ -46,13 +48,15 @@ const WaitingRoom = () => {
     }
   };
 
-  const categoryValid = useValidateCategory(categoryId);
-  const userAdded = useAddUserToSession(
-    categoryId,
-    userId,
-    setSessionId,
-    setHostId,
-    categoryValid
+  setCategoryValid(useValidateCategory(categoryId));
+  setUserAdded(
+    useAddUserToSession(
+      categoryId,
+      userId,
+      setSessionId,
+      setHostId,
+      categoryValid
+    )
   );
 
   useEffect(() => {
