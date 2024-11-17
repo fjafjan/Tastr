@@ -44,8 +44,8 @@ const useAddUserToSession = (
             sessionId: sessionEntry.sessionId,
             tasterId: userId,
           });
-          setUserAdded(true);
         }
+        setUserAdded(true);
       } catch (error) {
         console.error(
           `Failed to add user ${userId} to categoryId ${categoryId}`,
