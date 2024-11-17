@@ -23,8 +23,6 @@ const WaitingRoom = () => {
   const [waiting, setWaiting] = useState(true);
   const [hostId, setHostId] = useState("");
   const [sessionId, setSessionId] = useState("");
-  const [categoryValid, setCategoryValid] = useState(false);
-  const [userAdded, setUserAdded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.userId || localStorage.getItem("userId");
@@ -48,15 +46,13 @@ const WaitingRoom = () => {
     }
   };
 
-  setCategoryValid(useValidateCategory(categoryId));
-  setUserAdded(
-    useAddUserToSession(
-      categoryId,
-      userId,
-      setSessionId,
-      setHostId,
-      categoryValid
-    )
+  const categoryValid = useValidateCategory(categoryId);
+  const userAdded = useAddUserToSession(
+    categoryId,
+    userId,
+    setSessionId,
+    setHostId,
+    categoryValid
   );
 
   useEffect(() => {
@@ -75,10 +71,15 @@ const WaitingRoom = () => {
     return () => socket.off("start");
   }, [categoryId, navigate]);
 
+  useEffect(() => {
+    if (categoryValid && userAdded) {
+      proceedToVotingIfRunning();
+    }
+  }, [categoryValid, userAdded]);
+
   if (categoryValid && userAdded) {
     proceedToVotingIfRunning();
   } else {
-    return <ClipLoader size={50} color="#36D7B7" />;
   }
 
   const handleStartButtonPressed = async () => {
@@ -100,6 +101,9 @@ const WaitingRoom = () => {
       });
   };
 
+  if (!(categoryValid && userAdded)) {
+    return <ClipLoader size={50} color="#36D7B7" />;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <div>
