@@ -1,13 +1,13 @@
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { createHtmlPlugin } from 'vite-plugin-html';
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { createHtmlPlugin } from "vite-plugin-html";
 
 // Vite does not use the webpack.DefinePlugin directly,
 // but you can define environment variables in Vite config or `.env` files.
 
 export default defineConfig(({ mode }) => {
-  const isDevelopment = mode === 'development';
+  const isDevelopment = mode === "development";
 
   const extensions = [
     ".web.tsx",
@@ -27,13 +27,11 @@ export default defineConfig(({ mode }) => {
 
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '')
+  const env = loadEnv(mode, process.cwd(), "");
 
   return {
-    root: './', // Ensure the root is set correctly for Vite to find the entry point
-    plugins: [
-      react(),
-    ],
+    root: "./", // Ensure the root is set correctly for Vite to find the entry point
+    plugins: [react()],
     define: {
       // https://github.com/bevacqua/dragula/issues/602#issuecomment-1296313369
       global: "window",
@@ -45,20 +43,19 @@ export default defineConfig(({ mode }) => {
       "process.env.VITE_SERVER_URL": JSON.stringify(process.env.SERVER_URL),
       "process.env.VITE_SERVER_PORT": JSON.stringify(process.env.SERVER_PORT),
       __APP_ENV__: JSON.stringify(env.APP_ENV),
-
     },
     resolve: {
       alias: {
-        'react-native': 'react-native-web',
+        "react-native": "react-native-web",
       },
       extensions: extensions,
     },
     build: {
-      outDir: 'dist',
+      outDir: "dist",
       sourcemap: isDevelopment,
       rollupOptions: {
         output: {
-          entryFileNames: 'bundle.js',
+          entryFileNames: "bundle.js",
         },
       },
     },
@@ -83,7 +80,6 @@ export default defineConfig(({ mode }) => {
         jsx: "automatic",
         // need either this or the plugin below
         loader: { ".js": "jsx" },
-
       },
     },
   };
