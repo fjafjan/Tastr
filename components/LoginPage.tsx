@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
   };
 
   // Check the validity of the category, show a spinner while loading
-  const validCategory = useValidateCategory(categoryId || "");
+  const validCategory = useValidateCategory({ categoryId: categoryId || "" });
   if (!validCategory) {
     return <ClipLoader size={50} color="#36D7B7" />;
   }

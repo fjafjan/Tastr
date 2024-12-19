@@ -53,14 +53,14 @@ const WaitingRoom: React.FC = () => {
     }
   };
 
-  const categoryValid = useValidateCategory(categoryId);
-  const userAdded = useAddUserToSession(
-    categoryId,
-    userId!,
-    setSessionId,
-    setHostId,
-    categoryValid
-  );
+  const categoryValid = useValidateCategory({ categoryId: categoryId });
+  const userAdded = useAddUserToSession({
+    categoryId: categoryId || "",
+    userId: userId || "",
+    setSessionId: setSessionId,
+    setHostId: setHostId,
+    precondition: categoryValid,
+  });
 
   useEffect(() => {
     // Set the share URL when the component is mounted
