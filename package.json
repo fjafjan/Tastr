@@ -24,7 +24,7 @@
     "cors": "^2.8.5",
     "expo": "^51.0.32",
     "express": "^4.21.2",
-    "mongodb-memory-server": "^10.0.1",
+    "mongodb-memory-server": "^10.1.2",
     "mongoose": "^8.8.3",
     "path": "^0.12.7",
     "react": "^18.3.1",
