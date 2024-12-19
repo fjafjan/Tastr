@@ -2,7 +2,6 @@ import { addUser } from "../../backend/controllers/user_controller"; // Adjust t
 import { Request, Response } from "express";
 import { UserData } from "../../backend/models";
 import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
-import { it } from "node:test";
 
 beforeAll(async () => {
   await connect(); // Set up connection before tests
@@ -29,7 +28,7 @@ function createMockResponse(): Response {
 }
 
 describe("UserController - addUser", () => {
-  it("should add a new user and update the database", async () => {
+  test("should add a new user and update the database", async () => {
     const mockRequest = createMockRequest({
       userId: "user123",
       name: "John Doe",
@@ -50,7 +49,7 @@ describe("UserController - addUser", () => {
     expect(addedUser?.email?.email).toBe("john@example.com");
   });
 
-  it("should update an existing user and modify the database", async () => {
+  test("should update an existing user and modify the database", async () => {
     // Pre-populate the database with an existing user
     const existingUser = new UserData({
       userId: "existingUser",
@@ -79,7 +78,7 @@ describe("UserController - addUser", () => {
     expect(updatedUser?.email?.email).toBe("jane@example.com");
   });
 
-  it("should return 404 and not modify the database on error", async () => {
+  test("should return 404 and not modify the database on error", async () => {
     const mockRequest = createMockRequest({
       userId: "errorUser",
       name: "Error User",

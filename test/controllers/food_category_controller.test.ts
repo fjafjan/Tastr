@@ -8,7 +8,6 @@ import { Request, Response } from "express";
 import { FoodCategoryData, IFoodCategory } from "../../backend/models";
 import { ParamsDictionary } from "express-serve-static-core";
 import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
-import { it } from "node:test";
 
 beforeAll(async () => {
   await connect(); // Set up connection before tests
@@ -52,7 +51,7 @@ function GetMockResponse(): Response {
 }
 
 describe("FoodCategoryController", () => {
-  it("should add a new category", async () => {
+  test("should add a new category", async () => {
     const mockRequest = {
       body: {
         categoryId: "new-category",
@@ -73,7 +72,7 @@ describe("FoodCategoryController", () => {
     expect(mockResponse.sendStatus).toHaveBeenCalledWith(200); // Assuming success
   });
 
-  it("Should retrieve names from category", async () => {
+  test("Should retrieve names from category", async () => {
     const mockResponse = GetMockResponse();
 
     await getNames(validCategoryRequest, mockResponse);
@@ -81,7 +80,7 @@ describe("FoodCategoryController", () => {
     expect(mockResponse.json).toHaveBeenCalledWith({ "1": "Pizza" });
   });
 
-  it("Should retrieve aliases from category", async () => {
+  test("Should retrieve aliases from category", async () => {
     const mockResponse = GetMockResponse();
 
     await getAliases(validCategoryRequest, mockResponse);
@@ -89,7 +88,7 @@ describe("FoodCategoryController", () => {
     expect(mockResponse.json).toHaveBeenCalledWith({ "1": "P" });
   });
 
-  it("Should retrieve MMR from category", async () => {
+  test("Should retrieve MMR from category", async () => {
     const mockResponse = GetMockResponse();
 
     await getMmr(validCategoryRequest, mockResponse);

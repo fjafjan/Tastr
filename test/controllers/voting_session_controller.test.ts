@@ -15,7 +15,6 @@ import {
 import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
 import { v4 as uuidv4 } from "uuid"; // For uuid generation
 import { NONAME } from "dns";
-import { it } from "node:test";
 
 jest.mock("uuid");
 jest.mock("../../backend/database_utility");
@@ -71,7 +70,7 @@ function createMockResponse(): Response {
 
 describe("VotingSessionController", () => {
   describe("getOrCreateActiveSession", () => {
-    it("should return an existing active session", async () => {
+    test("should return an existing active session", async () => {
       const req = createMockRequest(
         {
           categoryId: "test-category",
@@ -89,7 +88,7 @@ describe("VotingSessionController", () => {
       );
     });
 
-    it("should create a new session if none exists", async () => {
+    test("should create a new session if none exists", async () => {
       mockedUuidv4.mockReturnValue("new-session-id");
       const req = createMockRequest(
         {
@@ -115,7 +114,7 @@ describe("VotingSessionController", () => {
       );
     });
 
-    it("should return 400 for invalid parameters", async () => {
+    test("should return 400 for invalid parameters", async () => {
       const req = { params: {} } as Request; // No params
       const res = GetMockResponse();
 
@@ -129,7 +128,7 @@ describe("VotingSessionController", () => {
   });
 
   describe("addUserToSession", () => {
-    it("should add a user to an existing session", async () => {
+    test("should add a user to an existing session", async () => {
       const req = {
         body: { sessionId: "existing-session", tasterId: "taster2" },
       } as Request;
@@ -144,7 +143,7 @@ describe("VotingSessionController", () => {
       expect(res.sendStatus).toHaveBeenCalledWith(200);
     });
 
-    it("should return 403 if the user is already in the session", async () => {
+    test("should return 403 if the user is already in the session", async () => {
       const req = {
         body: { sessionId: "existing-session", tasterId: "taster1" }, // Already present
       } as Request;
@@ -158,7 +157,7 @@ describe("VotingSessionController", () => {
       });
     });
 
-    it("should return 404 if the session is not found", async () => {
+    test("should return 404 if the session is not found", async () => {
       const req = {
         body: { sessionId: "non-existent-session", tasterId: "new-taster" },
       } as Request;
@@ -174,7 +173,7 @@ describe("VotingSessionController", () => {
   });
 
   describe("getSelection", () => {
-    it("should return the selection for a user", async () => {
+    test("should return the selection for a user", async () => {
       mockedGetSelection.mockResolvedValue({
         option1: "Pizza",
         option2: "Burger",
@@ -198,7 +197,7 @@ describe("VotingSessionController", () => {
       });
     });
 
-    it("should return 404 if no selection is found", async () => {
+    test("should return 404 if no selection is found", async () => {
       mockedGetSelection.mockResolvedValue(null);
 
       const req = createMockRequest(
@@ -219,7 +218,7 @@ describe("VotingSessionController", () => {
   });
 
   describe("getTasted", () => {
-    it("should return tasted items for a user", async () => {
+    test("should return tasted items for a user", async () => {
       mockedFindTastedItems.mockResolvedValue({ "1": "Pizza", "2": "Burger" });
 
       const req = createMockRequest(
@@ -239,7 +238,7 @@ describe("VotingSessionController", () => {
       });
     });
 
-    it("should return 404 if no tasted items are found", async () => {
+    test("should return 404 if no tasted items are found", async () => {
       mockedFindTastedItems.mockResolvedValue(null);
 
       const req = createMockRequest(
@@ -261,7 +260,7 @@ describe("VotingSessionController", () => {
   });
 
   describe("performVote", () => {
-    it("should perform a vote and return 200", async () => {
+    test("should perform a vote and return 200", async () => {
       mockedPerformVote.mockResolvedValue(true);
 
       const req = createMockRequest(
@@ -285,7 +284,7 @@ describe("VotingSessionController", () => {
       expect(res.sendStatus).toHaveBeenCalledWith(200);
     });
 
-    it("should return 500 if the vote fails", async () => {
+    test("should return 500 if the vote fails", async () => {
       mockedPerformVote.mockResolvedValue(false);
 
       const req = createMockRequest(
