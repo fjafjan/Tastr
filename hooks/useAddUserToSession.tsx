@@ -42,8 +42,6 @@ const useAddUserToSession = ({
 
   useEffect(() => {
     const addUserToSession = async () => {
-      if (userAdded) return; // Prevent multiple additions
-
       const sessionEntry = await getSession();
       if (!sessionEntry) {
         console.error("Failed to add user to session");
@@ -53,6 +51,8 @@ const useAddUserToSession = ({
         setSessionId(sessionEntry.sessionId);
       }
       setHostId(sessionEntry.hostId);
+
+      if (userAdded) return; // Prevent multiple additions
       console.log("Got session ID ", sessionEntry.sessionId);
       try {
         if (!sessionEntry.tasterIds.includes(userId)) {
