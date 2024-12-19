@@ -2,6 +2,7 @@ import { addUser } from "../../backend/controllers/user_controller"; // Adjust t
 import { Request, Response } from "express";
 import { UserData } from "../../backend/models";
 import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
+import { it } from "node:test";
 
 beforeAll(async () => {
   await connect(); // Set up connection before tests

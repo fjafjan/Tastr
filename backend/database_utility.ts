@@ -239,8 +239,8 @@ async function TryFindCategory(
   }
 }
 
+export type { FoodObject };
 export {
-  FoodObject,
   CreateSession,
   GenerateSelections,
   GetSelection,

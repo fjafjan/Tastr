@@ -15,6 +15,7 @@ import {
 import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
 import { v4 as uuidv4 } from "uuid"; // For uuid generation
 import { NONAME } from "dns";
+import { it } from "node:test";
 
 jest.mock("uuid");
 jest.mock("../../backend/database_utility");
