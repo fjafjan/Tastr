@@ -4,10 +4,6 @@
   "homepage": "https://fjafjan.github.io/tastr",
   "type": "commonjs",
   "main": "index.js",
-  "scriptsOld": {
-    "web": "webpack serve --config webpack.config.js",
-    "build-web": "webpack --config webpack.config.js"
-  },
   "scripts": {
     "start": "vite",
     "build": "vite build",
@@ -58,16 +54,12 @@
     "@types/uuid": "^10.0.0",
     "babel-loader": "^9.1.2",
     "chai": "^5.1.1",
-    "html-webpack-plugin": "^5.6.0",
     "jest": "^29.7.0",
     "mocha": "^10.7.3",
     "react-test-renderer": "^18.3.1",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.11.0"
+    "typescript": "^5.6.3"
   }
 }

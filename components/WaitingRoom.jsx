@@ -61,9 +61,13 @@ const WaitingRoom = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    socket.on("start", () => {
-      setWaiting(false);
-      navigate(`/${categoryId}/voting`);
+    socket.on("start", (startedSessionId) => {
+      if (startedSessionId === sessionId) {
+        setWaiting(false);
+        navigate(`/${categoryId}/voting`);
+      } else {
+        console.info("Different session has started");
+      }
     });
 
     socket.emit("join", { userId });
@@ -76,11 +80,6 @@ const WaitingRoom = () => {
       proceedToVotingIfRunning();
     }
   }, [categoryValid, userAdded]);
-
-  if (categoryValid && userAdded) {
-    proceedToVotingIfRunning();
-  } else {
-  }
 
   const handleStartButtonPressed = async () => {
     socket.emit("startSession", {

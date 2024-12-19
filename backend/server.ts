@@ -63,9 +63,9 @@ const startNewRound = async (sessionId: string, categoryId: string) => {
 
   await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
 
-  console.log(`Starting round ${sessionEntry.round}`)
+  console.log(`Starting round ${sessionEntry.round}`);
   if (sessionEntry.round === 1) {
-    io.emit("start");
+    io.emit("start", { sessionId: sessionId });
   } else {
     io.emit("round ready", { round: sessionEntry.round });
   }
