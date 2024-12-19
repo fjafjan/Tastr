@@ -67,7 +67,7 @@ const startNewRound = async (sessionId: string, categoryId: string) => {
   if (sessionEntry.round === 1) {
     io.emit("start", { sessionId: sessionId });
   } else {
-    io.emit("round ready", { round: sessionEntry.round });
+    io.emit("round ready", { sessionId: sessionId, round: sessionEntry.round });
   }
 };
 

@@ -100,7 +100,14 @@ const VotePage: React.FC = () => {
   const socket = useMemo<Socket>(() => io(`${SERVER_URL}`), [categoryId]);
 
   useEffect(() => {
-    const handleRoundReady = async (data: { round: number }): Promise<void> => {
+    const handleRoundReady = async (data: {
+      sessionId: string;
+      round: number;
+    }): Promise<void> => {
+      if (sessionId !== data.sessionId) {
+        console.log("Voting in other session");
+        return;
+      }
       console.log("Round ready event received: ", data.round);
       setRound(data.round);
       await fetchOptions(data.round);

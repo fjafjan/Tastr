@@ -68,21 +68,25 @@ const WaitingRoom: React.FC = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    socket.on("start", ({ sessionId: startedSessionId }) => {
-      if (startedSessionId === sessionId) {
+    const handleStart = async (data: { sessionId: string }): Promise<void> => {
+      console.log("Session started event received: ", data.sessionId);
+      if (data.sessionId === sessionId) {
         setWaiting(false);
         navigate(`/${categoryId}/voting`);
       } else {
         console.info("Different session has started");
       }
-    });
+    };
+
+    socket.on("start", handleStart);
 
     socket.emit("join", { userId });
 
     return () => {
-      socket.off("start");
+      socket.off("start", handleStart);
+      socket.disconnect();
     };
-  }, [categoryId, navigate, sessionId, userId]);
+  }, [socket, categoryId, navigate, sessionId, userId]);
 
   useEffect(() => {
     if (categoryValid && userAdded) {
