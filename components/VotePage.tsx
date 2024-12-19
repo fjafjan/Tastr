@@ -120,7 +120,7 @@ const VotePage: React.FC = () => {
       socket.off("round ready", handleRoundReady);
       socket.disconnect();
     };
-  }, [socket, fetchOptions]);
+  }, [socket, fetchOptions, sessionId]);
 
   const handleSelect = useCallback(
     async (foodIdA: string, foodIdB: string): Promise<void> => {
