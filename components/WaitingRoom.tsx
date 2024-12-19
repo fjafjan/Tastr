@@ -68,7 +68,7 @@ const WaitingRoom: React.FC = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    socket.on("start", (startedSessionId: string) => {
+    socket.on("start", ({ sessionId: startedSessionId }) => {
       if (startedSessionId === sessionId) {
         setWaiting(false);
         navigate(`/${categoryId}/voting`);
