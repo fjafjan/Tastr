@@ -84,6 +84,7 @@ const WaitingRoom: React.FC = () => {
 
     return () => {
       socket.off("start", handleStart);
+      socket.disconnect();
     };
   }, [socket, categoryId, navigate, sessionId, userId]);
 
