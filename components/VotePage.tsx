@@ -118,7 +118,6 @@ const VotePage: React.FC = () => {
 
     return () => {
       socket.off("round ready", handleRoundReady);
-      socket.disconnect();
     };
   }, [socket, fetchOptions, sessionId]);
 
