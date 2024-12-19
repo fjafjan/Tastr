@@ -3,27 +3,35 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
-  StyleSheet,
   View,
   Button,
   ActivityIndicator,
   Alert,
   Text,
 } from "react-native-web";
+import { StyleSheet } from "react-native";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
 import axios from "axios";
+import { Style } from "util";
 
-const HomePage = () => {
-  const [categoryName, setCategoryName] = useState("");
-  const [foodItems, setFoodItems] = useState([{ id: 1, value: "" }]);
-  const [isLoading, setIsLoading] = useState(false);
+type FoodItem = {
+  id: number;
+  value: string;
+};
+
+const HomePage: React.FC = () => {
+  const [categoryName, setCategoryName] = useState<string>("");
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([
+    { id: 1, value: "" },
+  ]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   // Function to return alphabet letter based on index (A, B, C...)
-  const getLetter = (index) => String.fromCharCode(65 + index);
+  const getLetter = (index: number): string => String.fromCharCode(65 + index);
 
-  const handleChange = (id, value) => {
+  const handleChange = (id: number, value: string): void => {
     setFoodItems((prevItems) =>
       prevItems.map((item) => (item.id === id ? { ...item, value } : item))
     );
@@ -36,18 +44,21 @@ const HomePage = () => {
     }
   };
 
-  const handleDone = async () => {
+  const handleDone = async (): Promise<void> => {
     if (!categoryName || foodItems.every((item) => item.value === "")) {
-      Alert.alert("Error", "Please enter a category and at least one item.");
+      window.alert("Error: Please enter a category and at least one item.");
       return;
     }
 
     const categoryId = categoryName.toLowerCase();
     const filledItems = foodItems.filter((item) => item.value !== "");
-    const foodNames = filledItems.reduce((acc, item, index) => {
-      acc[`${index + 1}`] = item.value;
-      return acc;
-    }, {});
+    const foodNames = filledItems.reduce<{ [key: string]: string }>(
+      (acc, item, index) => {
+        acc[`${index + 1}`] = item.value;
+        return acc;
+      },
+      {}
+    );
 
     setIsLoading(true); // Start loading
     try {
@@ -58,7 +69,7 @@ const HomePage = () => {
       navigate(`/${categoryId}`, { state: { creator: true } });
     } catch (error) {
       console.error("Failed to create new category:", error);
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      window.alert("Error: Something went wrong. Please try again.");
     } finally {
       setIsLoading(false); // Stop loading
     }

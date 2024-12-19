@@ -1,49 +1,49 @@
 import React, { useState } from "react";
 import { SERVER_URL } from "../constants/Constants";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  SafeAreaView,
-  TextInput,
-  Button,
-  StyleSheet,
-  View,
-} from "react-native-web";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { SafeAreaView, TextInput, Button, View } from "react-native-web";
+import { StyleSheet } from "react-native";
 import { io } from "socket.io-client";
 import axios from "axios";
 import useValidateCategory from "../hooks/useValidateCategory";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const socket = io(`${SERVER_URL}`); // Replace with your server URL
+// Replace with your server URL
+const socket = io(SERVER_URL);
 
-const LoginPage = () => {
-  const { categoryId } = useParams(); // Extract session Id from URL.
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+const LoginPage: React.FC = () => {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const navigate = useNavigate();
-  const userId = location.state?.userId || localStorage.getItem("userId");
+  const location = useLocation();
 
-  // If we already know who this is.
+  const userId: string | null =
+    (location.state as { userId?: string })?.userId ||
+    localStorage.getItem("userId");
+
+  // Redirect if user ID is already known
   if (userId) {
     navigate(`/${categoryId}/waiting`);
   }
 
-  const handleLogin = async () => {
-    // Save the name in local storage or cookies as needed
+  const handleLogin = async (): Promise<void> => {
+    // Save the name in local storage
     localStorage.setItem("userId", name);
 
-    // Add the name to the database of users. TODO: Replace userId with an actual ID and not the name.
+    // Add the user to the database
     await axios.post(`${SERVER_URL}/users/add`, {
       userId: name,
       name: name,
       email: email,
     });
 
-    // Navigate to the Voting page for the category
+    // Navigate to the waiting page for the category
     navigate(`/${categoryId}/waiting`, { state: { userId: name } });
   };
 
-  // Check the category, and until we are sure, just show a spinner.
-  const validCategory = useValidateCategory(categoryId);
+  // Check the validity of the category, show a spinner while loading
+  const validCategory = useValidateCategory(categoryId || "");
   if (!validCategory) {
     return <ClipLoader size={50} color="#36D7B7" />;
   }
@@ -59,10 +59,8 @@ const LoginPage = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder={
-            "Optionally your email, to be notified of testing results"
-          }
-          values={email}
+          placeholder="Optionally your email, to be notified of testing results"
+          value={email}
           onChangeText={setEmail}
         />
         <Button title="Continue" onPress={handleLogin} />
@@ -71,6 +69,7 @@ const LoginPage = () => {
   );
 };
 
+// Styles defined as plain objects for compatibility with react-native-web
 const styles = StyleSheet.create({
   container: {
     flex: 1,

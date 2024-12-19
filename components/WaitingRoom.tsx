@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
@@ -7,32 +7,38 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
+  Pressable,
 } from "react-native-web";
+import { StyleSheet, Alert } from "react-native";
 import axios from "axios";
 import { SERVER_URL } from "../constants/Constants";
 import useValidateCategory from "../hooks/useValidateCategory";
 import useAddUserToSession from "../hooks/useAddUserToSession";
 import { ClipLoader } from "react-spinners";
 
-const socket = io(`${SERVER_URL}`); // Replace with your server URL
+const socket: Socket = io(SERVER_URL); // Replace with your server URL
 
-const WaitingRoom = () => {
-  const { categoryId } = useParams();
-  const [waiting, setWaiting] = useState(true);
-  const [hostId, setHostId] = useState("");
-  const [sessionId, setSessionId] = useState("");
+interface LocationState {
+  userId: string | null;
+}
+
+const WaitingRoom: React.FC = () => {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const [waiting, setWaiting] = useState<boolean>(true);
+  const [hostId, setHostId] = useState<string>("");
+  const [sessionId, setSessionId] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = location.state?.userId || localStorage.getItem("userId");
-  const [shareUrl, setShareUrl] = useState(""); // For the share link
+  const userId: string | null =
+    location.state?.userId || localStorage.getItem("userId");
+  const [shareUrl, setShareUrl] = useState<string>(""); // For the share link
 
   if (!userId) {
     navigate(`/${categoryId}`);
   }
 
-  const proceedToVotingIfRunning = async () => {
+  const proceedToVotingIfRunning = async (): Promise<boolean> => {
     try {
       const runningResponse = await axios.get(
         `${SERVER_URL}/${categoryId}/session/running`
@@ -40,6 +46,7 @@ const WaitingRoom = () => {
       if (runningResponse.data.running) {
         navigate(`/${categoryId}/voting`);
       }
+      return true;
     } catch (error) {
       console.error("Failed to check if session was running", error);
       return false;
@@ -49,7 +56,7 @@ const WaitingRoom = () => {
   const categoryValid = useValidateCategory(categoryId);
   const userAdded = useAddUserToSession(
     categoryId,
-    userId,
+    userId!,
     setSessionId,
     setHostId,
     categoryValid
@@ -61,7 +68,7 @@ const WaitingRoom = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    socket.on("start", (startedSessionId) => {
+    socket.on("start", (startedSessionId: string) => {
       if (startedSessionId === sessionId) {
         setWaiting(false);
         navigate(`/${categoryId}/voting`);
@@ -72,8 +79,10 @@ const WaitingRoom = () => {
 
     socket.emit("join", { userId });
 
-    return () => socket.off("start");
-  }, [categoryId, navigate]);
+    return () => {
+      socket.off("start");
+    };
+  }, [categoryId, navigate, sessionId, userId]);
 
   useEffect(() => {
     if (categoryValid && userAdded) {
@@ -81,7 +90,7 @@ const WaitingRoom = () => {
     }
   }, [categoryValid, userAdded]);
 
-  const handleStartButtonPressed = async () => {
+  const handleStartButtonPressed = async (): Promise<void> => {
     socket.emit("startSession", {
       categoryId,
       hostId: userId,
@@ -89,7 +98,7 @@ const WaitingRoom = () => {
     });
   };
 
-  const handleCopyToClipboard = () => {
+  const handleCopyToClipboard = (): void => {
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
@@ -103,6 +112,7 @@ const WaitingRoom = () => {
   if (!(categoryValid && userAdded)) {
     return <ClipLoader size={50} color="#36D7B7" />;
   }
+
   return (
     <SafeAreaView style={styles.container}>
       <div>
@@ -128,12 +138,9 @@ const WaitingRoom = () => {
           value={shareUrl}
           editable={false} // Make it read-only
         />
-        <TouchableOpacity
-          style={styles.copyButton}
-          onPress={handleCopyToClipboard}
-        >
+        <Pressable style={styles.copyButton} onPress={handleCopyToClipboard}>
           <Text style={styles.copyButtonText}>Copy</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

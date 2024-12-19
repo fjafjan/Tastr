@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, Text, StyleSheet, View } from "react-native";
+import { SafeAreaView, Text, View } from "react-native-web";
+import { StyleSheet } from "react-native";
 import { useParams } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
 import { Bar } from "react-chartjs-2";
 import axios from "axios";
+import { ChartData, ChartOptions } from "chart.js";
 import "chart.js/auto";
 
-const ResultsPage = ({ round }) => {
-  const { categoryId: categoryId } = useParams(); // Extract category Id from URL.
-  const [chartData, setChartData] = useState({
+// Props type
+interface ResultsPageProps {
+  round: number;
+}
+
+const ResultsPage: React.FC<ResultsPageProps> = ({ round }) => {
+  const { categoryId } = useParams<{ categoryId: string }>(); // Extract category ID from URL
+  const [chartData, setChartData] = useState<ChartData<"bar">>({
     labels: [],
     datasets: [
       {
@@ -21,9 +28,11 @@ const ResultsPage = ({ round }) => {
     ],
   });
 
-  const fetchVotes = async () => {
+  const fetchVotes = async (): Promise<void> => {
     try {
-      const response = await axios.get(`${SERVER_URL}/${categoryId}/mmr`);
+      const response = await axios.get<{ [key: string]: number }>(
+        `${SERVER_URL}/${categoryId}/mmr`
+      );
       const data = response.data;
 
       const names = Object.keys(data);
@@ -46,8 +55,8 @@ const ResultsPage = ({ round }) => {
     }
   };
 
-  // Chart options to limit the y-axis
-  const chartOptions = {
+  // Chart options with typed configuration
+  const chartOptions: ChartOptions<"bar"> = {
     maintainAspectRatio: false,
     scales: {
       y: {
@@ -71,6 +80,7 @@ const ResultsPage = ({ round }) => {
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

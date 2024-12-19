@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import {
-  SafeAreaView,
-  Text,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { SafeAreaView, Text, View, Pressable } from "react-native-web";
+import { StyleSheet, Alert } from "react-native";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import ResultsPage from "./ResultsPage";
 import { SERVER_URL } from "../constants/Constants";
 import { Button } from "react-native-web";
@@ -17,31 +11,38 @@ import useValidateCategory from "../hooks/useValidateCategory";
 import useAddUserToSession from "../hooks/useAddUserToSession";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const VotePage = () => {
-  const { categoryId } = useParams();
-  const [foodAliases, setFoodAliases] = useState({});
-  const [foodNames, setFoodNames] = useState({});
-  const [hostId, setHostId] = useState("");
-  const navigate = useNavigate();
-  const [sessionId, setSessionId] = useState("");
-  const userId = useMemo(() => localStorage.getItem("userId"), []);
-  const [selectedFoods, setSelectedFoods] = useState([]);
-  const [waiting, setWaiting] = useState(false);
-  const [round, setRound] = useState(1);
+interface FoodAliases {
+  [key: string]: string;
+}
 
-  // Redirect user back to sign-in.
+interface FoodNames {
+  [key: string]: string;
+}
+
+const VotePage: React.FC = () => {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const [foodAliases, setFoodAliases] = useState<FoodAliases>({});
+  const [foodNames, setFoodNames] = useState<FoodNames>({});
+  const [hostId, setHostId] = useState<string>("");
+  const navigate = useNavigate();
+  const [sessionId, setSessionId] = useState<string>("");
+  const userId = useMemo(() => localStorage.getItem("userId"), []);
+  const [selectedFoods, setSelectedFoods] = useState<string[]>([]);
+  const [waiting, setWaiting] = useState<boolean>(false);
+  const [round, setRound] = useState<number>(1);
+
   if (!userId) {
     navigate(`/${categoryId}`);
   }
 
-  // Fetch options for the current round
   const fetchOptions = useCallback(
-    async (currentRound) => {
+    async (currentRound: number): Promise<void> => {
       console.log(`Getting options for round ${currentRound}`);
       try {
-        const optionsResponse = await axios.get(
-          `${SERVER_URL}/${categoryId}/selection/${currentRound}/${userId}`
-        );
+        const optionsResponse = await axios.get<{
+          foodIdA: string;
+          foodIdB: string;
+        }>(`${SERVER_URL}/${categoryId}/selection/${currentRound}/${userId}`);
         setSelectedFoods([
           optionsResponse.data.foodIdA,
           optionsResponse.data.foodIdB,
@@ -51,22 +52,21 @@ const VotePage = () => {
         console.error("Error fetching options", error);
       }
     },
-    [categoryId, userId] // Remove `round` from dependencies to prevent conflicts
+    [categoryId, userId]
   );
 
   const categoryValid = useValidateCategory(categoryId);
-
   const userAdded = useAddUserToSession(
-    categoryId,
-    userId,
+    categoryId || "",
+    userId || "",
     setSessionId,
     setHostId,
     categoryValid
   );
 
-  const fetchAliases = async () => {
+  const fetchAliases = async (): Promise<void> => {
     try {
-      const aliasResponse = await axios.get(
+      const aliasResponse = await axios.get<FoodAliases>(
         `${SERVER_URL}/${categoryId}/aliases`
       );
       setFoodAliases(aliasResponse.data);
@@ -76,9 +76,9 @@ const VotePage = () => {
     }
   };
 
-  const fetchNames = async () => {
+  const fetchNames = async (): Promise<void> => {
     try {
-      const namesResponse = await axios.get(
+      const namesResponse = await axios.get<FoodNames>(
         `${SERVER_URL}/${categoryId}/names`
       );
       setFoodNames(namesResponse.data);
@@ -91,20 +91,19 @@ const VotePage = () => {
   useEffect(() => {
     fetchNames();
     fetchAliases();
-  }, [categoryId, setFoodNames, setFoodAliases]);
+  }, [categoryId]);
 
   useEffect(() => {
-    fetchOptions(round); // Use the round state explicitly here
+    fetchOptions(round);
   }, [categoryId, userId, fetchOptions, round]);
 
-  // Memoize socket connection
-  const socket = useMemo(() => io(`${SERVER_URL}`), [categoryId]);
+  const socket = useMemo<Socket>(() => io(`${SERVER_URL}`), [categoryId]);
 
   useEffect(() => {
-    const handleRoundReady = async (data) => {
+    const handleRoundReady = async (data: { round: number }): Promise<void> => {
       console.log("Round ready event received: ", data.round);
       setRound(data.round);
-      await fetchOptions(data.round); // Fetch options for the new round
+      await fetchOptions(data.round);
       setWaiting(false);
     };
 
@@ -112,12 +111,12 @@ const VotePage = () => {
 
     return () => {
       socket.off("round ready", handleRoundReady);
-      socket.disconnect(); // Ensure socket disconnects on component unmount
+      socket.disconnect();
     };
-  }, [socket, fetchOptions, setRound]); // Do not include `round` here as it's updated inside the effect
+  }, [socket, fetchOptions]);
 
   const handleSelect = useCallback(
-    async (foodIdA, foodIdB) => {
+    async (foodIdA: string, foodIdB: string): Promise<void> => {
       if (!userId) {
         console.error("No user ID found");
         return;
@@ -126,9 +125,7 @@ const VotePage = () => {
         setWaiting(true);
         await axios.post(
           `${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`,
-          {
-            userId,
-          }
+          { userId }
         );
         await axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, {
           userId,
@@ -144,7 +141,7 @@ const VotePage = () => {
     [categoryId, userId]
   );
 
-  const handleGoNextRound = async () => {
+  const handleGoNextRound = async (): Promise<void> => {
     try {
       await axios.post(`${SERVER_URL}/${categoryId}/session/nextRound`, {
         sessionId,
@@ -168,13 +165,15 @@ const VotePage = () => {
       <View style={styles.resultContainer}>
         {!waiting &&
           selectedFoods.map((foodId, index) => (
-            <TouchableOpacity
+            <Pressable
               key={index}
               style={styles.selectButton}
-              onPress={() => handleSelect(foodId, selectedFoods[1 - index])}
+              onPress={() => {
+                handleSelect(foodId, selectedFoods[1 - index]);
+              }}
             >
               <Text style={styles.buttonText}>{foodNames[foodId]}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
       </View>
 
