@@ -20,7 +20,7 @@ import {
   isSessionRunning,
   performVote,
 } from "./controllers/voting_session_controller";
-import { GenerateSelections } from "./database_utility";
+import { GenerateSelections } from "./core/selection";
 import { SessionData } from "./models";
 
 const app = express();

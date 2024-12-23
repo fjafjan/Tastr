@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import {
   FindTastedItems,
-  GetSelection,
-  PerformVote,
-} from '../database_utility';
+} from '../core/category';
+import { GetSelection } from '../core/selection';
+import { PerformVote } from '../core/voting';
 import { SessionData } from '../models';
 
 export const getActiveSession = async (req: Request, res: Response) => {

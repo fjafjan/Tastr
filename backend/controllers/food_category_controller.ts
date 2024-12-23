@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { FoodObject } from '../database_utility';
+import { FoodObject } from '../core/category';
 import { FoodCategoryData } from '../models';
 
 const letters = [

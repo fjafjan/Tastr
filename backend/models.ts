@@ -56,7 +56,7 @@ const emailSchema = new Schema<IEmail>({
 });
 
 // Define the interface for Vote
-interface IVote extends Document {
+export interface IVote extends Document {
   voteId: string;
   userId: string;
   categoryId: string;

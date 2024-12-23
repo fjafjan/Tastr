@@ -1,23 +1,23 @@
+import { Request, Response } from "express";
 import {
-  getOrCreateActiveSession,
   addUserToSession,
+  getOrCreateActiveSession,
   getSelection,
   getTasted,
   performVote,
 } from "../../backend/controllers/voting_session_controller"; // Adjust import as needed
-import { Request, Response } from "express";
-import { SessionData } from "../../backend/models"; // Your Mongoose model
-import {
-  GetSelection,
-  FindTastedItems,
-  PerformVote,
-} from "../../backend/database_utility"; // Mock these imports
-import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
+// Mock these imports
 import { v4 as uuidv4 } from "uuid"; // For uuid generation
-import { NONAME } from "dns";
+import { FindTastedItems } from "../../backend/core/category";
+import { GetSelection } from "../../backend/core/selection";
+import { PerformVote } from "../../backend/core/voting";
+import { SessionData } from "../../backend/models"; // Your Mongoose model
+import { clearDatabase, closeDatabase, connect } from "../jest-mongodb-setup";
 
 jest.mock("uuid");
-jest.mock("../../backend/database_utility");
+jest.mock("../../backend/core/category");
+jest.mock("../../backend/core/selection");
+jest.mock("../../backend/core/voting");
 
 const mockedUuidv4 = uuidv4 as jest.Mock;
 const mockedGetSelection = GetSelection as jest.Mock;
