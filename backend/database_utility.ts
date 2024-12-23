@@ -1,10 +1,10 @@
 // Import the necessary models and utilities with types.
 import {
   FoodCategoryData,
-  VoteData,
-  SessionData,
-  SelectionData,
   IFoodCategory,
+  SelectionData,
+  SessionData,
+  VoteData,
 } from "./models";
 import { GenerateMatchups, Judge } from "./selection_utility";
 
@@ -239,11 +239,10 @@ async function TryFindCategory(
   }
 }
 
-export type { FoodObject };
 export {
-  CreateSession,
-  GenerateSelections,
+  CreateSession, FindTastedItems, GenerateSelections,
   GetSelection,
   PerformVote,
-  FindTastedItems,
+  type FoodObject
 };
+

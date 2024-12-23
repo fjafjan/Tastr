@@ -1,26 +1,26 @@
+import bodyParser from "body-parser";
+import cors from "cors";
 import express, { Request, Response } from "express";
 import http from "http";
-import cors from "cors";
-import { Server as SocketIOServer, Socket } from "socket.io";
-import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import { CreateSession, GenerateSelections } from "./database_utility";
+import { Socket, Server as SocketIOServer } from "socket.io";
 import {
   addCategory,
-  getAliases,
-  getNames,
-  getMmr,
   categoryExists,
+  getAliases,
+  getMmr,
+  getNames,
 } from "./controllers/food_category_controller";
-import {
-  getTasted,
-  performVote,
-  getSelection,
-  getOrCreateActiveSession,
-  addUserToSession,
-  isSessionRunning,
-} from "./controllers/voting_session_controller";
 import { addUser } from "./controllers/user_controller";
+import {
+  addUserToSession,
+  getOrCreateActiveSession,
+  getSelection,
+  getTasted,
+  isSessionRunning,
+  performVote,
+} from "./controllers/voting_session_controller";
+import { GenerateSelections } from "./database_utility";
 import { SessionData } from "./models";
 
 const app = express();

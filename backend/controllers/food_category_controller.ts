@@ -1,48 +1,48 @@
-import { Request, Response } from "express";
-import { FoodObject } from "../database_utility";
-import { FoodCategoryData } from "../models";
+import { Request, Response } from 'express';
+import { FoodObject } from '../database_utility';
+import { FoodCategoryData } from '../models';
 
 const letters = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-  "Å",
-  "Ä",
-  "Ö",
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
+  'Å',
+  'Ä',
+  'Ö',
 ];
 
 export const addCategory = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   const {
     categoryId,
     foodNames,
   }: { categoryId: string; foodNames: Record<string, string> } = req.body;
-  console.log("Creating new category with ", categoryId, foodNames);
+  console.log('Creating new category with ', categoryId, foodNames);
 
   const result = await CreateCategory(categoryId, foodNames);
 
@@ -50,14 +50,14 @@ export const addCategory = async (
     res.sendStatus(200); // Ok!
   } else {
     res.sendStatus(500); // Sadness
-    console.error("Failed to create new category ", categoryId, foodNames);
+    console.error('Failed to create new category ', categoryId, foodNames);
   }
 };
 
 export const categoryExists = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
   if (!categoryId) {
-    return res.status(400).json({ message: "Missing category ID" });
+    return res.status(400).json({ message: 'Missing category ID' });
   }
   console.log(`Checking if category ${categoryId} exists`);
   try {
@@ -77,10 +77,10 @@ export const categoryExists = async (req: Request, res: Response) => {
 
 export const getAliases = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   const { categoryId } = req.params;
-  console.log("Getting aliases for category ", categoryId);
+  console.log('Getting aliases for category ', categoryId);
 
   try {
     const entry = await FoodCategoryData.findOne({
@@ -93,9 +93,9 @@ export const getAliases = async (
           acc[item.id] = item.alias;
           return acc;
         },
-        {}
+        {},
       );
-      console.log("Returning", idToAliasDictionary);
+      console.log('Returning', idToAliasDictionary);
       res.json(idToAliasDictionary);
     } else {
       res.sendStatus(404); // Not found
@@ -108,7 +108,7 @@ export const getAliases = async (
 
 export const getNames = async (req: Request, res: Response): Promise<void> => {
   const { categoryId } = req.params;
-  console.log("Getting food names for category ", categoryId);
+  console.log('Getting food names for category ', categoryId);
 
   try {
     const entry = await FoodCategoryData.findOne({
@@ -121,9 +121,9 @@ export const getNames = async (req: Request, res: Response): Promise<void> => {
           acc[item.id] = item.name;
           return acc;
         },
-        {}
+        {},
       );
-      console.log("Returning", idToNamesDictionary);
+      console.log('Returning', idToNamesDictionary);
       res.json(idToNamesDictionary);
     } else {
       res.sendStatus(404); // Not found
@@ -136,7 +136,7 @@ export const getNames = async (req: Request, res: Response): Promise<void> => {
 
 export const getMmr = async (req: Request, res: Response): Promise<void> => {
   const { categoryId } = req.params;
-  console.log("Getting MMR for category", categoryId);
+  console.log('Getting MMR for category', categoryId);
 
   try {
     const entry = await FoodCategoryData.findOne({
@@ -149,10 +149,10 @@ export const getMmr = async (req: Request, res: Response): Promise<void> => {
           acc[item.name] = item.MMR;
           return acc;
         },
-        {}
+        {},
       );
 
-      console.log("Returning", foodItemsDictionary);
+      console.log('Returning', foodItemsDictionary);
       res.json(foodItemsDictionary);
     } else {
       res.sendStatus(404); // Not found
@@ -166,7 +166,7 @@ export const getMmr = async (req: Request, res: Response): Promise<void> => {
 // Create a new category
 async function CreateCategory(
   categoryId: string,
-  foodNames: Record<string, string>
+  foodNames: Record<string, string>,
 ): Promise<boolean> {
   try {
     const selection = letters.slice(0, Object.keys(foodNames).length);
@@ -177,17 +177,17 @@ async function CreateCategory(
         name: foodNames[key],
         alias: selection[index],
         MMR: 1000,
-      })
+      }),
     );
 
     await FoodCategoryData.findOneAndUpdate(
       { categoryId },
       { $set: { foodObjects } },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     return true;
   } catch (error) {
-    console.error("Failed to save new data due to ", error);
+    console.error('Failed to save new data due to ', error);
     return false;
   }
 }

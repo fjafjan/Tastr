@@ -41,7 +41,7 @@ function GenerateMatchups(
   judges: Judge[]
 ): Record<string, Matchup> {
   let keys = foodIds.slice(); // Copy array
-  let assignedJudges = judges.slice(); // Copy array
+  const assignedJudges = judges.slice(); // Copy array
   const matchups: Record<string, Matchup> = {}; // Map userId to their matchup
 
   while (assignedJudges.length > 0) {
@@ -49,7 +49,7 @@ function GenerateMatchups(
 
     for (let i = 0; i < 10; i++) {
       shuffleArray(keys);
-      for (let judge of assignedJudges) {
+      for (const judge of assignedJudges) {
         if (keys.length >= 2) {
           if (
             hasNotTasted(judge.tasted, keys[0]) &&
@@ -75,7 +75,7 @@ function GenerateMatchups(
 
     for (let i = 0; i < 10; i++) {
       shuffleArray(keys);
-      for (let judge of assignedJudges) {
+      for (const judge of assignedJudges) {
         if (keys.length >= 2) {
           if (
             hasNotTasted(judge.tasted, keys[0]) ||
@@ -98,7 +98,7 @@ function GenerateMatchups(
     // Assign remaining pastries
     while (keys.length >= 2 && assignedJudges.length > 0) {
       shuffleArray(keys);
-      for (let judge of assignedJudges) {
+      for (const judge of assignedJudges) {
         if (keys.length >= 2) {
           console.log(
             `${keys[0]}-${keys[1]} Bad matchup for ${
@@ -118,3 +118,4 @@ function GenerateMatchups(
 }
 
 export { GenerateMatchups };
+

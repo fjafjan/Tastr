@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from "react";
-import io, { Socket } from "socket.io-client";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
 import {
   Button,
+  Pressable,
   SafeAreaView,
-  View,
   Text,
   TextInput,
-  TouchableOpacity,
-  Pressable,
+  View
 } from "react-native-web";
-import { StyleSheet, Alert } from "react-native";
-import axios from "axios";
-import { SERVER_URL } from "../constants/Constants";
-import useValidateCategory from "../hooks/useValidateCategory";
-import useAddUserToSession from "../hooks/useAddUserToSession";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
+import io, { Socket } from "socket.io-client";
+import { SERVER_URL } from "../constants/Constants";
+import useAddUserToSession from "../hooks/useAddUserToSession";
+import useValidateCategory from "../hooks/useValidateCategory";
 
 const socket: Socket = io(SERVER_URL); // Replace with your server URL
 

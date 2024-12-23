@@ -3,13 +3,9 @@ import { SERVER_URL } from "../constants/Constants";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { SafeAreaView, TextInput, Button, View } from "react-native-web";
 import { StyleSheet } from "react-native";
-import { io } from "socket.io-client";
 import axios from "axios";
 import useValidateCategory from "../hooks/useValidateCategory";
 import ClipLoader from "react-spinners/ClipLoader";
-
-// Replace with your server URL
-const socket = io(SERVER_URL);
 
 const LoginPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();

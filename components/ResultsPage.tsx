@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { SafeAreaView, Text, View } from "react-native-web";
-import { StyleSheet } from "react-native";
-import { useParams } from "react-router-dom";
-import { SERVER_URL } from "../constants/Constants";
-import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import { ChartData, ChartOptions } from "chart.js";
 import "chart.js/auto";
+import React, { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
+import { StyleSheet } from "react-native";
+import { SafeAreaView, Text, View } from "react-native-web";
+import { useParams } from "react-router-dom";
+import { SERVER_URL } from "../constants/Constants";
 
 // Props type
 interface ResultsPageProps {

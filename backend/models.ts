@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 // Define the interface for FoodObject
 interface IFoodObject extends Document {
@@ -32,7 +32,7 @@ const foodCategorySchema = new Schema<IFoodCategory>({
 
 // Email validation regex
 const validateEmail = (email: string): boolean => {
-  const re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  const re = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   return re.test(email);
 };
 
@@ -100,13 +100,6 @@ interface ISession extends Document {
   round: number;
 }
 
-interface IVoteRound extends Document {
-  sessionId: string;
-  roundNumber: number;
-  shouldTaste: string[];
-  haveTasted: string[];
-}
-
 // Define the schema for Session
 const sessionSchema = new Schema<ISession>({
   sessionId: { type: String, required: true, unique: true },
@@ -164,4 +157,5 @@ const SelectionData: Model<ISelection> = mongoose.model(
   selectionSchema
 );
 
-export { FoodCategoryData, VoteData, UserData, SessionData, SelectionData };
+export { FoodCategoryData, SelectionData, SessionData, UserData, VoteData };
+

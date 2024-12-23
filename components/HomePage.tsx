@@ -1,19 +1,17 @@
+import axios from "axios";
 import React, { useState } from "react";
+import { StyleSheet } from "react-native";
 import {
+  ActivityIndicator,
+  Button,
   SafeAreaView,
   ScrollView,
-  TextInput,
-  View,
-  Button,
-  ActivityIndicator,
-  Alert,
   Text,
+  TextInput,
+  View
 } from "react-native-web";
-import { StyleSheet } from "react-native";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
-import axios from "axios";
-import { Style } from "util";
 
 type FoodItem = {
   id: number;

@@ -1,19 +1,15 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { SafeAreaView, Text, View, Pressable } from "react-native-web";
-import { StyleSheet, Alert } from "react-native";
-import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { io, Socket } from "socket.io-client";
-import ResultsPage from "./ResultsPage";
-import { SERVER_URL } from "../constants/Constants";
-import { Button } from "react-native-web";
-import useValidateCategory from "../hooks/useValidateCategory";
-import useAddUserToSession from "../hooks/useAddUserToSession";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
+import { Button, Pressable, SafeAreaView, Text, View } from "react-native-web";
+import { useNavigate, useParams } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
+import { io, Socket } from "socket.io-client";
+import { SERVER_URL } from "../constants/Constants";
+import useAddUserToSession from "../hooks/useAddUserToSession";
+import useValidateCategory from "../hooks/useValidateCategory";
+import ResultsPage from "./ResultsPage";
 
-interface FoodAliases {
-  [key: string]: string;
-}
 
 interface FoodNames {
   [key: string]: string;
@@ -21,7 +17,6 @@ interface FoodNames {
 
 const VotePage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
-  const [foodAliases, setFoodAliases] = useState<FoodAliases>({});
   const [foodNames, setFoodNames] = useState<FoodNames>({});
   const [hostId, setHostId] = useState<string>("");
   const navigate = useNavigate();
@@ -64,18 +59,6 @@ const VotePage: React.FC = () => {
     precondition: categoryValid,
   });
 
-  const fetchAliases = async (): Promise<void> => {
-    try {
-      const aliasResponse = await axios.get<FoodAliases>(
-        `${SERVER_URL}/${categoryId}/aliases`
-      );
-      setFoodAliases(aliasResponse.data);
-    } catch (error) {
-      Alert.alert("Error", "Failed to load food aliases.");
-      console.error("Error fetching aliases", error);
-    }
-  };
-
   const fetchNames = async (): Promise<void> => {
     try {
       const namesResponse = await axios.get<FoodNames>(
@@ -90,7 +73,6 @@ const VotePage: React.FC = () => {
 
   useEffect(() => {
     fetchNames();
-    fetchAliases();
   }, [categoryId]);
 
   useEffect(() => {
