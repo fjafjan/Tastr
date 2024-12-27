@@ -3,7 +3,7 @@ import {
     SelectionData
 } from "../models";
 import { GenerateMatchups, Judge } from "../selection_utility";
-import { FindTastedItems, FoodObject, TryFindCategory } from "./category";
+import { FoodObject, GetUserTastedItems, TryFindCategory } from "./category";
 
 
 // Generate selections for the voting session
@@ -27,7 +27,7 @@ async function GenerateSelections(
       {}
     );
 
-  const promises = userIds.map((userId) => FindTastedItems(categoryId, userId));
+  const promises = userIds.map((userId) => GetUserTastedItems(categoryId, userId));
   const userHistory = await Promise.all(promises);
 
   // Filter out any false values from userHistory

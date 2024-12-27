@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "test": "jest --silent=false"
+    "test": "jest --silent=false",
+    "test:profile": "jest --silent=false"
+
   },
   "engines": {
     "node": "22.12.0"
@@ -29,8 +31,9 @@
     "eslint-plugin-regexp": "^2.7.0",
     "expo": "^51.0.32",
     "express": "^4.21.2",
-    "mongodb-memory-server": "^10.0.1",
+    "mongodb-memory-server": "^9.0.1",
     "mongoose": "^8.8.3",
+    "nodefly-v8-profiler": "^3.7.3",
     "path": "^0.12.7",
     "prettier": "^3.4.2",
     "react": "^18.3.1",
@@ -43,6 +46,7 @@
     "sass": "^1.81.0",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
+    "tsx": "^4.19.2",
     "uuid": "^10.0.0",
     "vite": "^5.4.11",
     "vite-plugin-html": "^3.2.2"

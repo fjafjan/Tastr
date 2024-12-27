@@ -5,7 +5,6 @@ interface IFoodObject extends Document {
   id: string;
   name: string;
   alias: string;
-  voteCount: number;
   MMR: number;
 }
 
@@ -14,9 +13,9 @@ const foodObjectSchema = new Schema<IFoodObject>({
   id: { type: String, required: true }, // Unique identifier for each food item
   name: { type: String, required: true }, // Name of the food item
   alias: { type: String, required: true }, // Alias displayed to the user to hide the identity.
-  voteCount: { type: Number, default: 0 }, // Number of votes for the food item
   MMR: { type: Schema.Types.Number, default: 1000.0 }, // MMR (Matchmaking Rating) as a double
 });
+foodObjectSchema.index({ id: 1})
 
 // Define the interface for FoodCategory
 export interface IFoodCategory extends Document {
@@ -29,6 +28,7 @@ const foodCategorySchema = new Schema<IFoodCategory>({
   categoryId: { type: String, required: true, unique: true }, // Unique category identifier
   foodObjects: { type: [foodObjectSchema], required: true }, // Array of FoodObjects
 });
+foodCategorySchema.index({ categoryId: 1})
 
 // Email validation regex
 const validateEmail = (email: string): boolean => {
@@ -60,6 +60,7 @@ export interface IVote extends Document {
   voteId: string;
   userId: string;
   categoryId: string;
+  sessionId: string;
   winnerId: string;
   loserId: string;
 }
@@ -69,9 +70,11 @@ const voteSchema = new Schema<IVote>({
   voteId: { type: String, required: true, unique: true }, // Uniquely identifies this vote
   userId: { type: String, required: true }, // Who did the voting
   categoryId: { type: String, required: true }, // What was the category
+  sessionId: { type: String, required: true }, // Which session was the vote in.
   winnerId: { type: String, required: true }, // Who was chosen as the winner
   loserId: { type: String, required: true }, // Who was voted against
 });
+voteSchema.index({voteId: 1})
 
 // Define the interface for User
 interface IUser extends Document {
@@ -86,9 +89,10 @@ const userSchema = new Schema<IUser>({
   name: { type: String, required: true }, // A more descriptive name of the user
   email: { type: emailSchema, default: { email: "fake@fakemail.fk" } }, // An email to the user, for notifications
 });
+userSchema.index({ userId: 1})
 
 // Define the interface for Session
-interface ISession extends Document {
+export interface ISession extends Document {
   sessionId: string;
   categoryId: string;
   tasterIds: string[];
@@ -112,6 +116,7 @@ const sessionSchema = new Schema<ISession>({
   active: { type: Boolean, default: false },
   round: { type: Number, default: 0 },
 });
+sessionSchema.index({ sessionId: 1})
 
 // Define the interface for Choice
 interface IChoice extends Document {

@@ -1,13 +1,13 @@
+import { Request, Response } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
 import {
   addCategory,
   getAliases,
   getMmr,
   getNames,
 } from "../../backend/controllers/food_category_controller"; // Adjust the import as needed
-import { Request, Response } from "express";
-import { FoodCategoryData, IFoodCategory } from "../../backend/models";
-import { ParamsDictionary } from "express-serve-static-core";
-import { connect, closeDatabase, clearDatabase } from "../jest-mongodb-setup";
+import { FoodCategoryData } from "../../backend/models";
+import { clearDatabase, closeDatabase, connect } from "../jest-mongodb-setup";
 
 beforeAll(async () => {
   await connect(); // Set up connection before tests
@@ -17,7 +17,7 @@ beforeEach(async () => {
   const testCategory = new FoodCategoryData({
     categoryId: "test-category",
     foodObjects: [
-      { id: "1", name: "Pizza", alias: "P", voteCount: 0, MMR: 1000 },
+      { id: "1", name: "Pizza", alias: "P", MMR: 1000 },
     ],
   });
   testCategory.foodObjects[0].id;

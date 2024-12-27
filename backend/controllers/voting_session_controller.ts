@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  FindTastedItems,
+    GetUserTastedItems,
 } from '../core/category';
 import { GetSelection } from '../core/selection';
 import { PerformVote } from '../core/voting';
-import { SessionData } from '../models';
+import { ISession, SessionData } from '../models';
 
 export const getActiveSession = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
@@ -45,22 +45,27 @@ export const getOrCreateActiveSession = async (req: Request, res: Response) => {
   }
 
   try {
-    let sessionEntry = await SessionData.findOne({
+    const newEntry: Partial<ISession> =       {
+      sessionId: uuidv4(),
       categoryId: categoryId,
+      hostId: userId,
       active: true,
-    }).exec();
-
-    // If no session found, create one
-    if (!sessionEntry) {
-      sessionEntry = await SessionData.create({
-        sessionId: uuidv4(),
-        categoryId: categoryId,
-        hostId: userId,
-        active: true,
-      });
     }
 
-    res.json(sessionEntry);
+    let sessionEntry = await SessionData.findOneAndUpdate(
+      {
+        categoryId: categoryId,
+        active: true,
+      },
+      newEntry,
+      { upsert: true }
+    ).exec();
+
+    if (sessionEntry) {
+      res.json(sessionEntry);
+    } else {
+      res.json(newEntry);
+    }
   } catch (error) {
     console.error('Error fetching session: ', error);
     res.status(500).json({ message: 'Server error. Unable to fetch session.' });
@@ -161,7 +166,7 @@ export const getTasted = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await FindTastedItems(categoryId, userId);
+    const result = await GetUserTastedItems(categoryId, userId);
 
     if (result) {
       res.json(result);

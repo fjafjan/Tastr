@@ -8,7 +8,7 @@ import {
 } from "../../backend/controllers/voting_session_controller"; // Adjust import as needed
 // Mock these imports
 import { v4 as uuidv4 } from "uuid"; // For uuid generation
-import { FindTastedItems } from "../../backend/core/category";
+import { GetUserTastedItems } from "../../backend/core/category";
 import { GetSelection } from "../../backend/core/selection";
 import { PerformVote } from "../../backend/core/voting";
 import { SessionData } from "../../backend/models"; // Your Mongoose model
@@ -21,30 +21,9 @@ jest.mock("../../backend/core/voting");
 
 const mockedUuidv4 = uuidv4 as jest.Mock;
 const mockedGetSelection = GetSelection as jest.Mock;
-const mockedFindTastedItems = FindTastedItems as jest.Mock;
+const mockedGetUserTastedItems = GetUserTastedItems as jest.Mock;
 const mockedPerformVote = PerformVote as jest.Mock;
 
-beforeAll(async () => {
-  await connect(); // Set up the database before tests
-});
-
-beforeEach(async () => {
-  await SessionData.create({
-    sessionId: "existing-session",
-    categoryId: "test-category",
-    hostId: "host-user",
-    tasterIds: ["taster1"],
-    active: true,
-  });
-});
-
-afterAll(async () => {
-  await closeDatabase(); // Clean up after all tests
-});
-
-afterEach(async () => {
-  await clearDatabase(); // Clear data between tests
-});
 
 // Helper function to mock responses
 function GetMockResponse(): Response {
@@ -69,6 +48,32 @@ function createMockResponse(): Response {
 }
 
 describe("VotingSessionController", () => {
+  beforeAll(async () => {
+    console.time("profile")
+    await connect(); // Set up the database before tests
+    console.timeLog("profile", "After connection")
+  });
+
+  beforeEach(async () => {
+    await SessionData.create({
+      sessionId: "existing-session",
+      categoryId: "test-category",
+      hostId: "host-user",
+      tasterIds: ["taster1"],
+      active: true,
+    });
+    console.timeLog("profile", "Creating session data")
+  });
+
+  afterAll(async () => {
+    await closeDatabase(); // Clean up after all tests
+    console.timeEnd("profile")
+  });
+
+  afterEach(async () => {
+    await clearDatabase(); // Clear data between tests
+  });
+
   describe("getOrCreateActiveSession", () => {
     test("should return an existing active session", async () => {
       const req = createMockRequest(
@@ -86,6 +91,7 @@ describe("VotingSessionController", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: "existing-session" })
       );
+      console.timeLog("profile", "Getting active session")
     });
 
     test("should create a new session if none exists", async () => {
@@ -112,6 +118,7 @@ describe("VotingSessionController", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: "new-session-id" })
       );
+      console.timeLog("profile", "Adding new session")
     });
 
     test("should return 400 for invalid parameters", async () => {
@@ -124,6 +131,7 @@ describe("VotingSessionController", () => {
       expect(res.json).toHaveBeenCalledWith({
         message: "Invalid category or user ID.",
       });
+      console.timeLog("profile", "Invalid parameter")
     });
   });
 
@@ -141,6 +149,7 @@ describe("VotingSessionController", () => {
       });
       expect(session?.tasterIds).toContain("taster2");
       expect(res.sendStatus).toHaveBeenCalledWith(200);
+      console.timeLog("profile", "Adding new user")
     });
 
     test("should return 403 if the user is already in the session", async () => {
@@ -155,6 +164,7 @@ describe("VotingSessionController", () => {
       expect(res.json).toHaveBeenCalledWith({
         message: "User taster1 already in session.",
       });
+      console.timeLog("profile", "User already exists")
     });
 
     test("should return 404 if the session is not found", async () => {
@@ -219,7 +229,7 @@ describe("VotingSessionController", () => {
 
   describe("getTasted", () => {
     test("should return tasted items for a user", async () => {
-      mockedFindTastedItems.mockResolvedValue({ "1": "Pizza", "2": "Burger" });
+      mockedGetUserTastedItems.mockResolvedValue({ "1": "Pizza", "2": "Burger" });
 
       const req = createMockRequest(
         {
@@ -239,7 +249,7 @@ describe("VotingSessionController", () => {
     });
 
     test("should return 404 if no tasted items are found", async () => {
-      mockedFindTastedItems.mockResolvedValue(null);
+      mockedGetUserTastedItems.mockResolvedValue(null);
 
       const req = createMockRequest(
         {

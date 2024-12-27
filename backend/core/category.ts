@@ -1,6 +1,6 @@
 import {
-    FoodCategoryData,
-    IFoodCategory,
+  FoodCategoryData,
+  IFoodCategory,
 } from "../models";
 import { Judge } from "../selection_utility";
 import { GetUserVotes } from "./voting";
@@ -31,7 +31,7 @@ async function TryFindCategory(
   };
 
 // Find tasted items for a user
-async function FindTastedItems(
+async function GetUserTastedItems(
     categoryId: string,
     userId: string
   ): Promise<Judge | false> {
@@ -60,6 +60,6 @@ async function FindTastedItems(
   }
 
 export {
-    FindTastedItems, TryFindCategory, type FoodObject
+  GetUserTastedItems as GetUserTastedItems, TryFindCategory, type FoodObject
 };
 
