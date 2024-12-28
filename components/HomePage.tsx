@@ -20,9 +20,11 @@ type FoodItem = {
 
 const HomePage: React.FC = () => {
   const [categoryName, setCategoryName] = useState<string>("");
+
   const [foodItems, setFoodItems] = useState<FoodItem[]>([
     { id: 1, value: "" },
   ]);
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -77,7 +79,9 @@ const HomePage: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.inputContainer}>
+          {/* Using data-testid to ensure targeting in tests */}
           <TextInput
+            data-testid="category-input"
             key="Category"
             style={styles.category}
             placeholder="What are you Sampling?"
@@ -85,14 +89,24 @@ const HomePage: React.FC = () => {
             onChangeText={setCategoryName}
           />
           {foodItems.map((item, index) => (
-            <View key={item.id} style={styles.inputWithLetter}>
-              {/* Display the corresponding letter */}
-              <Text style={styles.letter}>{getLetter(index)}.</Text>
+            <View
+              key={item.id}
+              style={styles.inputWithLetter}
+              data-testid={`view-for-letter-${index}`}
+              testID="foodView"
+            >
+              <Text
+                style={styles.letter}
+                data-testid={`letter-${index}`}
+              >
+                {getLetter(index)}.
+              </Text>
               <TextInput
                 style={styles.input}
                 placeholder={`Enter a ${categoryName || "item"}`}
                 value={item.value}
                 onChangeText={(value) => handleChange(item.id, value)}
+                data-testid={`food-item-input-${index}`}
               />
             </View>
           ))}
@@ -103,9 +117,7 @@ const HomePage: React.FC = () => {
           <Button
             title="Done"
             onPress={handleDone}
-            disabled={
-              !categoryName || foodItems.every((item) => item.value === "")
-            }
+            disabled={categoryName === "" || foodItems.every((item) => item.value === "")}
           />
         )}
       </ScrollView>

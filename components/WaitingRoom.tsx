@@ -95,7 +95,7 @@ const WaitingRoom: React.FC = () => {
 
   const handleStartButtonPressed = async (): Promise<void> => {
     socket.emit("startSession", {
-      categoryId,
+      categoryId: categoryId,
       hostId: userId,
       sessionId: sessionId,
     });

@@ -52,7 +52,7 @@ export const getOrCreateActiveSession = async (req: Request, res: Response) => {
       active: true,
     }
 
-    let sessionEntry = await SessionData.findOneAndUpdate(
+    const sessionEntry = await SessionData.findOneAndUpdate(
       {
         categoryId: categoryId,
         active: true,

@@ -13,6 +13,8 @@ type FoodObject = {
     MMR: number;
   };
 
+type MmrMap = Record<string, number>
+
 // Find a category by ID
 async function TryFindCategory(
     categoryId: string
@@ -29,6 +31,27 @@ async function TryFindCategory(
       return false;
     }
   };
+
+
+export async function GetItemMmrs(categoryId: string)
+ : Promise<MmrMap | false> {
+  console.log(`Getting MMRs for category ${categoryId}`)
+
+  try {
+    const categoryEntry = await FoodCategoryData.findOne({ categoryId }).exec();
+    if (!categoryEntry) {
+      console.error("No category with ID ", categoryId);
+      return false;
+    }
+    const mmrs: Record<string, number> = {};
+    categoryEntry.foodObjects.forEach(food => mmrs[food.id] = food.MMR)
+
+    return mmrs
+  } catch (error) {
+    console.error(`Failed to get MMRs for category ${categoryId}`)
+    return false
+  }
+ }
 
 // Find tasted items for a user
 async function GetUserTastedItems(
@@ -60,6 +83,6 @@ async function GetUserTastedItems(
   }
 
 export {
-  GetUserTastedItems as GetUserTastedItems, TryFindCategory, type FoodObject
+  GetUserTastedItems as GetUserTastedItems, TryFindCategory, type FoodObject, type MmrMap
 };
 

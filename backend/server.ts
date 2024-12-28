@@ -92,8 +92,8 @@ io.on("connection", (socket: Socket) => {
   socket.on(
     "startSession",
     async (data: { categoryId: string; hostId: string; sessionId: string }) => {
-      console.log("Got start request", socket.id);
       const { categoryId, hostId, sessionId } = data;
+      console.log(`Got start request on socket ${socket.id} for category ${categoryId} with host ${hostId}`);
       await startNewRound(sessionId, categoryId);
     }
   );

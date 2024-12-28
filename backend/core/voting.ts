@@ -1,6 +1,6 @@
 import {
-    IVote,
-    VoteData
+  IVote,
+  VoteData
 } from "../models";
 import { TryFindCategory } from "./category";
 
@@ -9,7 +9,7 @@ const s = 400;
 const K = 32;
 
 // Helper function to calculate ELO change
-function sigma(r: number): number {
+export function win_likelyhood(r: number): number {
     const exponent = -r / s;
     return 1 / (1 + Math.pow(10, exponent));
   }
@@ -19,7 +19,7 @@ function sigma(r: number): number {
     loser_elo: number
   ): { winnerAfter: number; loserAfter: number } {
     const rho = winner_elo - loser_elo;
-    const likelihood = sigma(-rho);
+    const likelihood = win_likelyhood(-rho);
     const winner_after = winner_elo + likelihood * K;
     const loser_after = loser_elo - likelihood * K;
     return { winnerAfter: winner_after, loserAfter: loser_after };
@@ -81,7 +81,7 @@ async function PerformVote(
   }
 
 export {
-    GetUserVotes,
-    PerformVote
+  GetUserVotes,
+  PerformVote
 };
 
