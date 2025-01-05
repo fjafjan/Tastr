@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { SERVER_URL } from "../constants/Constants";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { SafeAreaView, TextInput, Button, View } from "react-native-web";
-import { StyleSheet } from "react-native";
 import axios from "axios";
-import useValidateCategory from "../hooks/useValidateCategory";
+import React, { useState } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { SafeAreaView, Text, TextInput, View } from "react-native-web";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
+import { SERVER_URL } from "../constants/Constants";
+import useValidateCategory from "../hooks/useValidateCategory";
 
 const LoginPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -48,18 +48,29 @@ const LoginPage: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
+          id="user-name-input"
           style={styles.input}
           placeholder={`Who are you who dares opine on ${categoryId}`}
           value={name}
           onChangeText={setName}
         />
         <TextInput
+          id="user-email-input"
           style={styles.input}
           placeholder="Optionally your email, to be notified of testing results"
           value={email}
           onChangeText={setEmail}
         />
-        <Button title="Continue" onPress={handleLogin} />
+        <Pressable
+          id="login-button"
+          onPress={handleLogin}
+          style={({ pressed }) => [
+            styles.button,
+            pressed ? styles.buttonPressed : null,
+          ]}
+        >
+          <Text style={styles.buttonText}> Continue </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -83,6 +94,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: "100%",
     paddingHorizontal: 10,
+  },
+  button: {
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonPressed: {
+    backgroundColor: "#0056b3",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 

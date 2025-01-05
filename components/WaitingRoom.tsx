@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Alert, StyleSheet } from "react-native";
 import {
-  Button,
   Pressable,
   SafeAreaView,
   Text,
@@ -115,7 +114,7 @@ const WaitingRoom: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <div>
+      <div id="info-text">
         {waiting ? (
           hostId === userId ? (
             <Text>Start when all tasters have joined</Text>
@@ -127,7 +126,16 @@ const WaitingRoom: React.FC = () => {
         )}
       </div>
       {hostId === userId && (
-        <Button title="Start" onPress={handleStartButtonPressed} />
+        <Pressable
+          id="start-session-button"
+          onPress={handleStartButtonPressed}
+          style={({ pressed }) => [
+            styles.button,
+            pressed ? styles.buttonPressed : null,
+          ]}
+          >
+          <Text style={styles.buttonText}>Start</Text>
+        </Pressable>
       )}
 
       {/* Share link input box and copy button */}
@@ -181,6 +189,20 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonPressed: {
+    backgroundColor: "#0056b3",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 

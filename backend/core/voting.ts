@@ -50,7 +50,7 @@ async function PerformVote(
     );
 
     await VoteData.create({
-      categoryId: sessionId,
+      categoryId: categoryId,
       sessionId: sessionId,
       userId: userId,
       voteId: Math.random().toString(),

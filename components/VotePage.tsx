@@ -142,7 +142,7 @@ const VotePage: React.FC = () => {
   };
 
   if (!(categoryValid && userAdded)) {
-    return <ClipLoader size={50} color="#36D7B7" />;
+    return <ClipLoader id="loading-spinner" size={50} color="#36D7B7" />;
   }
 
   return (
@@ -152,6 +152,7 @@ const VotePage: React.FC = () => {
         {!waiting &&
           selectedFoods.map((foodId, index) => (
             <Pressable
+              id={`vote-option-${index}`}
               key={index}
               style={styles.selectButton}
               onPress={() => {
@@ -164,7 +165,7 @@ const VotePage: React.FC = () => {
       </View>
 
       <View>
-        <ResultsPage />
+        <ResultsPage id={"voting-results"}/>
       </View>
 
       <View>

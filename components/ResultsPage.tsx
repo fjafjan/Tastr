@@ -9,8 +9,11 @@ import { useParams } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
 
 // Props type
+interface ResultsPageProps {
+  id: string;
+}
 
-const ResultsPage: React.FC = () => {
+const ResultsPage: React.FC<ResultsPageProps> = ({ id }) => {
   const { categoryId } = useParams<{ categoryId: string }>(); // Extract category ID from URL
   const [chartData, setChartData] = useState<ChartData<"bar">>({
     labels: [],
@@ -68,7 +71,7 @@ const ResultsPage: React.FC = () => {
   }, [categoryId]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView id={id} style={styles.container}>
       <Text style={styles.title}>And the Oracles have spoken</Text>
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>MMR per {categoryId}</Text>

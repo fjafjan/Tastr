@@ -1,9 +1,8 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import {
   ActivityIndicator,
-  Button,
   SafeAreaView,
   ScrollView,
   Text,
@@ -80,9 +79,8 @@ const HomePage: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.inputContainer}>
-          {/* Using data-testid to ensure targeting in tests */}
           <TextInput
-            data-testid="category-input"
+            id="category-input"
             key="Category"
             style={styles.category}
             placeholder="What are you Sampling?"
@@ -93,7 +91,7 @@ const HomePage: React.FC = () => {
             <View
               key={item.id}
               style={styles.inputWithLetter}
-              data-testid={`view-for-letter-${index}`}
+              id={`view-for-letter-${index}`}
               testID="foodView"
             >
               <Text
@@ -103,11 +101,11 @@ const HomePage: React.FC = () => {
                 {getLetter(index)}.
               </Text>
               <TextInput
+                id={`food-item-input-${index}`} // Use id for Selenium
                 style={styles.input}
                 placeholder={`Enter a ${categoryName || "item"}`}
                 value={item.value}
                 onChangeText={(value) => handleChange(item.id, value)}
-                data-testid={`food-item-input-${index}`}
               />
             </View>
           ))}
@@ -115,11 +113,22 @@ const HomePage: React.FC = () => {
         {isLoading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
-          <Button
-            title="Done"
+          <Pressable
+            id="done-button"
             onPress={handleDone}
+            testID="done-button"
             disabled={categoryName === "" || foodItems.every((item) => item.value === "")}
-          />
+            style={({ pressed }) => [
+              styles.button,
+              pressed ? styles.buttonPressed : null,
+              categoryName === "" || foodItems.every((item) => item.value === "")
+                ? styles.buttonDisabled
+                : null,
+            ]}
+          >
+           <Text style={styles.buttonText}>Done</Text>
+          </Pressable>
+
         )}
       </ScrollView>
     </SafeAreaView>
@@ -161,6 +170,23 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderWidth: 1,
     paddingHorizontal: 10,
+  },
+  button: {
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonPressed: {
+    backgroundColor: "#0056b3",
+  },
+  buttonDisabled: {
+    backgroundColor: "gray",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
   },
 });
 
