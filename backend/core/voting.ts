@@ -42,11 +42,12 @@ async function PerformVote(
   categoryId: string,
   userId: string,
   sessionId: string,
+  round: number,
   winnerId: string,
   loserId: string
   ): Promise<boolean> {
     console.log(
-      `Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${categoryId}`
+      `Got vote from ${userId} in round ${round} for ${winnerId} over ${loserId} in category ${categoryId}`
     );
 
     await VoteData.create({
@@ -54,6 +55,7 @@ async function PerformVote(
       sessionId: sessionId,
       userId: userId,
       voteId: Math.random().toString(),
+      round: round,
       winnerId: winnerId,
       loserId: loserId,
     });

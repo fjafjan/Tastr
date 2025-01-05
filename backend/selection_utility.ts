@@ -23,15 +23,17 @@ interface Matchup {
 
 // Utility function to compute the mean of the map values
 function meanMapValues(map: TastedMap): number {
-  const values = Object.values(map);
+  const values = Object.values(map).filter(value => !Number.isNaN(value));
   const total = values.reduce((sum, val) => sum + val, 0);
   return total / values.length;
 }
 
 // Checks if a food item has been tasted less or equal to the mean
 function hasNotTasted(tastedMap: TastedMap, foodId: string): boolean {
+  const hasTasted = foodId in tastedMap
+  const meanSamples = meanMapValues(tastedMap)
   return (
-    !(foodId in tastedMap) || tastedMap[foodId] <= meanMapValues(tastedMap)
+    !hasTasted || tastedMap[foodId] <= meanSamples
   );
 }
 

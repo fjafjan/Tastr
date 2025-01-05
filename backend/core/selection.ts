@@ -1,7 +1,10 @@
 // Import the necessary models and utilities with types.
+import { v4 as uuidv4 } from 'uuid';
 import {
+  ISelection,
   SelectionData,
-  SessionData
+  SessionData,
+  VoteData
 } from "../models";
 import { GenerateMatchups, Judge } from "../selection_utility";
 import { FoodObject, GetUserTastedItems, MmrMap, TryFindCategory } from "./category";
@@ -142,22 +145,62 @@ function SelectionScore(
   return total_score
 }
 
-// Get a selection for a user
+const generateNewSelection = async (categoryId: string, userId: string, round: number) : Promise<ISelection|false> =>
+  {
+    const generatedEntry = await GenerateSelections(categoryId, [userId], round)
+    if (!generatedEntry) {
+      console.error(
+        `Failed to find selection in category ${categoryId} for user ${userId}`
+      );
+      return false;
+    }
+    const entry = await SelectionData.findOne({
+      categoryId,
+      tasterId: userId,
+      round: round,
+    }).exec();
+    return entry ?? false
+  }
+
+const GenerateEmptyVote = async (categoryId: string, userId: string, sessionId: string, round: number) =>
+  {
+    const voteEntry = await VoteData.findOne({
+      categoryId: categoryId,
+      userId: userId,
+      round: round
+    });
+    if (!voteEntry) {
+      await new VoteData({
+        voteId: uuidv4(),
+        userId: userId,
+        categoryId: categoryId,
+        sessionId: sessionId,
+        round: round,
+        winnerId: "-1",
+        loserId: "-1",
+      }).save()
+    }
+  }
+
+  // Get a selection for a user
 async function GetSelection(
   categoryId: string,
   userId: string,
-): Promise<{ foodIdA: string; foodIdB: string } | false> {
+): Promise<{ round: number, foodIdA: string; foodIdB: string } | false> {
   try {
     const sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
       active: true,
     }).exec();
 
-    // TOOD: Check if there is a better way of managing the session here...
+    // TOOD: Check if there is a better way of managing th  e session here...
     if (!sessionEntry) {
       console.error(`No session found for category ${categoryId}`)
       return false
     }
+
+    // When asked for a selection we create a corresponding vote that has not yet been filled yet.
+    await GenerateEmptyVote(categoryId, userId, sessionEntry.sessionId, sessionEntry.round)
 
     const entry = await SelectionData.findOne({
       categoryId,
@@ -165,17 +208,20 @@ async function GetSelection(
       round: sessionEntry.round,
     }).exec();
     if (!entry) {
-      console.error(
-        `Failed to find selection in category ${categoryId} for user ${userId}`
-      );
-      return false;
+      console.log(`Could not find selection in category ${categoryId} for user ${userId}, generating new`)
+      const newEntry = await generateNewSelection(categoryId, userId, sessionEntry.round);
+      if (!newEntry) {
+        return false;
+      }
+      return  { round: sessionEntry.round, foodIdA: newEntry.choice.foodIdA, foodIdB: newEntry.choice.foodIdB }
     }
-    return { foodIdA: entry.choice.foodIdA, foodIdB: entry.choice.foodIdB };
+    return { round: sessionEntry.round, foodIdA: entry.choice.foodIdA, foodIdB: entry.choice.foodIdB };
   } catch (error) {
     console.error("Error when getting selection data", error);
     return false;
   }
 }
+
 
 export {
   GenerateSelections,

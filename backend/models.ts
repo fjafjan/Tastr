@@ -61,6 +61,7 @@ export interface IVote extends Document {
   userId: string;
   categoryId: string;
   sessionId: string;
+  round: number;
   winnerId: string;
   loserId: string;
 }
@@ -71,9 +72,11 @@ const voteSchema = new Schema<IVote>({
   userId: { type: String, required: true }, // Who did the voting
   categoryId: { type: String, required: true }, // What was the category
   sessionId: { type: String, required: true }, // Which session was the vote in.
+  round: {type: Number, required: true}, // Which round the vote was cast in
   winnerId: { type: String, required: true }, // Who was chosen as the winner
   loserId: { type: String, required: true }, // Who was voted against
 });
+
 voteSchema.index({voteId: 1})
 
 // Define the interface for User
@@ -96,7 +99,6 @@ export interface ISession extends Document {
   sessionId: string;
   categoryId: string;
   tasterIds: string[];
-  waitingIds: string[];
   hostId: string;
   url: string;
   name: string;
@@ -109,7 +111,6 @@ const sessionSchema = new Schema<ISession>({
   sessionId: { type: String, required: true, unique: true },
   categoryId: { type: String, required: true },
   tasterIds: [{ type: String }],
-  waitingIds: [{ type: String }], // Tasters waiting for the next round
   hostId: { type: String, required: true },
   url: { type: String, default: "" },
   name: { type: String, default: "" },
@@ -131,7 +132,7 @@ const choiceSchema = new Schema<IChoice>({
 });
 
 // Define the interface for Selection
-interface ISelection extends Document {
+export interface ISelection extends Document {
   categoryId: string;
   tasterId: string;
   round: number;

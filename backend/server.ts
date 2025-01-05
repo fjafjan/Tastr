@@ -61,7 +61,7 @@ const startNewRound = async (sessionId: string, categoryId: string) => {
     );
 
     sessionEntry.round += 1;
-    sessionEntry.waitingIds = Object.assign([], tasterIds);
+    // sessionEntry.waitingIds = Object.assign([], tasterIds);
     await sessionEntry.save();
 
     await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
@@ -152,31 +152,8 @@ app.post(
 
 app.get("/:categoryId/selection/:userId", getSelection);
 
-app.post("/:categoryId/vote/:winnerId/:loserId", performVote);
-
-app.post("/:categoryId/waiting/remove", async (req: Request, res: Response) => {
-  const { categoryId } = req.params;
-  const { userId } = req.body;
-
-  const sessionEntry = await SessionData.findOne({ categoryId });
-
-  if (!sessionEntry) {
-    console.error("Failed to find session for ", categoryId);
-    res.sendStatus(404);
-    return;
-  }
-
-  const waitingUsers = sessionEntry.waitingIds;
-  console.log(`Removing ${userId} from [${waitingUsers}]`);
-  waitingUsers.splice(waitingUsers.indexOf(userId), 1);
-
-  if (waitingUsers.length === 0) {
-    await startNewRound(sessionEntry.sessionId, categoryId);
-  } else {
-    await sessionEntry.save();
-  }
-
-  res.sendStatus(200);
+app.post("/:categoryId/vote/:round/:winnerId/:loserId", async (req: Request, res: Response) => {
+  await performVote(req, res, startNewRound)
 });
 
 app.get("/:categoryId/aliases", getAliases);

@@ -23,6 +23,7 @@ const VotePage: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>("");
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState<string[]>([]);
+  const [round, setRound] = useState<number>(0)
   const [waiting, setWaiting] = useState<boolean>(false);
 
   if (!userId) {
@@ -34,9 +35,11 @@ const VotePage: React.FC = () => {
       console.log(`Getting options `);
       try {
         const optionsResponse = await axios.get<{
+          round: number;
           foodIdA: string;
           foodIdB: string;
         }>(`${SERVER_URL}/${categoryId}/selection/${userId}`);
+        setRound(optionsResponse.data.round)
         setSelectedFoods([
           optionsResponse.data.foodIdA,
           optionsResponse.data.foodIdB,
@@ -110,12 +113,9 @@ const VotePage: React.FC = () => {
       try {
         setWaiting(true);
         await axios.post(
-          `${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`,
+          `${SERVER_URL}/${categoryId}/vote/${round}/${foodIdA}/${foodIdB}`,
           { userId, sessionId }
         );
-        await axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, {
-          userId,
-        });
       } catch (error) {
         Alert.alert(
           "Error",

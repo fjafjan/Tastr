@@ -5,7 +5,7 @@ import {
 } from '../core/category';
 import { GetSelection } from '../core/selection';
 import { PerformVote } from '../core/voting';
-import { ISession, SessionData } from '../models';
+import { ISession, SessionData, VoteData } from '../models';
 
 export const getSession = async (sessionId: string ): Promise<ISession|null> =>  {
   const sessionEntry = await SessionData.findOne( { sessionId: sessionId} );
@@ -64,7 +64,6 @@ export const getOrCreateActiveSession = async (req: Request, res: Response) => {
         hostId: userId,
         active: true,
         tasterIds: [],
-        waitingIds: [],
       }).save()
       res.json(newEntry);
     }
@@ -184,18 +183,24 @@ export const getTasted = async (req: Request, res: Response) => {
 };
 
 // Perform a vote
-export const performVote = async (req: Request, res: Response) => {
-  const { categoryId, winnerId, loserId } = req.params;
+export const performVote = async (req: Request, res: Response, lastVoteCallback: (sessionId: string, categoryId: string) => Promise<void>) => {
+  const { categoryId, round: roundStr, winnerId, loserId } = req.params;
   const { userId, sessionId } = req.body;
 
-  if (!categoryId || !winnerId || !loserId || !userId) {
+  if (!categoryId || !roundStr || !winnerId || !loserId || !userId) {
     return res.status(400).json({ message: 'Invalid parameters.' });
   }
-
+  const round = parseInt(roundStr)
   try {
-    const result = await PerformVote(categoryId, userId, sessionId, winnerId, loserId);
+
+    const result = await PerformVote(categoryId, userId, sessionId, round, winnerId, loserId);
 
     if (result) {
+      const remainingRoundVotes = await CountRemainingVotes(sessionId, round)
+      if (remainingRoundVotes == 0) {
+        await lastVoteCallback(sessionId, categoryId)
+      }
+
       res.sendStatus(200);
     } else {
       res.status(500).json({ message: 'Error performing vote.' });
@@ -205,3 +210,14 @@ export const performVote = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error. Unable to perform vote.' });
   }
 };
+
+const CountRemainingVotes = async (sessionId: string, round: number) : Promise<number> => {
+  const votes = await VoteData.find({
+    sessionId: sessionId,
+    round: round,
+    winnerId: "-1",
+    loserId: "-1"
+  })
+  // This is not right at all!  we want to count the votes where winner and loser and both -1
+  return votes.length
+}
