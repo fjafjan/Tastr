@@ -23,7 +23,7 @@ const VotePage: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>("");
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState<string[]>([]);
-  const [round, setRound] = useState<number>(0)
+  const [round, setRound] = useState(0)
   const [waiting, setWaiting] = useState<boolean>(false);
 
   if (!userId) {
@@ -49,7 +49,7 @@ const VotePage: React.FC = () => {
         console.error("Error fetching options", error);
       }
     },
-    [categoryId, userId]
+    [categoryId, userId, setRound]
   );
 
   const categoryValid = useValidateCategory({ categoryId: categoryId });
@@ -124,7 +124,7 @@ const VotePage: React.FC = () => {
         console.error("Error submitting vote", error);
       }
     },
-    [categoryId, userId, sessionId]
+    [categoryId, userId, sessionId, round]
   );
 
   const handleGoNextRound = async (): Promise<void> => {

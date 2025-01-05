@@ -271,6 +271,7 @@ describe("VotingSessionController", () => {
       const req = createMockRequest(
         {
           categoryId: "test-category",
+          round: "5",
           winnerId: "Pizza",
           loserId: "Burger",
         },
@@ -278,12 +279,13 @@ describe("VotingSessionController", () => {
       );
       const res = GetMockResponse();
 
-      await performVote(req, res);
+      await performVote(req, res, async () => {});
 
       expect(PerformVote).toHaveBeenCalledWith(
         "test-category",
         "user1",
         "session1",
+        5,
         "Pizza",
         "Burger"
       );
@@ -296,6 +298,7 @@ describe("VotingSessionController", () => {
       const req = createMockRequest(
         {
           categoryId: "test-category",
+          round: "5",
           winnerId: "Pizza",
           loserId: "Burger",
         },
@@ -303,7 +306,7 @@ describe("VotingSessionController", () => {
       );
       const res = GetMockResponse();
 
-      await performVote(req, res);
+      await performVote(req, res, async () => {});
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({

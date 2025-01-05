@@ -60,7 +60,7 @@ describe("HomePage E2E Tests", () => {
   let driver: ThenableWebDriver;
   let driver2: ThenableWebDriver;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     driver = new Builder().forBrowser("chrome").build();
     driver.manage().setTimeouts({ implicit: 10000 }); // Wait up to 10 seconds
 
@@ -70,7 +70,7 @@ describe("HomePage E2E Tests", () => {
     jest.setTimeout(30000)
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await driver.quit();
     await driver2?.quit();
   }, 20000);

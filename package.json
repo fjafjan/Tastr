@@ -10,8 +10,9 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "test": "jest --silent=false",
-    "test:profile": "jest --silent=false"
+    "test": "jest --testPathIgnorePatterns='e2e' --silent=false",
+    "test:profile": "jest --silent=false",
+    "test:e2e": "jest --silent=false e2e"
   },
   "engines": {
     "node": "22.12.0"

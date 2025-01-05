@@ -50,14 +50,17 @@ async function PerformVote(
       `Got vote from ${userId} in round ${round} for ${winnerId} over ${loserId} in category ${categoryId}`
     );
 
-    await VoteData.create({
+    await VoteData.findOneAndUpdate({
       categoryId: categoryId,
       sessionId: sessionId,
       userId: userId,
-      voteId: Math.random().toString(),
       round: round,
+    },
+    {
       winnerId: winnerId,
       loserId: loserId,
+    }, {
+      upsert: true
     });
 
     const categoryEntry = await TryFindCategory(categoryId);
