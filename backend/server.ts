@@ -16,6 +16,7 @@ import {
   addUserToSession,
   getOrCreateActiveSession,
   getSelection,
+  getSession,
   getTasted,
   isSessionRunning,
   performVote,
@@ -35,7 +36,8 @@ app.use(bodyParser.json());
 const io = new SocketIOServer(server, {
   cors: {
     origin: [
-      "localhost:9000",
+      "http://localhost:9000",
+      "http://localhost:5000",
       "https://tastr-production.up.railway.app",
       "https://node-server-production-588f.up.railway.app",
     ],
@@ -44,31 +46,36 @@ const io = new SocketIOServer(server, {
 });
 
 const startNewRound = async (sessionId: string, categoryId: string) => {
-  console.log("All clients are ready. Preparing next round.");
-  const sessionEntry = await SessionData.findOne({ sessionId });
+  try {
+    console.log("All clients are ready. Preparing next round.");
+    const sessionEntry = await getSession(sessionId)
 
-  if (!sessionEntry) {
-    console.error("No session with session Id found!");
-    return;
+    if (!sessionEntry) {
+      console.error("No session with session Id found!");
+      return;
+    }
+
+    const tasterIds = sessionEntry.tasterIds;
+    console.log(
+      `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`
+    );
+
+    sessionEntry.round += 1;
+    sessionEntry.waitingIds = Object.assign([], tasterIds);
+    await sessionEntry.save();
+
+    await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
+
+    console.log(`Starting round ${sessionEntry.round}`);
+    if (sessionEntry.round === 1) {
+      io.emit("start", { sessionId: sessionId });
+    } else {
+      io.emit("round ready", { sessionId: sessionId, round: sessionEntry.round });
+    }
+  } catch (error) {
+    console.error("Failed to start new round due to ", error)
   }
 
-  const tasterIds = sessionEntry.tasterIds;
-  console.log(
-    `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`
-  );
-
-  sessionEntry.round += 1;
-  sessionEntry.waitingIds = Object.assign([], tasterIds);
-  await sessionEntry.save();
-
-  await GenerateSelections(categoryId, tasterIds, sessionEntry.round);
-
-  console.log(`Starting round ${sessionEntry.round}`);
-  if (sessionEntry.round === 1) {
-    io.emit("start", { sessionId: sessionId });
-  } else {
-    io.emit("round ready", { sessionId: sessionId, round: sessionEntry.round });
-  }
 };
 
 // Connect to database.
@@ -143,7 +150,7 @@ app.post(
   }
 );
 
-app.get("/:categoryId/selection/:round/:userId", getSelection);
+app.get("/:categoryId/selection/:userId", getSelection);
 
 app.post("/:categoryId/vote/:winnerId/:loserId", performVote);
 

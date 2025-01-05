@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
 
+
 type FoodItem = {
   id: number;
   value: string;

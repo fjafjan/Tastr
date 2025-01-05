@@ -9,11 +9,8 @@ import { useParams } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
 
 // Props type
-interface ResultsPageProps {
-  round: number;
-}
 
-const ResultsPage: React.FC<ResultsPageProps> = ({ round }) => {
+const ResultsPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>(); // Extract category ID from URL
   const [chartData, setChartData] = useState<ChartData<"bar">>({
     labels: [],
@@ -68,7 +65,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({ round }) => {
 
   useEffect(() => {
     fetchVotes();
-  }, [categoryId, round]);
+  }, [categoryId]);
 
   return (
     <SafeAreaView style={styles.container}>

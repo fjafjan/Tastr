@@ -39,21 +39,23 @@ async function GetUserVotes(categoryId: string, userId: string) : Promise<IVote[
 
 // Perform a vote in the session
 async function PerformVote(
-    userId: string,
-    categoryId: string,
-    winnerId: string,
-    loserId: string
+  categoryId: string,
+  userId: string,
+  sessionId: string,
+  winnerId: string,
+  loserId: string
   ): Promise<boolean> {
     console.log(
       `Got vote from ${userId} for ${winnerId} over ${loserId} in Session ${categoryId}`
     );
 
     await VoteData.create({
+      categoryId: sessionId,
+      sessionId: sessionId,
+      userId: userId,
       voteId: Math.random().toString(),
-      userId,
-      categoryId,
-      winnerId,
-      loserId,
+      winnerId: winnerId,
+      loserId: loserId,
     });
 
     const categoryEntry = await TryFindCategory(categoryId);

@@ -18,10 +18,6 @@ import useValidateCategory from "../hooks/useValidateCategory";
 
 const socket: Socket = io(SERVER_URL); // Replace with your server URL
 
-interface LocationState {
-  userId: string | null;
-}
-
 const WaitingRoom: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const [waiting, setWaiting] = useState<boolean>(true);
@@ -79,11 +75,12 @@ const WaitingRoom: React.FC = () => {
 
     socket.on("start", handleStart);
 
-    socket.emit("join", { userId });
+    if (userId !== null) {
+      socket.emit("join", { userId });
+    }
 
     return () => {
       socket.off("start", handleStart);
-      socket.disconnect();
     };
   }, [socket, categoryId, navigate, sessionId, userId]);
 

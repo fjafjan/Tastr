@@ -31,21 +31,16 @@ function GetMockResponse(): Response {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
     sendStatus: jest.fn(),
-  } as any as Response;
+  } as unknown as Response;
 }
 
-function createMockRequest(params: any, body: any): Request {
+function createMockRequest(params: unknown, body: unknown): Request {
   return {
     params,
     body,
-  } as any as Request;
+  } as unknown as Request;
 }
 
-function createMockResponse(): Response {
-  return {
-    sendStatus: jest.fn(),
-  } as any as Response;
-}
 
 describe("VotingSessionController", () => {
   beforeAll(async () => {
@@ -279,15 +274,16 @@ describe("VotingSessionController", () => {
           winnerId: "Pizza",
           loserId: "Burger",
         },
-        { userId: "user1" }
+        { userId: "user1", sessionId: "session1" }
       );
       const res = GetMockResponse();
 
       await performVote(req, res);
 
       expect(PerformVote).toHaveBeenCalledWith(
-        "user1",
         "test-category",
+        "user1",
+        "session1",
         "Pizza",
         "Burger"
       );

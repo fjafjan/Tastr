@@ -24,20 +24,19 @@ const VotePage: React.FC = () => {
   const userId = useMemo(() => localStorage.getItem("userId"), []);
   const [selectedFoods, setSelectedFoods] = useState<string[]>([]);
   const [waiting, setWaiting] = useState<boolean>(false);
-  const [round, setRound] = useState<number>(1);
 
   if (!userId) {
     navigate(`/${categoryId}`);
   }
 
   const fetchOptions = useCallback(
-    async (currentRound: number): Promise<void> => {
-      console.log(`Getting options for round ${currentRound}`);
+    async (): Promise<void> => {
+      console.log(`Getting options `);
       try {
         const optionsResponse = await axios.get<{
           foodIdA: string;
           foodIdB: string;
-        }>(`${SERVER_URL}/${categoryId}/selection/${currentRound}/${userId}`);
+        }>(`${SERVER_URL}/${categoryId}/selection/${userId}`);
         setSelectedFoods([
           optionsResponse.data.foodIdA,
           optionsResponse.data.foodIdB,
@@ -76,8 +75,8 @@ const VotePage: React.FC = () => {
   }, [categoryId]);
 
   useEffect(() => {
-    fetchOptions(round);
-  }, [categoryId, userId, fetchOptions, round]);
+    fetchOptions();
+  }, [categoryId, userId, fetchOptions]);
 
   const socket = useMemo<Socket>(() => io(`${SERVER_URL}`), [categoryId]);
 
@@ -91,8 +90,7 @@ const VotePage: React.FC = () => {
         return;
       }
       console.log("Round ready event received: ", data.round);
-      setRound(data.round);
-      await fetchOptions(data.round);
+      await fetchOptions();
       setWaiting(false);
     };
 
@@ -113,7 +111,7 @@ const VotePage: React.FC = () => {
         setWaiting(true);
         await axios.post(
           `${SERVER_URL}/${categoryId}/vote/${foodIdA}/${foodIdB}`,
-          { userId }
+          { userId, sessionId }
         );
         await axios.post(`${SERVER_URL}/${categoryId}/waiting/remove`, {
           userId,
@@ -126,7 +124,7 @@ const VotePage: React.FC = () => {
         console.error("Error submitting vote", error);
       }
     },
-    [categoryId, userId]
+    [categoryId, userId, sessionId]
   );
 
   const handleGoNextRound = async (): Promise<void> => {
@@ -166,7 +164,7 @@ const VotePage: React.FC = () => {
       </View>
 
       <View>
-        <ResultsPage round={round} />
+        <ResultsPage />
       </View>
 
       <View>

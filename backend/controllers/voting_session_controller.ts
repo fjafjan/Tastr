@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import {
-    GetUserTastedItems,
+  GetUserTastedItems,
 } from '../core/category';
 import { GetSelection } from '../core/selection';
 import { PerformVote } from '../core/voting';
 import { ISession, SessionData } from '../models';
+
+export const getSession = async (sessionId: string ): Promise<ISession|null> =>  {
+  const sessionEntry = await SessionData.findOne( { sessionId: sessionId} );
+  return sessionEntry
+}
 
 export const getActiveSession = async (req: Request, res: Response) => {
   const { categoryId } = req.params;
@@ -45,25 +50,22 @@ export const getOrCreateActiveSession = async (req: Request, res: Response) => {
   }
 
   try {
-    const newEntry: Partial<ISession> =       {
-      sessionId: uuidv4(),
+    const sessionEntry = await SessionData.findOne({
       categoryId: categoryId,
-      hostId: userId,
-      active: true,
-    }
-
-    const sessionEntry = await SessionData.findOneAndUpdate(
-      {
-        categoryId: categoryId,
-        active: true,
-      },
-      newEntry,
-      { upsert: true }
-    ).exec();
+      active: true
+    });
 
     if (sessionEntry) {
       res.json(sessionEntry);
     } else {
+      const newEntry = await new SessionData({
+        sessionId: uuidv4(),
+        categoryId: categoryId,
+        hostId: userId,
+        active: true,
+        tasterIds: [],
+        waitingIds: [],
+      }).save()
       res.json(newEntry);
     }
   } catch (error) {
@@ -108,9 +110,9 @@ export const addUserToSession = async (req: Request, res: Response) => {
   try {
     const sessionEntry = await SessionData.findOne({
       sessionId: sessionId,
-    }).exec();
-
+    });
     if (!sessionEntry) {
+      console.error("Could not find session user wanted to be added to")
       return res
         .status(404)
         .json({ message: `Session ${sessionId} not found.` });
@@ -136,14 +138,14 @@ export const addUserToSession = async (req: Request, res: Response) => {
 
 // Get the selection for a user
 export const getSelection = async (req: Request, res: Response) => {
-  const { categoryId, round, userId } = req.params;
+  const { categoryId, userId } = req.params;
 
-  if (!categoryId || !round || !userId) {
+  if (!categoryId || !userId) {
     return res.status(400).json({ message: 'Invalid parameters.' });
   }
 
   try {
-    const options = await GetSelection(categoryId, userId, parseInt(round));
+    const options = await GetSelection(categoryId, userId);
     if (options) {
       res.json(options);
     } else {
@@ -184,14 +186,14 @@ export const getTasted = async (req: Request, res: Response) => {
 // Perform a vote
 export const performVote = async (req: Request, res: Response) => {
   const { categoryId, winnerId, loserId } = req.params;
-  const { userId } = req.body;
+  const { userId, sessionId } = req.body;
 
   if (!categoryId || !winnerId || !loserId || !userId) {
     return res.status(400).json({ message: 'Invalid parameters.' });
   }
 
   try {
-    const result = await PerformVote(userId, categoryId, winnerId, loserId);
+    const result = await PerformVote(categoryId, userId, sessionId, winnerId, loserId);
 
     if (result) {
       res.sendStatus(200);

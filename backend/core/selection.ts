@@ -1,6 +1,7 @@
 // Import the necessary models and utilities with types.
 import {
-  SelectionData
+  SelectionData,
+  SessionData
 } from "../models";
 import { GenerateMatchups, Judge } from "../selection_utility";
 import { FoodObject, GetUserTastedItems, MmrMap, TryFindCategory } from "./category";
@@ -101,9 +102,9 @@ function SimilarMmrFunction(
 }
 
 function NormalizeMmrMap(mmrMap: MmrMap) : MmrMap {
-  let normalized_mmrs: MmrMap = {}
+  const normalized_mmrs: MmrMap = {}
 
-  let largest_element = Object.values(mmrMap).reduce((a, b) => Math.max(a, b))
+  const largest_element = Object.values(mmrMap).reduce((a, b) => Math.max(a, b))
   Object.keys(mmrMap).forEach(item => normalized_mmrs[item] = mmrMap[item] / largest_element)
   return normalized_mmrs
 }
@@ -145,17 +146,27 @@ function SelectionScore(
 async function GetSelection(
   categoryId: string,
   userId: string,
-  round: number
 ): Promise<{ foodIdA: string; foodIdB: string } | false> {
   try {
+    const sessionEntry = await SessionData.findOne({
+      categoryId: categoryId,
+      active: true,
+    }).exec();
+
+    // TOOD: Check if there is a better way of managing the session here...
+    if (!sessionEntry) {
+      console.error(`No session found for category ${categoryId}`)
+      return false
+    }
+
     const entry = await SelectionData.findOne({
       categoryId,
       tasterId: userId,
-      round: parseInt(String(round), 10), // TODO: Should remove this parseInt stuff, or explain why we need it.
+      round: sessionEntry.round,
     }).exec();
     if (!entry) {
       console.error(
-        `Failed to find selection in category ${categoryId} for user ${userId} round ${round}`
+        `Failed to find selection in category ${categoryId} for user ${userId}`
       );
       return false;
     }

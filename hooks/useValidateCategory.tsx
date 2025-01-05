@@ -1,12 +1,24 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/Constants";
+
+type FoodItem = {
+  id: string,
+  name: string,
+  alias: string,
+  MMR: number,
+}
+
+export type Category = {
+  categoryId: string,
+  foodObjects: FoodItem[],
+}
 
 // Define the types for the parameters and the return value of the hook
 type UseValidateCategoryProps = {
   categoryId: string | undefined;
-  onSuccessCallback?: () => void; // Optional callback
+  onSuccessCallback?: (category: Category) => void; // Optional callback
 };
 
 const useValidateCategory = ({
@@ -33,7 +45,7 @@ const useValidateCategory = ({
 
         // Run the success callback if provided
         if (onSuccessCallback) {
-          onSuccessCallback();
+          onSuccessCallback(categoryResponse.data as unknown as Category);
         }
       } else {
         console.warn(
