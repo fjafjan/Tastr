@@ -23,24 +23,22 @@ interface Matchup {
 
 // Utility function to compute the mean of the map values
 function meanMapValues(map: TastedMap): number {
-  const values = Object.values(map).filter(value => !Number.isNaN(value));
+  const values = Object.values(map).filter((value) => !Number.isNaN(value));
   const total = values.reduce((sum, val) => sum + val, 0);
   return total / values.length;
 }
 
 // Checks if a food item has been tasted less or equal to the mean
 function hasNotTasted(tastedMap: TastedMap, foodId: string): boolean {
-  const hasTasted = foodId in tastedMap
-  const meanSamples = meanMapValues(tastedMap)
-  return (
-    !hasTasted || tastedMap[foodId] <= meanSamples
-  );
+  const hasTasted = foodId in tastedMap;
+  const meanSamples = meanMapValues(tastedMap);
+  return !hasTasted || tastedMap[foodId] <= meanSamples;
 }
 
 // Function to generate matchups based on food IDs and judges' history
 function GenerateMatchups(
   foodIds: string[],
-  judges: Judge[]
+  judges: Judge[],
 ): Record<string, Matchup> {
   let keys = foodIds.slice(); // Copy array
   const assignedJudges = judges.slice(); // Copy array
@@ -60,7 +58,7 @@ function GenerateMatchups(
             console.log(
               `${keys[0]}-${keys[1]} Good matchup for ${
                 judge.userId
-              }, has tasted: ${Object.values(judge.tasted)}`
+              }, has tasted: ${Object.values(judge.tasted)}`,
             );
             matchups[judge.userId] = { itemA: keys[0], itemB: keys[1] };
             keys.splice(keys.indexOf(keys[0]), 1);
@@ -70,7 +68,7 @@ function GenerateMatchups(
         } else {
           // Return foods to the pool when there aren't enough remaining
           keys = foodIds.slice();
-          console.log("Returning all foods to the pool");
+          console.log('Returning all foods to the pool');
         }
       }
     }
@@ -86,7 +84,7 @@ function GenerateMatchups(
             console.log(
               `${keys[0]}-${keys[1]} Decent matchup for ${
                 judge.userId
-              }, has tasted: ${Object.values(judge.tasted)}`
+              }, has tasted: ${Object.values(judge.tasted)}`,
             );
             matchups[judge.userId] = { itemA: keys[0], itemB: keys[1] };
             keys.splice(keys.indexOf(keys[0]), 1);
@@ -105,7 +103,7 @@ function GenerateMatchups(
           console.log(
             `${keys[0]}-${keys[1]} Bad matchup for ${
               judge.userId
-            }, has tasted: ${Object.values(judge.tasted)}`
+            }, has tasted: ${Object.values(judge.tasted)}`,
           );
           matchups[judge.userId] = { itemA: keys[0], itemB: keys[1] };
           keys.splice(keys.indexOf(keys[0]), 1);
@@ -120,4 +118,3 @@ function GenerateMatchups(
 }
 
 export { GenerateMatchups };
-

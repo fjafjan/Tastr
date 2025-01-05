@@ -26,14 +26,14 @@ jobs:
           registry-url: ${{ env.REGISTRY_URL }}
 
       - name: Install dependencies
-        working-directory: "." # In case this will be changed.
+        working-directory: '.' # In case this will be changed.
         run: |
           npm ci
           echo "Need to manually install package due to https://github.com/npm/cli/issues/4828"
           npm i -d @rollup/rollup-linux-x64-gnu
 
       - name: Build
-        working-directory: "."
+        working-directory: '.'
         run: npm run build --if-present
 
       - name: Run tests

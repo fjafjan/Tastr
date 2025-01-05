@@ -1,19 +1,8 @@
-import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { SERVER_URL } from "../constants/Constants";
-
-type FoodItem = {
-  id: string,
-  name: string,
-  alias: string,
-  MMR: number,
-}
-
-export type Category = {
-  categoryId: string,
-  foodObjects: FoodItem[],
-}
+import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SERVER_URL } from '../constants/Constants';
+import { Category } from '../types/category';
 
 // Define the types for the parameters and the return value of the hook
 type UseValidateCategoryProps = {
@@ -36,7 +25,7 @@ const useValidateCategory = ({
     }
     try {
       const categoryResponse = await axios.get(
-        `${SERVER_URL}/category/get/${categoryId}`
+        `${SERVER_URL}/category/get/${categoryId}`,
       );
 
       if (categoryResponse && categoryResponse.status === 200) {
@@ -49,12 +38,12 @@ const useValidateCategory = ({
         }
       } else {
         console.warn(
-          `Category ${categoryId} validation failed with status ${categoryResponse.status}`
+          `Category ${categoryId} validation failed with status ${categoryResponse.status}`,
         );
         navigate(`/`);
       }
-    } catch (error: any) {
-      console.warn(`Failed to find category ${categoryId}:`, error.message);
+    } catch (error) {
+      console.warn(`Failed to find category ${categoryId}:`, error);
       navigate(`/`);
     }
   }, [categoryId, onSuccessCallback, navigate]);

@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 // Define the interface for FoodObject
 interface IFoodObject extends Document {
@@ -15,7 +15,7 @@ const foodObjectSchema = new Schema<IFoodObject>({
   alias: { type: String, required: true }, // Alias displayed to the user to hide the identity.
   MMR: { type: Schema.Types.Number, default: 1000.0 }, // MMR (Matchmaking Rating) as a double
 });
-foodObjectSchema.index({ id: 1})
+foodObjectSchema.index({ id: 1 });
 
 // Define the interface for FoodCategory
 export interface IFoodCategory extends Document {
@@ -28,7 +28,7 @@ const foodCategorySchema = new Schema<IFoodCategory>({
   categoryId: { type: String, required: true, unique: true }, // Unique category identifier
   foodObjects: { type: [foodObjectSchema], required: true }, // Array of FoodObjects
 });
-foodCategorySchema.index({ categoryId: 1})
+foodCategorySchema.index({ categoryId: 1 });
 
 // Email validation regex
 const validateEmail = (email: string): boolean => {
@@ -49,9 +49,9 @@ const emailSchema = new Schema<IEmail>({
     lowercase: true,
     validate: {
       validator: validateEmail,
-      message: "Please enter a valid email",
+      message: 'Please enter a valid email',
     },
-    required: [true, "Email required"],
+    required: [true, 'Email required'],
   },
 });
 
@@ -72,12 +72,12 @@ const voteSchema = new Schema<IVote>({
   userId: { type: String, required: true }, // Who did the voting
   categoryId: { type: String, required: true }, // What was the category
   sessionId: { type: String, required: true }, // Which session was the vote in.
-  round: {type: Number, required: true}, // Which round the vote was cast in
+  round: { type: Number, required: true }, // Which round the vote was cast in
   winnerId: { type: String, required: true }, // Who was chosen as the winner
   loserId: { type: String, required: true }, // Who was voted against
 });
 
-voteSchema.index({voteId: 1})
+voteSchema.index({ voteId: 1 });
 
 // Define the interface for User
 interface IUser extends Document {
@@ -90,9 +90,9 @@ interface IUser extends Document {
 const userSchema = new Schema<IUser>({
   userId: { type: String, required: true, unique: true }, // Uniquely identifies the user
   name: { type: String, required: true }, // A more descriptive name of the user
-  email: { type: emailSchema, default: { email: "fake@fakemail.fk" } }, // An email to the user, for notifications
+  email: { type: emailSchema, default: { email: 'fake@fakemail.fk' } }, // An email to the user, for notifications
 });
-userSchema.index({ userId: 1})
+userSchema.index({ userId: 1 });
 
 // Define the interface for Session
 export interface ISession extends Document {
@@ -112,12 +112,12 @@ const sessionSchema = new Schema<ISession>({
   categoryId: { type: String, required: true },
   tasterIds: [{ type: String }],
   hostId: { type: String, required: true },
-  url: { type: String, default: "" },
-  name: { type: String, default: "" },
+  url: { type: String, default: '' },
+  name: { type: String, default: '' },
   active: { type: Boolean, default: false },
   round: { type: Number, default: 0 },
 });
-sessionSchema.index({ sessionId: 1})
+sessionSchema.index({ sessionId: 1 });
 
 // Define the interface for Choice
 interface IChoice extends Document {
@@ -149,19 +149,18 @@ const selectionSchema = new Schema<ISelection>({
 
 // Export the models with types
 const FoodCategoryData: Model<IFoodCategory> = mongoose.model(
-  "FoodCategoryData",
-  foodCategorySchema
+  'FoodCategoryData',
+  foodCategorySchema,
 );
-const VoteData: Model<IVote> = mongoose.model("VoteData", voteSchema);
-const UserData: Model<IUser> = mongoose.model("UserData", userSchema);
+const VoteData: Model<IVote> = mongoose.model('VoteData', voteSchema);
+const UserData: Model<IUser> = mongoose.model('UserData', userSchema);
 const SessionData: Model<ISession> = mongoose.model(
-  "SessionData",
-  sessionSchema
+  'SessionData',
+  sessionSchema,
 );
 const SelectionData: Model<ISelection> = mongoose.model(
-  "SelectionData",
-  selectionSchema
+  'SelectionData',
+  selectionSchema,
 );
 
 export { FoodCategoryData, SelectionData, SessionData, UserData, VoteData };
-

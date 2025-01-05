@@ -1,6 +1,6 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { SERVER_URL } from "../constants/Constants";
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { SERVER_URL } from '../constants/Constants';
 
 // Define types for the function parameters
 interface SessionEntry {
@@ -31,11 +31,11 @@ const useAddUserToSession = ({
   const getSession = async (): Promise<SessionEntry | undefined> => {
     try {
       const sessionEntryResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/session/${userId}/get`
+        `${SERVER_URL}/${categoryId}/session/${userId}/get`,
       );
       return sessionEntryResponse.data;
     } catch (error) {
-      console.error("Failed to get active session ID", error);
+      console.error('Failed to get active session ID', error);
       return undefined;
     }
   };
@@ -44,7 +44,7 @@ const useAddUserToSession = ({
     const addUserToSession = async () => {
       const sessionEntry = await getSession();
       if (!sessionEntry) {
-        console.error("Failed to add user to session");
+        console.error('Failed to add user to session');
         return;
       }
       if (setSessionId) {
@@ -53,7 +53,7 @@ const useAddUserToSession = ({
       setHostId(sessionEntry.hostId);
 
       if (userAdded) return; // Prevent multiple additions
-      console.log("Got session ID ", sessionEntry.sessionId);
+      console.log('Got session ID ', sessionEntry.sessionId);
       try {
         if (!sessionEntry.tasterIds.includes(userId)) {
           await axios.post(`${SERVER_URL}/${categoryId}/session/add`, {
@@ -65,7 +65,7 @@ const useAddUserToSession = ({
       } catch (error) {
         console.error(
           `Failed to add user ${userId} to categoryId ${categoryId}`,
-          error
+          error,
         );
       }
     };

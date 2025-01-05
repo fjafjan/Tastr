@@ -1,17 +1,17 @@
-import bodyParser from "body-parser";
-import cors from "cors";
-import express, { Request, Response } from "express";
-import http from "http";
-import mongoose from "mongoose";
-import { Socket, Server as SocketIOServer } from "socket.io";
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express, { Request, Response } from 'express';
+import http from 'http';
+import mongoose from 'mongoose';
+import { Socket, Server as SocketIOServer } from 'socket.io';
 import {
   addCategory,
   categoryExists,
   getAliases,
   getMmr,
   getNames,
-} from "./controllers/food_category_controller";
-import { addUser } from "./controllers/user_controller";
+} from './controllers/food_category_controller';
+import { addUser } from './controllers/user_controller';
 import {
   addUserToSession,
   getOrCreateActiveSession,
@@ -20,9 +20,9 @@ import {
   getTasted,
   isSessionRunning,
   performVote,
-} from "./controllers/voting_session_controller";
-import { GenerateSelections } from "./core/selection";
-import { SessionData } from "./models";
+} from './controllers/voting_session_controller';
+import { GenerateSelections } from './core/selection';
+import { SessionData } from './models';
 
 const app = express();
 
@@ -36,28 +36,28 @@ app.use(bodyParser.json());
 const io = new SocketIOServer(server, {
   cors: {
     origin: [
-      "http://localhost:9000",
-      "http://localhost:5000",
-      "https://tastr-production.up.railway.app",
-      "https://node-server-production-588f.up.railway.app",
+      'http://localhost:9000',
+      'http://localhost:5000',
+      'https://tastr-production.up.railway.app',
+      'https://node-server-production-588f.up.railway.app',
     ],
-    methods: ["GET", "POST"],
+    methods: ['GET', 'POST'],
   },
 });
 
 const startNewRound = async (sessionId: string, categoryId: string) => {
   try {
-    console.log("All clients are ready. Preparing next round.");
-    const sessionEntry = await getSession(sessionId)
+    console.log('All clients are ready. Preparing next round.');
+    const sessionEntry = await getSession(sessionId);
 
     if (!sessionEntry) {
-      console.error("No session with session Id found!");
+      console.error('No session with session Id found!');
       return;
     }
 
     const tasterIds = sessionEntry.tasterIds;
     console.log(
-      `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`
+      `Starting new voting round for category ${categoryId} with host ${sessionEntry.hostId} and users ${tasterIds}`,
     );
 
     sessionEntry.round += 1;
@@ -68,107 +68,114 @@ const startNewRound = async (sessionId: string, categoryId: string) => {
 
     console.log(`Starting round ${sessionEntry.round}`);
     if (sessionEntry.round === 1) {
-      io.emit("start", { sessionId: sessionId });
+      io.emit('start', { sessionId: sessionId });
     } else {
-      io.emit("round ready", { sessionId: sessionId, round: sessionEntry.round });
+      io.emit('round ready', {
+        sessionId: sessionId,
+        round: sessionEntry.round,
+      });
     }
   } catch (error) {
-    console.error("Failed to start new round due to ", error)
+    console.error('Failed to start new round due to ', error);
   }
-
 };
 
 // Connect to database.
 mongoose
   .connect(process.env.MONGO_URL as string)
   .then(() => {
-    console.log("Connected to database");
+    console.log('Connected to database');
   })
   .catch((err) => {
-    console.error("Failed to connect to database", err);
+    console.error('Failed to connect to database', err);
     return 1;
   });
 
-io.on("connection", (socket: Socket) => {
+io.on('connection', (socket: Socket) => {
   console.log(`New client ${socket.id} connected`);
 
-  socket.on("join", (data: { userId: string }) => {
+  socket.on('join', (data: { userId: string }) => {
     console.log(`User ${data.userId} has joined`);
   });
 
   socket.on(
-    "startSession",
+    'startSession',
     async (data: { categoryId: string; hostId: string; sessionId: string }) => {
       const { categoryId, hostId, sessionId } = data;
-      console.log(`Got start request on socket ${socket.id} for category ${categoryId} with host ${hostId}`);
+      console.log(
+        `Got start request on socket ${socket.id} for category ${categoryId} with host ${hostId}`,
+      );
       await startNewRound(sessionId, categoryId);
-    }
+    },
   );
 
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     console.log(`Client ${socket.id} disconnected`);
   });
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).send({ status: "Alright" });
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).send({ status: 'Alright' });
 });
 
 // Endpoint to save data sent from a user.
-app.post("/category/add", addCategory);
+app.post('/category/add', addCategory);
 
 // Endpoint to save data sent from a user.
-app.get("/category/get/:categoryId", categoryExists);
+app.get('/category/get/:categoryId', categoryExists);
 
 // Endpoint to add user to the user database.
-app.post("/users/add", addUser);
+app.post('/users/add', addUser);
 
 // Checks if the session for the given category is running.
-app.get("/:categoryId/session/running", isSessionRunning);
+app.get('/:categoryId/session/running', isSessionRunning);
 
 // Gets an active session for the given category.
-app.get("/:categoryId/session/:userId/get", getOrCreateActiveSession);
+app.get('/:categoryId/session/:userId/get', getOrCreateActiveSession);
 
 // Add a user to a session.
-app.post("/:categoryId/session/add", addUserToSession);
+app.post('/:categoryId/session/add', addUserToSession);
 
 // Force the start of a new round.
 app.post(
-  "/:categoryId/session/nextRound",
+  '/:categoryId/session/nextRound',
   async (req: Request, res: Response) => {
     const { categoryId } = req.params;
 
     const sessionEntry = await SessionData.findOne({ categoryId });
 
     if (!sessionEntry) {
-      console.error("Failed to find session for ", categoryId);
+      console.error('Failed to find session for ', categoryId);
       res.sendStatus(404);
       return;
     }
     await startNewRound(sessionEntry.sessionId, categoryId);
     res.sendStatus(200);
-  }
+  },
 );
 
-app.get("/:categoryId/selection/:userId", getSelection);
+app.get('/:categoryId/selection/:userId', getSelection);
 
-app.post("/:categoryId/vote/:round/:winnerId/:loserId", async (req: Request, res: Response) => {
-  await performVote(req, res, startNewRound)
-});
+app.post(
+  '/:categoryId/vote/:round/:winnerId/:loserId',
+  async (req: Request, res: Response) => {
+    await performVote(req, res, startNewRound);
+  },
+);
 
-app.get("/:categoryId/aliases", getAliases);
+app.get('/:categoryId/aliases', getAliases);
 
-app.get("/:categoryId/names", getNames);
+app.get('/:categoryId/names', getNames);
 
-app.get("/:categoryId/mmr", getMmr);
+app.get('/:categoryId/mmr', getMmr);
 
-app.get("/:categoryId/:userId/tasted", getTasted);
+app.get('/:categoryId/:userId/tasted', getTasted);
 
-server.listen(port, "0.0.0.0", 511, () => {
+server.listen(port, '0.0.0.0', 511, () => {
   console.log(`Server running on port ${port}`);
 });
 
 function logAwake() {
-  console.log("Still running");
+  console.log('Still running');
 }
 setInterval(logAwake, 10000);

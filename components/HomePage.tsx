@@ -1,17 +1,16 @@
-import axios from "axios";
-import React, { useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import axios from 'axios';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import {
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
   Text,
   TextInput,
-  View
-} from "react-native-web";
-import { useNavigate } from "react-router-dom";
-import { SERVER_URL } from "../constants/Constants";
-
+  View,
+} from 'react-native-web';
+import { useNavigate } from 'react-router-dom';
+import { SERVER_URL } from '../constants/Constants';
 
 type FoodItem = {
   id: number;
@@ -19,10 +18,10 @@ type FoodItem = {
 };
 
 const HomePage: React.FC = () => {
-  const [categoryName, setCategoryName] = useState<string>("");
+  const [categoryName, setCategoryName] = useState<string>('');
 
   const [foodItems, setFoodItems] = useState<FoodItem[]>([
-    { id: 1, value: "" },
+    { id: 1, value: '' },
   ]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,31 +32,31 @@ const HomePage: React.FC = () => {
 
   const handleChange = (id: number, value: string): void => {
     setFoodItems((prevItems) =>
-      prevItems.map((item) => (item.id === id ? { ...item, value } : item))
+      prevItems.map((item) => (item.id === id ? { ...item, value } : item)),
     );
 
-    if (value !== "" && id === foodItems[foodItems.length - 1].id) {
+    if (value !== '' && id === foodItems[foodItems.length - 1].id) {
       setFoodItems((prevItems) => [
         ...prevItems,
-        { id: prevItems.length + 1, value: "" },
+        { id: prevItems.length + 1, value: '' },
       ]);
     }
   };
 
   const handleDone = async (): Promise<void> => {
-    if (!categoryName || foodItems.every((item) => item.value === "")) {
-      window.alert("Error: Please enter a category and at least one item.");
+    if (!categoryName || foodItems.every((item) => item.value === '')) {
+      window.alert('Error: Please enter a category and at least one item.');
       return;
     }
 
     const categoryId = categoryName.toLowerCase();
-    const filledItems = foodItems.filter((item) => item.value !== "");
+    const filledItems = foodItems.filter((item) => item.value !== '');
     const foodNames = filledItems.reduce<{ [key: string]: string }>(
       (acc, item, index) => {
         acc[`${index + 1}`] = item.value;
         return acc;
       },
-      {}
+      {},
     );
 
     setIsLoading(true); // Start loading
@@ -68,8 +67,8 @@ const HomePage: React.FC = () => {
       });
       navigate(`/${categoryId}`, { state: { creator: true } });
     } catch (error) {
-      console.error("Failed to create new category:", error);
-      window.alert("Error: Something went wrong. Please try again.");
+      console.error('Failed to create new category:', error);
+      window.alert('Error: Something went wrong. Please try again.');
     } finally {
       setIsLoading(false); // Stop loading
     }
@@ -94,16 +93,13 @@ const HomePage: React.FC = () => {
               id={`view-for-letter-${index}`}
               testID="foodView"
             >
-              <Text
-                style={styles.letter}
-                data-testid={`letter-${index}`}
-              >
+              <Text style={styles.letter} data-testid={`letter-${index}`}>
                 {getLetter(index)}.
               </Text>
               <TextInput
                 id={`food-item-input-${index}`} // Use id for Selenium
                 style={styles.input}
-                placeholder={`Enter a ${categoryName || "item"}`}
+                placeholder={`Enter a ${categoryName || 'item'}`}
                 value={item.value}
                 onChangeText={(value) => handleChange(item.id, value)}
               />
@@ -117,18 +113,21 @@ const HomePage: React.FC = () => {
             id="done-button"
             onPress={handleDone}
             testID="done-button"
-            disabled={categoryName === "" || foodItems.every((item) => item.value === "")}
+            disabled={
+              categoryName === '' ||
+              foodItems.every((item) => item.value === '')
+            }
             style={({ pressed }) => [
               styles.button,
               pressed ? styles.buttonPressed : null,
-              categoryName === "" || foodItems.every((item) => item.value === "")
+              categoryName === '' ||
+              foodItems.every((item) => item.value === '')
                 ? styles.buttonDisabled
                 : null,
             ]}
           >
-           <Text style={styles.buttonText}>Done</Text>
+            <Text style={styles.buttonText}>Done</Text>
           </Pressable>
-
         )}
       </ScrollView>
     </SafeAreaView>
@@ -138,26 +137,26 @@ const HomePage: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     paddingVertical: 20,
   },
   inputContainer: {
-    width: "80%",
+    width: '80%',
   },
   category: {
     height: 60,
     width: 300,
-    borderColor: "gray",
+    borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 30,
     paddingHorizontal: 20,
   },
   inputWithLetter: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
   },
   letter: {
@@ -167,25 +166,25 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
-    borderColor: "gray",
+    borderColor: 'gray',
     borderWidth: 1,
     paddingHorizontal: 10,
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     padding: 15,
     borderRadius: 5,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
   },
   buttonPressed: {
-    backgroundColor: "#0056b3",
+    backgroundColor: '#0056b3',
   },
   buttonDisabled: {
-    backgroundColor: "gray",
+    backgroundColor: 'gray',
   },
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
   },
 });

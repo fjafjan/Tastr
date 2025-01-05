@@ -1,88 +1,87 @@
-import {
-  FoodCategoryData,
-  IFoodCategory,
-} from "../models";
-import { Judge } from "../selection_utility";
-import { GetUserVotes } from "./voting";
+import { FoodCategoryData, IFoodCategory } from '../models';
+import { Judge } from '../selection_utility';
+import { GetUserVotes } from './voting';
 
 // Type for food objects
 type FoodObject = {
-    id: string;
-    name: string;
-    alias: string;
-    MMR: number;
-  };
+  id: string;
+  name: string;
+  alias: string;
+  MMR: number;
+};
 
-type MmrMap = Record<string, number>
+type MmrMap = Record<string, number>;
 
 // Find a category by ID
 async function TryFindCategory(
-    categoryId: string
-  ): Promise<IFoodCategory | false> {
-    try {
-      const categoryEntry = await FoodCategoryData.findOne({ categoryId }).exec();
-      if (!categoryEntry) {
-        console.error("No category with ID ", categoryId);
-        return false;
-      }
-      return categoryEntry;
-    } catch (error) {
-      console.error(`Failed to find category with ${categoryId} due to `, error);
+  categoryId: string,
+): Promise<IFoodCategory | false> {
+  try {
+    const categoryEntry = await FoodCategoryData.findOne({ categoryId }).exec();
+    if (!categoryEntry) {
+      console.error('No category with ID ', categoryId);
       return false;
     }
-  };
+    return categoryEntry;
+  } catch (error) {
+    console.error(`Failed to find category with ${categoryId} due to `, error);
+    return false;
+  }
+}
 
-
-export async function GetItemMmrs(categoryId: string)
- : Promise<MmrMap | false> {
-  console.log(`Getting MMRs for category ${categoryId}`)
+export async function GetItemMmrs(categoryId: string): Promise<MmrMap | false> {
+  console.log(`Getting MMRs for category ${categoryId}`);
 
   try {
     const categoryEntry = await FoodCategoryData.findOne({ categoryId }).exec();
     if (!categoryEntry) {
-      console.error("No category with ID ", categoryId);
+      console.error('No category with ID ', categoryId);
       return false;
     }
     const mmrs: Record<string, number> = {};
-    categoryEntry.foodObjects.forEach(food => mmrs[food.id] = food.MMR)
+    categoryEntry.foodObjects.forEach((food) => (mmrs[food.id] = food.MMR));
 
-    return mmrs
+    return mmrs;
   } catch (error) {
-    console.error(`Failed to get MMRs for category ${categoryId}`)
-    return false
+    console.error(
+      `Failed to get MMRs for category ${categoryId} due to ${error}`,
+    );
+    return false;
   }
- }
+}
 
 // Find tasted items for a user
 async function GetUserTastedItems(
-    categoryId: string,
-    userId: string
-  ): Promise<Judge | false> {
-    console.log(`Generating taste-map for ${categoryId} and user ${userId}`);
+  categoryId: string,
+  userId: string,
+): Promise<Judge | false> {
+  console.log(`Generating taste-map for ${categoryId} and user ${userId}`);
 
-    try {
-      const foodVotes = await GetUserVotes(categoryId, userId);
+  try {
+    const foodVotes = await GetUserVotes(categoryId, userId);
 
-      const categoryEntry = await TryFindCategory(categoryId);
-      if (!categoryEntry) {
-        return false;
-      }
-
-      const tasted: Record<string, number> = {};
-      categoryEntry.foodObjects.forEach((item) => (tasted[item.id] = 0));
-
-      foodVotes.forEach((item) => {
-        tasted[item.winnerId] += 1;
-        tasted[item.loserId] += 1;
-      });
-      return { userId, tasted };
-    } catch (error) {
-      console.error("Failed to generate taste map due to", error);
+    const categoryEntry = await TryFindCategory(categoryId);
+    if (!categoryEntry) {
       return false;
     }
+
+    const tasted: Record<string, number> = {};
+    categoryEntry.foodObjects.forEach((item) => (tasted[item.id] = 0));
+
+    foodVotes.forEach((item) => {
+      tasted[item.winnerId] += 1;
+      tasted[item.loserId] += 1;
+    });
+    return { userId, tasted };
+  } catch (error) {
+    console.error('Failed to generate taste map due to', error);
+    return false;
   }
+}
 
 export {
-  GetUserTastedItems as GetUserTastedItems, TryFindCategory, type FoodObject, type MmrMap
+  GetUserTastedItems as GetUserTastedItems,
+  TryFindCategory,
+  type FoodObject,
+  type MmrMap,
 };
-

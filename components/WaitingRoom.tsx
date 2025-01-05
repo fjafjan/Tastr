@@ -1,32 +1,32 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet } from 'react-native';
 import {
   Pressable,
   SafeAreaView,
   Text,
   TextInput,
-  View
-} from "react-native-web";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ClipLoader } from "react-spinners";
-import io, { Socket } from "socket.io-client";
-import { SERVER_URL } from "../constants/Constants";
-import useAddUserToSession from "../hooks/useAddUserToSession";
-import useValidateCategory from "../hooks/useValidateCategory";
+  View,
+} from 'react-native-web';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
+import io, { Socket } from 'socket.io-client';
+import { SERVER_URL } from '../constants/Constants';
+import useAddUserToSession from '../hooks/useAddUserToSession';
+import useValidateCategory from '../hooks/useValidateCategory';
 
 const socket: Socket = io(SERVER_URL); // Replace with your server URL
 
 const WaitingRoom: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const [waiting, setWaiting] = useState<boolean>(true);
-  const [hostId, setHostId] = useState<string>("");
-  const [sessionId, setSessionId] = useState<string>("");
+  const [hostId, setHostId] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>('');
   const navigate = useNavigate();
   const location = useLocation();
   const userId: string | null =
-    location.state?.userId || localStorage.getItem("userId");
-  const [shareUrl, setShareUrl] = useState<string>(""); // For the share link
+    location.state?.userId || localStorage.getItem('userId');
+  const [shareUrl, setShareUrl] = useState<string>(''); // For the share link
 
   if (!userId) {
     navigate(`/${categoryId}`);
@@ -35,22 +35,22 @@ const WaitingRoom: React.FC = () => {
   const proceedToVotingIfRunning = async (): Promise<boolean> => {
     try {
       const runningResponse = await axios.get(
-        `${SERVER_URL}/${categoryId}/session/running`
+        `${SERVER_URL}/${categoryId}/session/running`,
       );
       if (runningResponse.data.running) {
         navigate(`/${categoryId}/voting`);
       }
       return true;
     } catch (error) {
-      console.error("Failed to check if session was running", error);
+      console.error('Failed to check if session was running', error);
       return false;
     }
   };
 
   const categoryValid = useValidateCategory({ categoryId: categoryId });
   const userAdded = useAddUserToSession({
-    categoryId: categoryId || "",
-    userId: userId || "",
+    categoryId: categoryId || '',
+    userId: userId || '',
     setSessionId: setSessionId,
     setHostId: setHostId,
     precondition: categoryValid,
@@ -63,23 +63,23 @@ const WaitingRoom: React.FC = () => {
 
   useEffect(() => {
     const handleStart = async (data: { sessionId: string }): Promise<void> => {
-      console.log("Session started event received: ", data.sessionId);
+      console.log('Session started event received: ', data.sessionId);
       if (data.sessionId === sessionId) {
         setWaiting(false);
         navigate(`/${categoryId}/voting`);
       } else {
-        console.info("Different session has started");
+        console.info('Different session has started');
       }
     };
 
-    socket.on("start", handleStart);
+    socket.on('start', handleStart);
 
     if (userId !== null) {
-      socket.emit("join", { userId });
+      socket.emit('join', { userId });
     }
 
     return () => {
-      socket.off("start", handleStart);
+      socket.off('start', handleStart);
     };
   }, [socket, categoryId, navigate, sessionId, userId]);
 
@@ -90,7 +90,7 @@ const WaitingRoom: React.FC = () => {
   }, [categoryValid, userAdded]);
 
   const handleStartButtonPressed = async (): Promise<void> => {
-    socket.emit("startSession", {
+    socket.emit('startSession', {
       categoryId: categoryId,
       hostId: userId,
       sessionId: sessionId,
@@ -101,10 +101,10 @@ const WaitingRoom: React.FC = () => {
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        Alert.alert("Success", "Link copied to clipboard!");
+        Alert.alert('Success', 'Link copied to clipboard!');
       })
       .catch((err) => {
-        console.error("Failed to copy: ", err);
+        console.error('Failed to copy: ', err);
       });
   };
 
@@ -133,7 +133,7 @@ const WaitingRoom: React.FC = () => {
             styles.button,
             pressed ? styles.buttonPressed : null,
           ]}
-          >
+        >
           <Text style={styles.buttonText}>Start</Text>
         </Pressable>
       )}
@@ -157,51 +157,51 @@ const WaitingRoom: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   shareText: {
     marginTop: 20,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   shareContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 10,
   },
   shareInput: {
     height: 40,
     width: 250,
-    borderColor: "gray",
+    borderColor: 'gray',
     borderWidth: 1,
     paddingHorizontal: 10,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#f0f0f0',
   },
   copyButton: {
     marginLeft: 10,
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 5,
   },
   copyButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: '#007BFF',
     padding: 15,
     borderRadius: 5,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
   },
   buttonPressed: {
-    backgroundColor: "#0056b3",
+    backgroundColor: '#0056b3',
   },
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
   },
 });

@@ -1,24 +1,24 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose from "mongoose";
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
 
 // In-memory MongoDB instance
 let mongoServer: MongoMemoryServer;
 
 export const connect = async () => {
-  console.time("Connecting")
-  console.timeLog("Connecting", "Starting connection")
+  console.time('Connecting');
+  console.timeLog('Connecting', 'Starting connection');
   mongoServer = await MongoMemoryServer.create();
-  console.timeLog("Connecting", "Created")
+  console.timeLog('Connecting', 'Created');
   const uri = mongoServer.getUri();
-  console.timeLog("Connecting", "Uri")
+  console.timeLog('Connecting', 'Uri');
 
   // Connect mongoose to the in-memory server
   await mongoose.connect(uri, {
     // useNewUrlParser: true,
     // useUnifiedTopology: true,
   });
-  console.timeLog("Connecting", "Connected")
-  console.timeEnd("Connecting")
+  console.timeLog('Connecting', 'Connected');
+  console.timeEnd('Connecting');
 };
 
 export const closeDatabase = async () => {
