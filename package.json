@@ -60,7 +60,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.13",
-    "@types/mocha": "^10.0.8",
+    "@types/mocha": "^10.0.10",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^22.10.2",
     "@types/react-native-web": "^0.19.0",
