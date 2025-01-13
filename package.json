@@ -33,7 +33,7 @@
     "expo": "^51.0.32",
     "express": "^4.21.2",
     "mongodb-memory-server": "^9.0.1",
-    "mongoose": "^8.8.3",
+    "mongoose": "^8.9.4",
     "nodefly-v8-profiler": "^3.7.3",
     "path": "^0.12.7",
     "prettier": "^3.4.2",
